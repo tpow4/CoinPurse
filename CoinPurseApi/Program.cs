@@ -29,6 +29,13 @@ if (app.Environment.IsDevelopment())
     app.UseMigrationsEndPoint();
 }
 
+// Run Sqlite migrations
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<CoinPurseDbContext>();
+    dbContext.Database.Migrate();
+}
+
 app.UseHttpsRedirection();
 
 app.MapControllers();
