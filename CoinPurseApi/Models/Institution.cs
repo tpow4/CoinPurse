@@ -6,8 +6,10 @@ namespace CoinPurseApi.Models
     {
         public int Id { get; set; }
         [Required]
-        public string Name { get; set; }
+        [MaxLength(100)]
+        public required string Name { get; set; }
+        public bool IsActive { get; set; }
 
-        public Account Account { get; set; }
+        public ICollection<Account> Accounts { get; set; } = [];
     }
 }
