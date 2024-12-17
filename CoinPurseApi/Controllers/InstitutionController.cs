@@ -6,14 +6,14 @@ namespace CoinPurseApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class InstitutionsController : ControllerBase
+    public class InstitutionController : ControllerBase
     {
         private readonly IInstitutionService _institutionService;
-        private readonly ILogger<InstitutionsController> _logger;
+        private readonly ILogger<InstitutionController> _logger;
 
-        public InstitutionsController(
+        public InstitutionController(
             IInstitutionService institutionService,
-            ILogger<InstitutionsController> logger)
+            ILogger<InstitutionController> logger)
         {
             _institutionService = institutionService;
             _logger = logger;

@@ -28,7 +28,7 @@ function getDaysInMonth(month: number, year: number) {
   return days;
 }
 
-export default function SessionsChart() {
+export default function FinancialChart() {
   const theme = useTheme();
   const data = getDaysInMonth(4, 2024);
 

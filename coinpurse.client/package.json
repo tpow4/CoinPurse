@@ -16,9 +16,12 @@
     "@mui/icons-material": "^6.2.0",
     "@mui/material": "^6.2.0",
     "@mui/x-charts": "^7.23.2",
+    "@reduxjs/toolkit": "^2.5.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "axios": "^1.7.9",
     "react": "19.0.0",
-    "react-dom": "19.0.0"
+    "react-dom": "19.0.0",
+    "react-redux": "^9.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",

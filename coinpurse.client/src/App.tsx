@@ -2,6 +2,7 @@ import { LineChart } from "@mui/x-charts/LineChart";
 import "./App.css";
 import { Box, Container, Grid2, Stack, Typography } from "@mui/material";
 import FinancialChart from "./FinancialChart";
+import Accounts from "./Accounts";
 
 function App() {
   return (
@@ -37,7 +38,7 @@ function App() {
               sx={{ mb: (theme) => theme.spacing(2) }}
             >
               <Grid2 size={{ xs: 12, md: 6 }}>
-                <FinancialChart/>
+                <FinancialChart />
               </Grid2>
               <Grid2 size={{ xs: 12, md: 6 }}>
                 <Typography>Test Graph</Typography>
@@ -51,6 +52,9 @@ function App() {
                   width={500}
                   height={300}
                 />
+              </Grid2>
+              <Grid2 size={{ xs: 12, md: 6 }}>
+                <Accounts/>
               </Grid2>
             </Grid2>
           </Container>
