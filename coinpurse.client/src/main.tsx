@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import App from './App.tsx'
+import App from './containers/App.tsx'
 import { ThemeProvider } from '@mui/material/styles'
 import theme from './theme/theme.tsx'
 import CssBaseline from '@mui/material/CssBaseline/CssBaseline'
@@ -14,10 +14,10 @@ createRoot(document.getElementById('root')!).render(
         <Provider store={store}>
             <ThemeProvider theme={theme}>
                 <CssBaseline />
-                    <BrowserRouter>
-                        <App />
-                    </BrowserRouter>
+                <BrowserRouter>
+                    <App />
+                </BrowserRouter>
             </ThemeProvider>
         </Provider>
-  </StrictMode>
+    </StrictMode>
 );
