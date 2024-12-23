@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "./redux/store";
-import { fetchAccounts } from "./redux/slices/accountsSlice";
+import { AppDispatch, RootState } from "../redux/store";
+import { fetchAccounts } from "../redux/slices/accountsSlice";
 import { Stack, Typography } from "@mui/material";
 
 export default function Accounts() {
