@@ -7,7 +7,9 @@ namespace CoinPurseApi.Data
     {
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Institution> Institutions { get; set; }
-        public DbSet<Balance> Balances { get; set; }
+        public DbSet<Period> Periods { get; set; }
+
+        public DbSet<AccountPeriod> AccountPeriods { get; set; }
 
         private readonly IConfiguration _configuration = configuration;
              

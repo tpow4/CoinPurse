@@ -19,20 +19,21 @@ namespace CoinPurseApi.Services
 
         public async Task<BalanceDto> CreateBalanceAsync(CreateBalanceDto balanceDto)
         {
-            var balance = balanceDto.ToEntity();
+            var accountBalance = balanceDto.ToEntity();
 
             try
             {
-                _context.Balances.Add(balance);
+                _context.AccountPeriods.Add(accountBalance);
                 await _context.SaveChangesAsync();
 
                 // Reload with account information
-                balance = await _context.Balances
-                    .Include(b => b.Account)
-                    .FirstAsync(b => b.AccountId == balance.AccountId &&
-                                   b.Timestamp == balance.Timestamp);
+                accountBalance = await _context.AccountPeriods
+                    .Include(ap => ap.Account)
+                    .OrderByDescending(ap => ap.PeriodId)
+                    .FirstAsync(ap => ap.AccountId == accountBalance.AccountId &&
+                                   ap.PeriodId == accountBalance.PeriodId);
 
-                return balance.ToDto();
+                return accountBalance.ToDto();
             }
             catch (Exception ex)
             {
@@ -41,20 +42,20 @@ namespace CoinPurseApi.Services
             }
         }
 
-        public async Task<IEnumerable<BalanceDto>> GetBalancesForPeriodAsync(
+        public async Task<IEnumerable<BalanceDto>> GetBalancesForRangeAsync(
             int accountId,
-            DateTime startDate,
-            DateTime endDate)
+            int startPeriodId,
+            int endPeriodId)
         {
-            var balances = await _context.Balances
-                .Include(b => b.Account)
-                .Where(b => b.AccountId == accountId &&
-                           b.Timestamp >= startDate &&
-                           b.Timestamp <= endDate)
-                .OrderByDescending(b => b.Timestamp)
+            var accountBalances = await _context.AccountPeriods
+                .Include(ap => ap.Account)
+                .Where(ap => ap.AccountId == accountId &&
+                           ap.PeriodId >= startPeriodId &&
+                           ap.PeriodId <= endPeriodId)
+                .OrderByDescending(b => b.PeriodId)
                 .ToListAsync();
 
-            return balances.Select(b => b.ToDto());
+            return accountBalances.Select(ap => ap.ToDto());
         }
     }
 }

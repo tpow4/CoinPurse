@@ -21,7 +21,7 @@ namespace CoinPurseApi.Services
         {
             var account = await _context.Accounts
                 .Include(a => a.Institution)
-                .Include(a => a.Balances)
+                .Include(a => a.AccountPeriods)
                 .FirstOrDefaultAsync(a => a.Id == id);
 
             return account?.ToDto();
@@ -31,7 +31,7 @@ namespace CoinPurseApi.Services
         {
             var accounts = await _context.Accounts
                 .Include(a => a.Institution)
-                .Include(a => a.Balances)
+                .Include(a => a.AccountPeriods)
                 .ToListAsync();
 
             return accounts.Select(a => a.ToDto());
@@ -49,7 +49,7 @@ namespace CoinPurseApi.Services
                 // Reload the account with relations
                 account = await _context.Accounts
                     .Include(a => a.Institution)
-                    .Include(a => a.Balances)
+                    .Include(a => a.AccountPeriods)
                     .FirstAsync(a => a.Id == account.Id);
 
                 return account.ToDto();
@@ -65,7 +65,7 @@ namespace CoinPurseApi.Services
         {
             var account = await _context.Accounts
                 .Include(a => a.Institution)
-                .Include(a => a.Balances)
+                .Include(a => a.AccountPeriods)
                 .FirstOrDefaultAsync(a => a.Id == id);
 
             if (account == null)
@@ -102,10 +102,10 @@ namespace CoinPurseApi.Services
 
         public async Task<IEnumerable<BalanceDto>> GetAccountBalancesAsync(int accountId)
         {
-            var balances = await _context.Balances
+            var balances = await _context.AccountPeriods
                 .Include(b => b.Account)
                 .Where(b => b.AccountId == accountId)
-                .OrderByDescending(b => b.Timestamp)
+                .OrderByDescending(b => b.PeriodId)
                 .ToListAsync();
 
             return balances.Select(b => b.ToDto());
