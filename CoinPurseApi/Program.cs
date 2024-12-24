@@ -1,6 +1,7 @@
 using CoinPurseApi.Data;
 using CoinPurseApi.Services;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +11,7 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IBalanceService, BalanceService>();
 builder.Services.AddScoped<IInstitutionService, InstitutionService>();
 
-// Add services to the container.
+// Add services to the program.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -25,8 +26,16 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
     app.UseDeveloperExceptionPage();
     app.UseMigrationsEndPoint();
+}
+
+// Run Sqlite migrations
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<CoinPurseDbContext>();
+    dbContext.Database.Migrate();
 }
 
 app.UseHttpsRedirection();

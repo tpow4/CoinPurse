@@ -1,6 +1,41 @@
-@CoinPurseApi_HostAddress = http://localhost:5090
+@CoinPurseApi_HostAddress = https://localhost:7000
 
-GET {{CoinPurseApi_HostAddress}}/weatherforecast/
-Accept: application/json
+
+POST {{CoinPurseApi_HostAddress}}/api/institutions
+Content-Type: application/json
+
+{
+  "Name": "Chase"
+}
+
+###
+
+GET {{CoinPurseApi_HostAddress}}/api/institutions
+
+###
+
+POST {{CoinPurseApi_HostAddress}}/api/account
+Content-Type: application/json
+
+{
+  "Name": "Savings",
+  "TaxTypeId": 1,
+  "InstitutionId": 1
+}
+
+###
+
+POST {{CoinPurseApi_HostAddress}}/api/balance
+Content-Type: application/json
+
+{
+  "AccountId": 1,
+  "Amount": 1000
+}
+
+###
+
+@id=1
+GET {{CoinPurseApi_HostAddress}}/api/account/{{id}}
 
 ###

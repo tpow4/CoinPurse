@@ -1,5 +1,4 @@
 ﻿using CoinPurseApi.Dtos;
-using CoinPurseApi.Models;
 using CoinPurseApi.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,7 +19,7 @@ namespace CoinPurseApi.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<AccountDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<Account>>> GetAccounts()
+        public async Task<ActionResult<IEnumerable<AccountDto>>> GetAccounts()
         {
             var accounts = await _accountService.GetAccountsAsync();
             return Ok(accounts);
@@ -29,7 +28,7 @@ namespace CoinPurseApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(AccountDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Account>> GetAccount(int id)
+        public async Task<ActionResult<AccountDto>> GetAccount(int id)
         {
             var account = await _accountService.GetAccountAsync(id);
             if (account == null)
@@ -43,7 +42,7 @@ namespace CoinPurseApi.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(AccountDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<Account>> CreateAccount(CreateAccountDto accountDto)
+        public async Task<ActionResult<AccountDto>> CreateAccount(CreateAccountDto accountDto)
         {
             if (!ModelState.IsValid)
             {
@@ -93,7 +92,7 @@ namespace CoinPurseApi.Controllers
         [HttpGet("{id}/balances")]
         [ProducesResponseType(typeof(IEnumerable<BalanceDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<Balance>>> GetAccountBalances(int id)
+        public async Task<ActionResult<IEnumerable<BalanceDto>>> GetAccountBalances(int id)
         {
             var balances = await _accountService.GetAccountBalancesAsync(id);
             return Ok(balances);
