@@ -9,7 +9,7 @@ const TopAppBar = () => {
         <AppHeader position="fixed">
             <Toolbar>
                 <Typography variant="h6" noWrap>
-                    My Application
+                    {"Coin Purse"}
                 </Typography>
             </Toolbar>
         </AppHeader>
