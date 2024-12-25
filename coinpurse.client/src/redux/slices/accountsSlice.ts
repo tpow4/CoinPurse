@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getAccounts } from "../../services/accountService";
 import axios from "axios";
 
-// Thunks
 export const fetchAccounts = createAsyncThunk(
     "account/fetchAccounts",
     async (_, thunkAPI) => {
@@ -12,7 +11,8 @@ export const fetchAccounts = createAsyncThunk(
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {
                 return thunkAPI.rejectWithValue(error.response.data);
-            } else if (error instanceof Error) {
+            }
+            else if (error instanceof Error) {
                 return thunkAPI.rejectWithValue(error.message);
             }
             return thunkAPI.rejectWithValue("Unknown error");
