@@ -25,13 +25,13 @@ namespace CoinPurseApi.Services
             return institutions.Select(a => a.ToDto());
         }
 
-        public async Task<InstitutionDto> GetInstitutionAsync(int id)
+        public async Task<InstitutionDto> GetInstitutionAsync(int institutionId)
         {
             var institution = await _context.Institutions
                 .Include(i => i.Accounts)
-                .FirstOrDefaultAsync(i => i.IsActive);
+                .SingleAsync(i => i.Id == institutionId && i.IsActive);
 
-            return institution?.ToDto();
+            return institution.ToDto();
         }
 
         public async Task<InstitutionDto> CreateInstitutionAsync(CreateInstitutionDto institutionDto)
@@ -46,7 +46,7 @@ namespace CoinPurseApi.Services
                 // Reload the account with relations
                 institution = await _context.Institutions
                     .Include(i => i.Accounts)
-                    .FirstAsync(i => i.Id == institution.Id);
+                    .SingleAsync(i => i.Id == institution.Id && i.IsActive);
 
                 return institution.ToDto();
             }
@@ -61,7 +61,7 @@ namespace CoinPurseApi.Services
         {
             var institution = await _context.Institutions
                 .Include(i => i.Accounts)
-                .FirstOrDefaultAsync(i => i.IsActive);
+                .SingleAsync(i => i.Id == institutionId && i.IsActive);
 
             if(institution == null)
             {

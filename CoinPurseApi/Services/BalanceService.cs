@@ -30,7 +30,7 @@ namespace CoinPurseApi.Services
                 accountBalance = await _context.AccountPeriods
                     .Include(ap => ap.Account)
                     .OrderByDescending(ap => ap.PeriodId)
-                    .FirstAsync(ap => ap.AccountId == accountBalance.AccountId &&
+                    .SingleAsync(ap => ap.AccountId == accountBalance.AccountId &&
                                    ap.PeriodId == accountBalance.PeriodId);
 
                 return accountBalance.ToDto();

@@ -22,7 +22,7 @@ namespace CoinPurseApi.Services
             var account = await _context.Accounts
                 .Include(a => a.Institution)
                 .Include(a => a.AccountPeriods)
-                .FirstOrDefaultAsync(a => a.Id == id);
+                .SingleAsync(a => a.Id == id);
 
             return account?.ToDto();
         }
@@ -50,7 +50,7 @@ namespace CoinPurseApi.Services
                 account = await _context.Accounts
                     .Include(a => a.Institution)
                     .Include(a => a.AccountPeriods)
-                    .FirstAsync(a => a.Id == account.Id);
+                    .SingleAsync(a => a.Id == account.Id);
 
                 return account.ToDto();
             }
@@ -66,7 +66,7 @@ namespace CoinPurseApi.Services
             var account = await _context.Accounts
                 .Include(a => a.Institution)
                 .Include(a => a.AccountPeriods)
-                .FirstOrDefaultAsync(a => a.Id == id);
+                .SingleOrDefaultAsync(a => a.Id == id);
 
             if (account == null)
             {

@@ -44,8 +44,8 @@ namespace CoinPurseApi.Controllers
                 new
                 {
                     accountId = balance.AccountId,
-                    startDate = balance.PeriodId,
-                    endDate = balance.PeriodId
+                    startPeriodId = balance.PeriodId,
+                    endPeriodId = balance.PeriodId
                 },
                 balance);
         }

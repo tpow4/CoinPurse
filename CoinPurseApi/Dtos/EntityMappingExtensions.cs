@@ -12,6 +12,7 @@ namespace CoinPurseApi.Dtos
                 Name = account.Name,
                 TaxTypeId = account.TaxTypeId,
                 InstitutionName = account.Institution?.Name ?? string.Empty,
+                IsActive = account.IsActive,
                 LatestBalance = account.AccountPeriods
                     ?.OrderByDescending(b => b.PeriodId)
                     .FirstOrDefault()
@@ -33,6 +34,7 @@ namespace CoinPurseApi.Dtos
         {
             account.Name = dto.Name;
             account.TaxTypeId = dto.TaxTypeId;
+            account.IsActive = dto.IsActive;
         }
 
         public static BalanceDto ToDto(this AccountPeriod balance)
