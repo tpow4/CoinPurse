@@ -40,6 +40,7 @@ namespace CoinPurseApi.Services
         public async Task<AccountDto> CreateAccountAsync(CreateAccountDto accountDto)
         {
             var account = accountDto.ToEntity();
+            account.IsActive = true;
 
             try
             {

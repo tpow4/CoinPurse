@@ -15,4 +15,13 @@ namespace CoinPurseApi.Models
         public Institution Institution { get; set; }
         public ICollection<AccountPeriod> AccountPeriods { get; set; } = [];
     }
+
+    public enum TaxType
+    {
+        Standard = 1,
+        Roth = 2,
+        Traditional = 3,
+        TaxFree = 4
+
+    }
 }
