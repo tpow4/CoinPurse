@@ -20,16 +20,21 @@ namespace CoinPurseApi.Data
             //https://learn.microsoft.com/en-us/ef/core/modeling/data-seeding#configuration-options-useseeding-and-useasyncseeding-methods
             .UseSeeding((context, _) =>
             {
-                var fiscalPeriods = GetSeedingPeriods(NUMBER_YEARS_SEEDED_DATA);
-                context.Set<Period>().AddRange(fiscalPeriods);
-                context.SaveChanges();
-
+                if(!context.Set<Period>().Any())
+                {
+                    var fiscalPeriods = GetSeedingPeriods(NUMBER_YEARS_SEEDED_DATA);
+                    context.Set<Period>().AddRange(fiscalPeriods);
+                    context.SaveChanges();
+                }
             })
             .UseAsyncSeeding(async (context, _, cancellationToken) =>
             {
-                var fiscalPeriods = GetSeedingPeriods(NUMBER_YEARS_SEEDED_DATA);
-                await context.Set<Period>().AddRangeAsync(fiscalPeriods, cancellationToken);
-                await context.SaveChangesAsync(cancellationToken);
+                if (!context.Set<Period>().Any())
+                {
+                    var fiscalPeriods = GetSeedingPeriods(NUMBER_YEARS_SEEDED_DATA);
+                    await context.Set<Period>().AddRangeAsync(fiscalPeriods, cancellationToken);
+                    await context.SaveChangesAsync(cancellationToken);
+                }
             });
 
         private static List<Period> GetSeedingPeriods(int numberYears)
