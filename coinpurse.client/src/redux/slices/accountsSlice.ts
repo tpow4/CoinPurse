@@ -1,6 +1,7 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, createEntityAdapter, EntityState } from "@reduxjs/toolkit";
 import { getAccounts } from "../../services/accountService";
 import axios from "axios";
+import { RootState } from "../store";
 
 export const fetchAccounts = createAsyncThunk(
     "account/fetchAccounts",
@@ -28,17 +29,17 @@ interface Account {
     latestBalance: number;
 }
 
-interface AccountsState {
-    accounts: Account[];
-    loading: boolean;
+interface AccountsState extends EntityState<Account, number> {
+    status: 'idle' | 'pending' | 'succeeded' | 'rejected';
     error: string | null;
 }
 
-const initialState: AccountsState = {
-    accounts: [],
-    loading: false,
-    error: null,
-};
+const accountsAdapter = createEntityAdapter<Account>();
+
+const initialState: AccountsState = accountsAdapter.getInitialState({
+    status: 'idle',
+    error: null
+})
 
 const accountsSlice = createSlice({
     name: "accounts",
@@ -47,18 +48,24 @@ const accountsSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(fetchAccounts.pending, (state) => {
-                state.loading = true;
-                state.error = null;
+                state.status = 'idle';
+                state.error = null
             })
             .addCase(fetchAccounts.fulfilled, (state, action) => {
-                state.loading = false;
-                state.accounts = action.payload;
+                state.status = 'succeeded';
+                accountsAdapter.setAll(state, action.payload)
             })
             .addCase(fetchAccounts.rejected, (state, action) => {
-                state.loading = false;
+                state.status = 'rejected'
                 state.error = action.payload as string;
             });
     },
 });
 
 export default accountsSlice.reducer;
+
+export const { selectAll: selectAllAccounts, selectById: selectAccountById } =
+    accountsAdapter.getSelectors((state: RootState) => state.accounts)
+
+export const selectAccountsStatus = (state: RootState) => state.accounts.status
+export const selectAccountsError = (state: RootState) => state.accounts.error
