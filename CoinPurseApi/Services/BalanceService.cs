@@ -28,8 +28,6 @@ namespace CoinPurseApi.Services
 
                 // Reload with account information
                 accountBalance = await _context.AccountBalances
-                    .Include(ap => ap.Account)
-                    .OrderByDescending(ap => ap.PeriodId)
                     .SingleAsync(ap => ap.AccountId == accountBalance.AccountId &&
                                    ap.PeriodId == accountBalance.PeriodId);
 
@@ -42,17 +40,11 @@ namespace CoinPurseApi.Services
             }
         }
 
-        public async Task<IEnumerable<AccountBalanceDto>> GetBalancesForRangeAsync(
-            int accountId,
-            int startPeriodId,
-            int endPeriodId)
+        public async Task<IEnumerable<AccountBalanceDto>> GetBalancesByAccountIdAsync(int accountId)
         {
             var accountBalances = await _context.AccountBalances
-                .Include(ap => ap.Account)
-                .Where(ap => ap.AccountId == accountId &&
-                           ap.PeriodId >= startPeriodId &&
-                           ap.PeriodId <= endPeriodId)
-                .OrderByDescending(b => b.PeriodId)
+                .Include(balance => balance.Account)
+                .Where(balance => balance.AccountId == accountId && balance.Account.IsActive)
                 .ToListAsync();
 
             return accountBalances.Select(ap => ap.ToDto());
@@ -61,8 +53,8 @@ namespace CoinPurseApi.Services
         public async Task<IEnumerable<AccountBalanceDto>> GetAllBalancesAsync()
         {
             var accountBalances = await _context.AccountBalances
-                .Include(ap => ap.Account)
-                .OrderByDescending(b => b.PeriodId)
+                .Include(balance => balance.Account)
+                .Where(balance => balance.Account.IsActive)
                 .ToListAsync();
 
             return accountBalances.Select(ap => ap.ToDto());

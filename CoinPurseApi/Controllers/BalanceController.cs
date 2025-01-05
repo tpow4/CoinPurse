@@ -25,13 +25,11 @@ namespace CoinPurseApi.Controllers
             return Ok(balances);
         }
 
-        [HttpGet]
+        [HttpGet("{accountId}")]
         [ProducesResponseType(typeof(IEnumerable<AccountBalanceDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetBalances([FromQuery] int accountId,
-        [FromQuery] int startPeriodId,
-        [FromQuery] int endPeriodId)
+        public async Task<IActionResult> GetBalancesByAccountId(int accountId)
         {
-            var balances = await _balanceService.GetBalancesForRangeAsync(accountId, startPeriodId, endPeriodId);
+            var balances = await _balanceService.GetBalancesByAccountIdAsync(accountId);
             return Ok(balances);
         }
 
@@ -48,13 +46,12 @@ namespace CoinPurseApi.Controllers
             var balance = await _balanceService.CreateBalanceAsync(balanceDto);
 
             return CreatedAtAction(
-                nameof(GetBalances),
+                nameof(GetBalancesByAccountId),
                 new
                 {
                     accountId = balance.AccountId,
                     startPeriodId = balance.PeriodId,
-                    endPeriodId = balance.PeriodId,
-                    amount = balance.Amount
+                    endPeriodId = balance.PeriodId
                 },
                 balance);
         }

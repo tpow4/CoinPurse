@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-
-namespace CoinPurseApi.Models
+﻿namespace CoinPurseApi.Models
 {
     public class Period
     {

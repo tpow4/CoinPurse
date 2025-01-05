@@ -43,7 +43,6 @@ namespace CoinPurseApi.Dtos
             {
                 PeriodId = balance.PeriodId,
                 AccountId = balance.AccountId,
-                AccountName = balance.Account?.Name ?? string.Empty,
                 Amount = balance.Amount
             };
         }
