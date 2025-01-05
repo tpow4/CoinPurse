@@ -101,9 +101,9 @@ namespace CoinPurseApi.Services
             return true;
         }
 
-        public async Task<IEnumerable<BalanceDto>> GetAccountBalancesAsync(int accountId)
+        public async Task<IEnumerable<AccountBalanceDto>> GetAccountBalancesAsync(int accountId)
         {
-            var balances = await _context.AccountPeriods
+            var balances = await _context.AccountBalances
                 .Include(b => b.Account)
                 .Where(b => b.AccountId == accountId)
                 .OrderByDescending(b => b.PeriodId)

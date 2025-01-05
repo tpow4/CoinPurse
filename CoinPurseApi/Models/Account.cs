@@ -13,7 +13,7 @@ namespace CoinPurseApi.Models
         public bool IsActive { get; set; }
 
         public Institution Institution { get; set; }
-        public ICollection<AccountPeriod> AccountPeriods { get; set; } = [];
+        public ICollection<AccountBalance> AccountPeriods { get; set; } = [];
     }
 
     public enum TaxType

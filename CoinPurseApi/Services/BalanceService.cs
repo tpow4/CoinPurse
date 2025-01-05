@@ -17,17 +17,17 @@ namespace CoinPurseApi.Services
             _logger = logger;
         }
 
-        public async Task<BalanceDto> CreateBalanceAsync(CreateBalanceDto balanceDto)
+        public async Task<AccountBalanceDto> CreateBalanceAsync(CreateAccountBalanceDto balanceDto)
         {
             var accountBalance = balanceDto.ToEntity();
 
             try
             {
-                _context.AccountPeriods.Add(accountBalance);
+                _context.AccountBalances.Add(accountBalance);
                 await _context.SaveChangesAsync();
 
                 // Reload with account information
-                accountBalance = await _context.AccountPeriods
+                accountBalance = await _context.AccountBalances
                     .Include(ap => ap.Account)
                     .OrderByDescending(ap => ap.PeriodId)
                     .SingleAsync(ap => ap.AccountId == accountBalance.AccountId &&
@@ -42,16 +42,26 @@ namespace CoinPurseApi.Services
             }
         }
 
-        public async Task<IEnumerable<BalanceDto>> GetBalancesForRangeAsync(
+        public async Task<IEnumerable<AccountBalanceDto>> GetBalancesForRangeAsync(
             int accountId,
             int startPeriodId,
             int endPeriodId)
         {
-            var accountBalances = await _context.AccountPeriods
+            var accountBalances = await _context.AccountBalances
                 .Include(ap => ap.Account)
                 .Where(ap => ap.AccountId == accountId &&
                            ap.PeriodId >= startPeriodId &&
                            ap.PeriodId <= endPeriodId)
+                .OrderByDescending(b => b.PeriodId)
+                .ToListAsync();
+
+            return accountBalances.Select(ap => ap.ToDto());
+        }
+
+        public async Task<IEnumerable<AccountBalanceDto>> GetAllBalancesAsync()
+        {
+            var accountBalances = await _context.AccountBalances
+                .Include(ap => ap.Account)
                 .OrderByDescending(b => b.PeriodId)
                 .ToListAsync();
 

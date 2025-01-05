@@ -9,6 +9,6 @@ namespace CoinPurseApi.Services
         Task<AccountDto> CreateAccountAsync(CreateAccountDto accountDto);
         Task<AccountDto> UpdateAccountAsync(int id, UpdateAccountDto accountDto);
         Task<bool> DeleteAccountAsync(int id);
-        Task<IEnumerable<BalanceDto>> GetAccountBalancesAsync(int accountId);
+        Task<IEnumerable<AccountBalanceDto>> GetAccountBalancesAsync(int accountId);
     }
 }

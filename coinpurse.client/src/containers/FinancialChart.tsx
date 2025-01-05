@@ -29,7 +29,7 @@ function getDaysInMonth(month: number, year: number) {
 }
 
 // interface FinancialChartProps {
-
+//     data: 
 // }
 
 export default function FinancialChart() {

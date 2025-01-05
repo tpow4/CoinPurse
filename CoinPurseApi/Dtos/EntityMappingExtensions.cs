@@ -16,7 +16,7 @@ namespace CoinPurseApi.Dtos
                 LatestBalance = account.AccountPeriods
                     ?.OrderByDescending(b => b.PeriodId)
                     .FirstOrDefault()
-                    ?.Balance
+                    ?.Amount
             };
         }
 
@@ -37,24 +37,24 @@ namespace CoinPurseApi.Dtos
             account.IsActive = dto.IsActive;
         }
 
-        public static BalanceDto ToDto(this AccountPeriod balance)
+        public static AccountBalanceDto ToDto(this AccountBalance balance)
         {
-            return new BalanceDto
+            return new AccountBalanceDto
             {
                 PeriodId = balance.PeriodId,
                 AccountId = balance.AccountId,
                 AccountName = balance.Account?.Name ?? string.Empty,
-                Balance = balance.Balance
+                Amount = balance.Amount
             };
         }
 
-        public static AccountPeriod ToEntity(this CreateBalanceDto dto)
+        public static AccountBalance ToEntity(this CreateAccountBalanceDto dto)
         {
-            return new AccountPeriod
+            return new AccountBalance
             {
                 PeriodId = dto.PeriodId,
                 AccountId = dto.AccountId,
-                Balance = dto.Balance,
+                Amount = dto.Amount,
                 CreatedAt = DateTime.UtcNow
             };
         }
