@@ -1,13 +1,12 @@
-import { createSlice, createAsyncThunk, createEntityAdapter, EntityState } from "@reduxjs/toolkit";
-import { getAccounts } from "../../services/accountService";
+import { createAsyncThunk, createEntityAdapter, createSlice, EntityState } from "@reduxjs/toolkit";
 import axios from "axios";
-import { RootState } from "../store";
+import { getBalances } from "../../services/balanceService";
 
 export const fetchAccounts = createAsyncThunk(
     "account/fetchAccounts",
     async (_, thunkAPI) => {
         try {
-            const response = await getAccounts();
+            const response = await getBalances();
             return response;
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {
@@ -21,28 +20,39 @@ export const fetchAccounts = createAsyncThunk(
     }
 );
 
-interface Account {
-    id: number;
-    name: string;
-    taxTypeId: number;
-    institutionName: string;
-    latestBalance: number;
+interface Balance {
+    accountId: number;
+    periodId: number;
+    balance: number;
 }
 
-interface AccountsState extends EntityState<Account, number> {
+interface BalancesState extends EntityState<Balance, string> {
     status: 'idle' | 'pending' | 'succeeded' | 'rejected';
     error: string | null;
 }
 
-const accountsAdapter = createEntityAdapter<Account>();
+const balancesAdapter = createEntityAdapter({
+    selectId: (balance: Balance) => `${balance.accountId}-${balance.periodId}` as string,
+    sortComparer: (a, b) => {
+        if (a.accountId < b.accountId) {
+            return -1;
+        }
+        if (a.accountId > b.accountId) {
+            return 1;
+        }
 
-const initialState: AccountsState = accountsAdapter.getInitialState({
+        return a.periodId - b.periodId;
+    }
+});
+
+
+const initialState: BalancesState = balancesAdapter.getInitialState({
     status: 'idle',
     error: null
 })
 
-const accountsSlice = createSlice({
-    name: "accounts",
+const balancesSlice = createSlice({
+    name: "balances",
     initialState,
     reducers: {},
     extraReducers: (builder) => {
@@ -53,7 +63,7 @@ const accountsSlice = createSlice({
             })
             .addCase(fetchAccounts.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                accountsAdapter.setAll(state, action.payload)
+                balancesAdapter.setAll(state, action.payload)
             })
             .addCase(fetchAccounts.rejected, (state, action) => {
                 state.status = 'rejected'
@@ -62,10 +72,4 @@ const accountsSlice = createSlice({
     },
 });
 
-export default accountsSlice.reducer;
-
-export const { selectAll: selectAllAccounts, selectById: selectAccountById } =
-    accountsAdapter.getSelectors((state: RootState) => state.accounts)
-
-export const selectAccountsStatus = (state: RootState) => state.accounts.status
-export const selectAccountsError = (state: RootState) => state.accounts.error
+export default balancesSlice.reducer;

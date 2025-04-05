@@ -17,22 +17,21 @@ namespace CoinPurseApi.Services
             _logger = logger;
         }
 
-        public async Task<BalanceDto> CreateBalanceAsync(CreateBalanceDto balanceDto)
+        public async Task<AccountBalanceDto> CreateBalanceAsync(CreateAccountBalanceDto balanceDto)
         {
-            var balance = balanceDto.ToEntity();
+            var accountBalance = balanceDto.ToEntity();
 
             try
             {
-                _context.Balances.Add(balance);
+                _context.AccountBalances.Add(accountBalance);
                 await _context.SaveChangesAsync();
 
                 // Reload with account information
-                balance = await _context.Balances
-                    .Include(b => b.Account)
-                    .FirstAsync(b => b.AccountId == balance.AccountId &&
-                                   b.Timestamp == balance.Timestamp);
+                accountBalance = await _context.AccountBalances
+                    .SingleAsync(ap => ap.AccountId == accountBalance.AccountId &&
+                                   ap.PeriodId == accountBalance.PeriodId);
 
-                return balance.ToDto();
+                return accountBalance.ToDto();
             }
             catch (Exception ex)
             {
@@ -41,20 +40,24 @@ namespace CoinPurseApi.Services
             }
         }
 
-        public async Task<IEnumerable<BalanceDto>> GetBalancesForPeriodAsync(
-            int accountId,
-            DateTime startDate,
-            DateTime endDate)
+        public async Task<IEnumerable<AccountBalanceDto>> GetBalancesByAccountIdAsync(int accountId)
         {
-            var balances = await _context.Balances
-                .Include(b => b.Account)
-                .Where(b => b.AccountId == accountId &&
-                           b.Timestamp >= startDate &&
-                           b.Timestamp <= endDate)
-                .OrderByDescending(b => b.Timestamp)
+            var accountBalances = await _context.AccountBalances
+                .Include(balance => balance.Account)
+                .Where(balance => balance.AccountId == accountId && balance.Account.IsActive)
                 .ToListAsync();
 
-            return balances.Select(b => b.ToDto());
+            return accountBalances.Select(ap => ap.ToDto());
+        }
+
+        public async Task<IEnumerable<AccountBalanceDto>> GetAllBalancesAsync()
+        {
+            var accountBalances = await _context.AccountBalances
+                .Include(balance => balance.Account)
+                .Where(balance => balance.Account.IsActive)
+                .ToListAsync();
+
+            return accountBalances.Select(ap => ap.ToDto());
         }
     }
 }

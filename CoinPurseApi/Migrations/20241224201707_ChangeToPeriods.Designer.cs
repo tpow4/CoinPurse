@@ -3,6 +3,7 @@ using System;
 using CoinPurseApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CoinPurseApi.Migrations
 {
     [DbContext(typeof(CoinPurseDbContext))]
-    partial class CoinPurseDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241224201707_ChangeToPeriods")]
+    partial class ChangeToPeriods
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
@@ -44,7 +47,7 @@ namespace CoinPurseApi.Migrations
                     b.ToTable("Accounts");
                 });
 
-            modelBuilder.Entity("CoinPurseApi.Models.AccountBalance", b =>
+            modelBuilder.Entity("CoinPurseApi.Models.AccountPeriod", b =>
                 {
                     b.Property<int>("PeriodId")
                         .HasColumnType("INTEGER");
@@ -52,7 +55,7 @@ namespace CoinPurseApi.Migrations
                     b.Property<int>("AccountId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Amount")
+                    b.Property<int>("Balance")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
@@ -62,7 +65,7 @@ namespace CoinPurseApi.Migrations
 
                     b.HasIndex("AccountId");
 
-                    b.ToTable("AccountBalances");
+                    b.ToTable("AccountPeriods");
                 });
 
             modelBuilder.Entity("CoinPurseApi.Models.Institution", b =>
@@ -116,7 +119,7 @@ namespace CoinPurseApi.Migrations
                     b.Navigation("Institution");
                 });
 
-            modelBuilder.Entity("CoinPurseApi.Models.AccountBalance", b =>
+            modelBuilder.Entity("CoinPurseApi.Models.AccountPeriod", b =>
                 {
                     b.HasOne("CoinPurseApi.Models.Account", "Account")
                         .WithMany("AccountPeriods")

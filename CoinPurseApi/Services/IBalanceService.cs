@@ -4,7 +4,8 @@ namespace CoinPurseApi.Services
 {
     public interface IBalanceService
     {
-        Task<BalanceDto> CreateBalanceAsync(CreateBalanceDto balanceDto);
-        Task<IEnumerable<BalanceDto>> GetBalancesForPeriodAsync(int accountId, DateTime startDate, DateTime endDate);
+        Task<IEnumerable<AccountBalanceDto>> GetAllBalancesAsync();
+        Task<IEnumerable<AccountBalanceDto>> GetBalancesByAccountIdAsync(int accountId);
+        Task<AccountBalanceDto> CreateBalanceAsync(CreateAccountBalanceDto balanceDto);
     }
 }

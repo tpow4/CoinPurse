@@ -1,8 +1,8 @@
 ﻿namespace CoinPurseApi.Dtos
 {
-    public class CreateBalanceDto
+    public class AccountBalanceDto
     {
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public int PeriodId { get; set; }
         public int AccountId { get; set; }
         public int Amount { get; set; }
     }

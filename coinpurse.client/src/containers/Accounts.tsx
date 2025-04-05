@@ -1,21 +1,20 @@
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../redux/store";
-import { fetchAccounts } from "../redux/slices/accountsSlice";
+import { fetchAccounts, selectAccountsError, selectAccountsStatus, selectAllAccounts } from "../redux/slices/accountsSlice";
 import { Stack, Typography } from "@mui/material";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
 
 export default function Accounts() {
-    const dispatch = useDispatch<AppDispatch>();
-    const { accounts, loading, error } = useSelector(
-        (state: RootState) => state.accounts
-    );
+    const dispatch = useAppDispatch();
+    const accounts = useAppSelector(selectAllAccounts)
+    const accountStatus = useAppSelector(selectAccountsStatus)
+    const accountError = useAppSelector(selectAccountsError)
 
     useEffect(() => {
         dispatch(fetchAccounts());
     }, [dispatch]);
 
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error: {error}</p>;
+    if (accountStatus === 'pending') return <p>Loading...</p>;
+    if (accountStatus === 'rejected') return <p>Error: {accountError}</p>;
 
     return (
         <Stack>

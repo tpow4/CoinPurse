@@ -2,7 +2,7 @@ import { Card, CardContent, Chip, Stack, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { LineChart } from "@mui/x-charts/LineChart";
 
-function AreaGradient({ color, id }: { color: string; id: string }) {
+function AreaGradient({ color, id }: Readonly<{ color: string; id: string }>) {
     return (
         <defs>
             <linearGradient id={id} x1="50%" y1="0%" x2="50%" y2="100%">
@@ -27,6 +27,10 @@ function getDaysInMonth(month: number, year: number) {
     }
     return days;
 }
+
+// interface FinancialChartProps {
+//     data: 
+// }
 
 export default function FinancialChart() {
     const theme = useTheme();
@@ -63,7 +67,7 @@ export default function FinancialChart() {
                         {
                             scaleType: "point",
                             data,
-                            tickInterval: (index, i) => (i + 1) % 5 === 0,
+                            tickInterval: (_index, i) => (i + 1) % 5 === 0,
                         },
                     ]}
                     series={[

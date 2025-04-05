@@ -12,8 +12,9 @@ namespace CoinPurseApi.Dtos
                 Name = account.Name,
                 TaxTypeId = account.TaxTypeId,
                 InstitutionName = account.Institution?.Name ?? string.Empty,
-                LatestBalance = account.Balances
-                    ?.OrderByDescending(b => b.Timestamp)
+                IsActive = account.IsActive,
+                LatestBalance = account.AccountPeriods
+                    ?.OrderByDescending(b => b.PeriodId)
                     .FirstOrDefault()
                     ?.Amount
             };
@@ -33,26 +34,27 @@ namespace CoinPurseApi.Dtos
         {
             account.Name = dto.Name;
             account.TaxTypeId = dto.TaxTypeId;
+            account.IsActive = dto.IsActive;
         }
 
-        public static BalanceDto ToDto(this Balance balance)
+        public static AccountBalanceDto ToDto(this AccountBalance balance)
         {
-            return new BalanceDto
+            return new AccountBalanceDto
             {
-                Timestamp = balance.Timestamp,
+                PeriodId = balance.PeriodId,
                 AccountId = balance.AccountId,
-                AccountName = balance.Account?.Name ?? string.Empty,
                 Amount = balance.Amount
             };
         }
 
-        public static Balance ToEntity(this CreateBalanceDto dto)
+        public static AccountBalance ToEntity(this CreateAccountBalanceDto dto)
         {
-            return new Balance
+            return new AccountBalance
             {
-                Timestamp = dto.Timestamp,
+                PeriodId = dto.PeriodId,
                 AccountId = dto.AccountId,
-                Amount = dto.Amount
+                Amount = dto.Amount,
+                CreatedAt = DateTime.UtcNow
             };
         }
 

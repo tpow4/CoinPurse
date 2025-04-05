@@ -1,8 +1,8 @@
 import { LineChart } from "@mui/x-charts/LineChart";
-import "../App.css";
+import "../../App.css";
 import { Container, Grid2, Stack, Typography } from "@mui/material";
-import FinancialChart from "./FinancialChart";
-import Accounts from "./Accounts";
+import FinancialChart from "../FinancialChart";
+import Accounts from "../Accounts";
 
 function DashboardPage() {
     return (

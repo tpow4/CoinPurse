@@ -90,9 +90,9 @@ namespace CoinPurseApi.Controllers
         }
 
         [HttpGet("{id}/balances")]
-        [ProducesResponseType(typeof(IEnumerable<BalanceDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<AccountBalanceDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<BalanceDto>>> GetAccountBalances(int id)
+        public async Task<ActionResult<IEnumerable<AccountBalanceDto>>> GetAccountBalances(int id)
         {
             var balances = await _accountService.GetAccountBalancesAsync(id);
             return Ok(balances);

@@ -18,19 +18,25 @@ namespace CoinPurseApi.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<BalanceDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetBalances([FromQuery] int accountId,
-        [FromQuery] DateTime startDate,
-        [FromQuery] DateTime endDate)
+        [ProducesResponseType(typeof(IEnumerable<AccountBalanceDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllBalances()
         {
-            var balances = await _balanceService.GetBalancesForPeriodAsync(accountId, startDate, endDate);
+            var balances = await _balanceService.GetAllBalancesAsync();
+            return Ok(balances);
+        }
+
+        [HttpGet("{accountId}")]
+        [ProducesResponseType(typeof(IEnumerable<AccountBalanceDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetBalancesByAccountId(int accountId)
+        {
+            var balances = await _balanceService.GetBalancesByAccountIdAsync(accountId);
             return Ok(balances);
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(BalanceDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(AccountBalanceDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<BalanceDto>> CreateBalance(CreateBalanceDto balanceDto)
+        public async Task<ActionResult<AccountBalanceDto>> CreateBalance(CreateAccountBalanceDto balanceDto)
         {
             if (!ModelState.IsValid)
             {
@@ -40,12 +46,12 @@ namespace CoinPurseApi.Controllers
             var balance = await _balanceService.CreateBalanceAsync(balanceDto);
 
             return CreatedAtAction(
-                nameof(GetBalances),
+                nameof(GetBalancesByAccountId),
                 new
                 {
                     accountId = balance.AccountId,
-                    startDate = balance.Timestamp,
-                    endDate = balance.Timestamp
+                    startPeriodId = balance.PeriodId,
+                    endPeriodId = balance.PeriodId
                 },
                 balance);
         }
