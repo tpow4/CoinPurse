@@ -21,7 +21,7 @@ export const fetchAccounts = createAsyncThunk(
     }
 );
 
-interface Account {
+export interface Account {
     id: number;
     name: string;
     taxTypeId: number;

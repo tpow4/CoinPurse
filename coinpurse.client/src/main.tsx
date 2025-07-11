@@ -7,7 +7,7 @@ import CssBaseline from '@mui/material/CssBaseline/CssBaseline'
 import { store } from './redux/store.ts'
 import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router'
-import theme from './theme/theme.tsx'
+import theme from './Theme/Theme.tsx'
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>

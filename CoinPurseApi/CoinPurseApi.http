@@ -5,7 +5,7 @@ POST {{CoinPurseApi_HostAddress}}/api/institution
 Content-Type: application/json
 
 {
-  "Name": "Chase"
+  "Name": "Capital One"
 }
 
 ###
@@ -14,13 +14,17 @@ GET {{CoinPurseApi_HostAddress}}/api/institution
 
 ###
 
+GET {{CoinPurseApi_HostAddress}}/api/account
+
+###
+
 POST {{CoinPurseApi_HostAddress}}/api/account
 Content-Type: application/json
 
 {
-  "Name": "Savings",
+  "Name": "I Bonds",
   "TaxTypeId": 1,
-  "InstitutionId": 1
+  "InstitutionId":5
 }
 
 ###
@@ -36,12 +40,7 @@ Content-Type: application/json
 
 ###
 
-@id=1
+@id=2
 GET {{CoinPurseApi_HostAddress}}/api/account/{{id}}
-
-###
-
-@accountId=1
-GET {{CoinPurseApi_HostAddress}}/api/balance/{{accountId}}
 
 ###

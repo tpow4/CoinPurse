@@ -1,9 +1,10 @@
 import { createAsyncThunk, createEntityAdapter, createSlice, EntityState } from "@reduxjs/toolkit";
 import axios from "axios";
 import { getBalances } from "../../services/balanceService";
+import { RootState } from "../store";
 
-export const fetchAccounts = createAsyncThunk(
-    "account/fetchAccounts",
+export const fetchBalances = createAsyncThunk(
+    "balance/fetchBalances",
     async (_, thunkAPI) => {
         try {
             const response = await getBalances();
@@ -20,10 +21,10 @@ export const fetchAccounts = createAsyncThunk(
     }
 );
 
-interface Balance {
+export interface Balance {
     accountId: number;
     periodId: number;
-    balance: number;
+    amount: number;
 }
 
 interface BalancesState extends EntityState<Balance, string> {
@@ -57,15 +58,15 @@ const balancesSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder
-            .addCase(fetchAccounts.pending, (state) => {
+            .addCase(fetchBalances.pending, (state) => {
                 state.status = 'idle';
                 state.error = null
             })
-            .addCase(fetchAccounts.fulfilled, (state, action) => {
+            .addCase(fetchBalances.fulfilled, (state, action) => {
                 state.status = 'succeeded';
                 balancesAdapter.setAll(state, action.payload)
             })
-            .addCase(fetchAccounts.rejected, (state, action) => {
+            .addCase(fetchBalances.rejected, (state, action) => {
                 state.status = 'rejected'
                 state.error = action.payload as string;
             });
@@ -73,3 +74,9 @@ const balancesSlice = createSlice({
 });
 
 export default balancesSlice.reducer;
+
+export const { selectAll: selectAllBalances, selectById: selectBalanceById } = 
+    balancesAdapter.getSelectors((state: RootState) => state.balances);
+
+export const selectBalancesStatus = (state: RootState) => state.balances.status;
+export const selectBalancesError = (state: RootState) => state.balances.error
