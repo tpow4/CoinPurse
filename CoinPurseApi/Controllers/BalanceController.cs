@@ -1,4 +1,4 @@
-﻿using CoinPurseApi.Dtos;
+using CoinPurseApi.Dtos;
 using CoinPurseApi.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -54,6 +54,28 @@ namespace CoinPurseApi.Controllers
                     endPeriodId = balance.PeriodId
                 },
                 balance);
+        }
+
+        // Bulk create balances
+        [HttpPost("bulk")]
+        [ProducesResponseType(typeof(IEnumerable<AccountBalanceDto>), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IEnumerable<AccountBalanceDto>>> CreateBalancesBulk([FromBody] List<CreateAccountBalanceDto> balancesDto)
+        {
+            if (balancesDto == null || balancesDto.Count == 0)
+            {
+                return BadRequest("No balances provided");
+            }
+
+            var createdBalances = new List<AccountBalanceDto>();
+            foreach (var dto in balancesDto)
+            {
+                if (dto == null)
+                    continue;
+                var created = await _balanceService.CreateBalanceAsync(dto);
+                createdBalances.Add(created);
+            }
+            return Created("/api/balance/bulk", createdBalances);
         }
     }
 }
