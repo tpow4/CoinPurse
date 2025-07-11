@@ -22,17 +22,25 @@ namespace CoinPurseApi.Controllers
         [ProducesResponseType(typeof(IEnumerable<PeriodDto>), StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<PeriodDto>> GetPeriods()
         {
-            var periods = _context.Periods
-                .Select(p => new PeriodDto
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    StartDate = p.StartDate,
-                    EndDate = p.EndDate
-                })
-                .OrderBy(p => p.Id)
-                .ToList();
-            return Ok(periods);
+            try
+            {
+                var periods = await _context.Periods
+                    .Select(p => new PeriodDto
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        StartDate = p.StartDate,
+                        EndDate = p.EndDate
+                    })
+                    .OrderBy(p => p.Id)
+                    .ToListAsync();
+                return Ok(periods);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching periods");
+                return StatusCode(500, "An error occurred while fetching periods");
+            }
         }
     }
 }

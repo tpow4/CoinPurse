@@ -71,7 +71,9 @@ namespace CoinPurseApi.Controllers
             foreach (var dto in balancesDto)
             {
                 if (dto == null)
-                    continue;
+                {
+                    return BadRequest("Invalid balance data provided");
+                }
                 var created = await _balanceService.CreateBalanceAsync(dto);
                 createdBalances.Add(created);
             }

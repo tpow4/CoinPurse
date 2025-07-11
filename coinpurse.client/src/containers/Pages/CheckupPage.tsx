@@ -62,13 +62,13 @@ function CheckupPage() {
                             <CardContent>
                                 <Stack spacing={2}>
                                     <Typography variant="body2" color="text.secondary">
-                                        Previous Balance: <b>${account.latestBalance?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</b>
+                                        Previous Balance: <b>${account.latestBalance?.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</b>
                                     </Typography>
                                     <TextField
                                         type="number"
                                         label="Enter weekly balance"
                                         value={balances[account.id] ?? ''}
-                                        InputProps={{ inputProps: { step: 1 } }}
+                                        InputProps={{ inputProps: { step: 0.01 } }}
                                         fullWidth
                                         onChange={(e) => handleBalanceChange(account.id, e.target.value)}
                                     />

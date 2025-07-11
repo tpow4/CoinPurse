@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { getPeriods, Period } from "../../services/periodService";
 import { RootState } from "../store";
+import axios from "axios";
 
 export const fetchPeriods = createAsyncThunk(
     "periods/fetchPeriods",
@@ -9,6 +10,9 @@ export const fetchPeriods = createAsyncThunk(
             const response = await getPeriods();
             return response;
         } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                return thunkAPI.rejectWithValue(error.response.data);
+            }
             if (error instanceof Error) {
                 return thunkAPI.rejectWithValue(error.message);
             }
