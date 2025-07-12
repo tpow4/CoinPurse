@@ -12,7 +12,7 @@ namespace CoinPurseApi.Models
         public int InstitutionId { get; set; }
         public bool IsActive { get; set; }
 
-        public required Institution Institution { get; set; }
+        public Institution? Institution { get; set; }
         public ICollection<AccountBalance> AccountPeriods { get; set; } = [];
     }
 

@@ -1,4 +1,4 @@
-import { Container, Stack, TextField, Typography, Avatar, Card, CardContent, CardHeader, Grid2 } from "@mui/material";
+import { Stack, TextField, Typography, Avatar, Box, Button } from "@mui/material";
 import { useEffect, useState } from 'react';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { selectAllAccounts, fetchAccounts } from '../../redux/slices/accountsSlice';
@@ -50,46 +50,83 @@ function CheckupPage() {
 
     return (
         <>
-            <Grid2 container spacing={3} sx={{ mt: 2 }}>
-                {accounts.map((account) => (
-                    <Grid2 key={account.id}>
-                        <Card>
-                            <CardHeader
-                                avatar={<Avatar src={undefined} alt={account.name} />}
-                                title={account.name}
-                                subheader={account.institutionName}
+            <Box sx={{ maxWidth: 1400, width: '100%', mx: 'auto', px: { xs: 1, sm: 2, md: 3 } }}>
+                <form autoComplete="off">
+                    <Stack spacing={2} sx={{ mt: 2 }}>
+                        {accounts.map((account) => (
+                            <Box
+                            key={account.id}
+                            sx={{
+                                display: 'flex',
+                                flexDirection: { xs: 'column', sm: 'row' },
+                                textAlign: 'left',
+                                alignItems: { sm: 'center' },
+                                gap: 2,
+                                p: 2,
+                                borderRadius: 2,
+                                border: '1px solid #e0e0e0',
+                                boxShadow: 1,
+                                background: 'white',
+                                width: '100%',
+                            }}
+                        >
+                            <Avatar src={undefined} alt={account.name} sx={{ mr: { sm: 2 }, mb: { xs: 1, sm: 0 } }} />
+                            <Box sx={{ flex: 2, minWidth: 120, maxWidth: 400, flexBasis: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: 0 }}>
+                                <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                    sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}
+                                >
+                                    {account.institutionName}
+                                </Typography>
+                                <Typography
+                                    variant="subtitle1"
+                                    sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}
+                                >
+                                    {account.name}
+                                </Typography>
+                            </Box>
+                            <Box sx={{ flex: 2, minWidth: 120, maxWidth: 400, flexBasis: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: 0 }}>
+                                <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                    sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}
+                                >
+                                    {"Previous Balance"}
+                                </Typography>
+                                <Typography
+                                    variant="subtitle1"
+                                    sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}
+                                >
+                                    {`$${account.latestBalance?.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) ?? '0.00'}`}
+                                </Typography>
+                            </Box>
+                            <TextField
+                                type="number"
+                                label="Enter balance"
+                                value={balances[account.id] ?? ''}
+                                InputProps={{ inputProps: { step: 0.01 } }}
+                                sx={{ flex: 2, minWidth: 160 }}
+                                onChange={(e) => handleBalanceChange(account.id, e.target.value)}
                             />
-                            <CardContent>
-                                <Stack spacing={2}>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Previous Balance: <b>${account.latestBalance?.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</b>
-                                    </Typography>
-                                    <TextField
-                                        type="number"
-                                        label="Enter weekly balance"
-                                        value={balances[account.id] ?? ''}
-                                        InputProps={{ inputProps: { step: 0.01 } }}
-                                        fullWidth
-                                        onChange={(e) => handleBalanceChange(account.id, e.target.value)}
-                                    />
-                                </Stack>
-                            </CardContent>
-                        </Card>
-                    </Grid2>
-                ))}
-            </Grid2>
+                        </Box>
+                    ))}
+                </Stack>
+            </form>
             {periodError && (
                 <Typography color="error" align="center" sx={{ mt: 2 }}>{periodError}</Typography>
             )}
             <Stack direction="row" justifyContent="center" sx={{ mt: 4 }}>
-                <button
-                    style={{ padding: '12px 32px', fontSize: '1.1rem', borderRadius: 8, background: '#1976d2', color: 'white', border: 'none', cursor: balancesStatus === 'pending' ? 'wait' : 'pointer', opacity: Object.values(balances).some(v => v && !isNaN(Number(v))) ? 1 : 0.5 }}
+                <Button
+                    variant="contained"
+                    color="secondary"
                     disabled={balancesStatus === 'pending' || !Object.values(balances).some(v => v && !isNaN(Number(v)))}
                     onClick={handleSubmit}
                 >
                     {balancesStatus === 'pending' ? 'Submitting...' : 'Submit All'}
-                </button>
+                </Button>
             </Stack>
+        </Box>
         </>
     );
 }

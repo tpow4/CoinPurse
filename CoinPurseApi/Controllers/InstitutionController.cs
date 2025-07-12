@@ -27,6 +27,7 @@ namespace CoinPurseApi.Controllers
             var institution = await institutionService.GetInstitutionAsync(id);
             if (institution == null)
             {
+                logger.LogWarning("Institution with ID {Id} not found", id);
                 return NotFound($"Institution with ID {id} not found");
             }
 
@@ -59,6 +60,7 @@ namespace CoinPurseApi.Controllers
             var institution = await institutionService.GetInstitutionAsync(id);
             if (institution == null)
             {
+                logger.LogWarning("Institution with ID {Id} not found", id);
                 return NotFound($"Institution with ID {id} not found");
             }
 

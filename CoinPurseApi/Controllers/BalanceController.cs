@@ -55,6 +55,7 @@ namespace CoinPurseApi.Controllers
         {
             if (balancesDto == null || balancesDto.Count == 0)
             {
+                logger.LogWarning("No balances provided for bulk creation");
                 return BadRequest("No balances provided");
             }
 
@@ -63,6 +64,7 @@ namespace CoinPurseApi.Controllers
             {
                 if (dto == null)
                 {
+                    logger.LogWarning("Invalid balance data provided for bulk creation");
                     return BadRequest("Invalid balance data provided");
                 }
                 var created = await balanceService.CreateBalanceAsync(dto);

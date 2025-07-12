@@ -24,6 +24,7 @@ namespace CoinPurseApi.Controllers
             var account = await accountService.GetAccountAsync(id);
             if (account == null)
             {
+                logger.LogWarning("Account with ID {Id} not found", id);
                 return NotFound();
             }
 
@@ -62,6 +63,7 @@ namespace CoinPurseApi.Controllers
             }
             catch (KeyNotFoundException)
             {
+                logger.LogWarning("Attempted to update non-existent account with ID {Id}", id);
                 return NotFound($"Account with ID {id} not found");
             }
         }
@@ -74,6 +76,7 @@ namespace CoinPurseApi.Controllers
             var result = await accountService.DeleteAccountAsync(id);
             if (!result)
             {
+                logger.LogWarning("Attempted to delete non-existent account with ID {Id}", id);
                 return NotFound($"Account with ID {id} not found");
             }
 
