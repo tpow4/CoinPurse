@@ -105,7 +105,12 @@ function CheckupPage() {
                                 type="number"
                                 label="Enter balance"
                                 value={balances[account.id] ?? ''}
-                                InputProps={{ inputProps: { step: 0.01 } }}
+                                slotProps={{
+                                    input: {
+                                        startAdornment: '$',
+                                        inputMode: 'decimal'
+                                    }
+                                }}
                                 sx={{ flex: 2, minWidth: 160 }}
                                 onChange={(e) => handleBalanceChange(account.id, e.target.value)}
                             />

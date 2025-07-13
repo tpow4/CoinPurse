@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, createEntityAdapter, EntityState } from "@reduxjs/toolkit";
-import { getAccounts } from "../../services/accountService";
+import { getAccounts, createAccount as createAccountService } from "../../services/accountService";
 import axios from "axios";
 import { RootState } from "../store";
 
@@ -21,12 +21,39 @@ export const fetchAccounts = createAsyncThunk(
     }
 );
 
+export const createAccount = createAsyncThunk(
+    "account/createAccount",
+    async (data: any, thunkAPI) => {
+        try {
+            const response = await createAccountService(data);
+            thunkAPI.dispatch(fetchAccounts());
+            return response;
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                return thunkAPI.rejectWithValue(error.response.data);
+            }
+            else if (error instanceof Error) {
+                return thunkAPI.rejectWithValue(error.message);
+            }
+            return thunkAPI.rejectWithValue("Unknown error");
+        }
+    }
+);
+
 export interface Account {
     id: number;
     name: string;
     taxTypeId: number;
     institutionName: string;
     latestBalance: number;
+}
+
+export enum TaxType
+{
+    Standard = 1,
+    Roth = 2,
+    Traditional = 3,
+    TaxFree = 4
 }
 
 interface AccountsState extends EntityState<Account, number> {
@@ -57,6 +84,17 @@ const accountsSlice = createSlice({
             })
             .addCase(fetchAccounts.rejected, (state, action) => {
                 state.status = 'rejected'
+                state.error = action.payload as string;
+            })
+            .addCase(createAccount.pending, (state) => {
+                state.status = 'pending';
+                state.error = null;
+            })
+            .addCase(createAccount.fulfilled, (state) => {
+                state.status = 'succeeded';
+            })
+            .addCase(createAccount.rejected, (state, action) => {
+                state.status = 'rejected';
                 state.error = action.payload as string;
             });
     },
