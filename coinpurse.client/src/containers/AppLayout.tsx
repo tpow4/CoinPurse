@@ -1,22 +1,21 @@
 import { Outlet } from "react-router-dom";
 import TopAppBar from "./TopAppBar";
-import { Box } from "@mui/material";
+import { Box, Container } from "@mui/material";
 
 const Layout = () => (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100vh", width: "100vw" }}>
         <TopAppBar />
-        <Box
+        <Container
             component="main"
             sx={{
                 flexGrow: 1,
-                height: "100vh",
                 overflow: "auto",
-                pt: 8,
-                px: 3,
+                pt: 2,
+                px: 2
             }}
         >
             <Outlet />
-        </Box>
+        </Container>
     </Box>
 );
 

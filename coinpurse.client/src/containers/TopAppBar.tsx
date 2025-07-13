@@ -6,7 +6,7 @@ const AppHeader = styled(AppBar)(({ theme }) => ({
 
 const TopAppBar = () => {
     return (
-        <AppHeader position="fixed">
+        <AppHeader position="static" color="primary" enableColorOnDark>
             <Toolbar>
                 <Typography variant="h6" noWrap>
                     {"Coin Purse"}
