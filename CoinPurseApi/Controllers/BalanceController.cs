@@ -9,12 +9,10 @@ namespace CoinPurseApi.Controllers
     public class BalanceController : ControllerBase
     {
         private readonly IBalanceService _balanceService;
-        private readonly ILogger<BalanceController> _logger;
 
-        public BalanceController(IBalanceService balanceService, ILogger<BalanceController> logger)
+        public BalanceController(IBalanceService balanceService)
         {
             _balanceService = balanceService;
-            _logger = logger;
         }
 
         [HttpGet]
