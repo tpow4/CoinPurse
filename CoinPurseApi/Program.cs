@@ -35,11 +35,11 @@ if (app.Environment.IsDevelopment())
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<CoinPurseDbContext>();
-    dbContext.Database.Migrate();
+    await dbContext.Database.MigrateAsync();
 }
 
 app.UseHttpsRedirection();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();

@@ -20,23 +20,6 @@ namespace CoinPurseApi.Dtos
             };
         }
 
-        public static Account ToEntity(this CreateAccountDto dto)
-        {
-            return new Account
-            {
-                Name = dto.Name,
-                TaxTypeId = dto.TaxTypeId,
-                InstitutionId = dto.InstitutionId
-            };
-        }
-
-        public static void UpdateEntity(this UpdateAccountDto dto, Account account)
-        {
-            account.Name = dto.Name;
-            account.TaxTypeId = dto.TaxTypeId;
-            account.IsActive = dto.IsActive;
-        }
-
         public static AccountBalanceDto ToDto(this AccountBalance balance)
         {
             return new AccountBalanceDto
@@ -44,6 +27,16 @@ namespace CoinPurseApi.Dtos
                 PeriodId = balance.PeriodId,
                 AccountId = balance.AccountId,
                 Amount = balance.Amount
+            };
+        }
+
+        public static InstitutionDto ToDto(this Institution institution)
+        {
+            return new InstitutionDto
+            {
+                Id = institution.Id,
+                Name = institution.Name,
+                AccountCount = institution.Accounts?.Count ?? 0
             };
         }
 
@@ -58,13 +51,13 @@ namespace CoinPurseApi.Dtos
             };
         }
 
-        public static InstitutionDto ToDto(this Institution institution)
+        public static Account ToEntity(this CreateAccountDto dto)
         {
-            return new InstitutionDto
+            return new Account
             {
-                Id = institution.Id,
-                Name = institution.Name,
-                AccountCount = institution.Accounts?.Count ?? 0
+                Name = dto.Name,
+                TaxTypeId = dto.TaxTypeId,
+                InstitutionId = dto.InstitutionId
             };
         }
 
@@ -76,5 +69,13 @@ namespace CoinPurseApi.Dtos
                 IsActive = true
             };
         }
+
+        public static void UpdateEntity(this UpdateAccountDto dto, Account account)
+        {
+            account.Name = dto.Name;
+            account.TaxTypeId = dto.TaxTypeId;
+            account.IsActive = dto.IsActive;
+        }
+
     }
 }

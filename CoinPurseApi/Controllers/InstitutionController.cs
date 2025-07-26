@@ -9,14 +9,11 @@ namespace CoinPurseApi.Controllers
     public class InstitutionController : ControllerBase
     {
         private readonly IInstitutionService _institutionService;
-        private readonly ILogger<InstitutionController> _logger;
 
         public InstitutionController(
-            IInstitutionService institutionService,
-            ILogger<InstitutionController> logger)
+            IInstitutionService institutionService)
         {
             _institutionService = institutionService;
-            _logger = logger;
         }
 
         [HttpGet]

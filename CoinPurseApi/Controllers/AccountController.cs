@@ -9,12 +9,10 @@ namespace CoinPurseApi.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAccountService _accountService;
-        private readonly ILogger<AccountController> _logger;
 
         public AccountController(IAccountService accountService, ILogger<AccountController> logger)
         {
             _accountService = accountService;
-            _logger = logger;
         }
 
         [HttpGet]
