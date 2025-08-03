@@ -52,7 +52,7 @@ interface BalancesState extends EntityState<Balance, string> {
 }
 
 const balancesAdapter = createEntityAdapter({
-    selectId: (balance: Balance) => `${balance.accountId}-${balance.periodId}` as string,
+    selectId: (balance: Balance): string => `${balance.accountId}-${balance.periodId}`,
     sortComparer: (a, b) => {
         if (a.accountId < b.accountId) {
             return -1;

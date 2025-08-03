@@ -16,11 +16,11 @@ namespace CoinPurseApi.Services
             return institutions.Select(a => a.ToDto());
         }
 
-        public async Task<InstitutionDto> GetInstitutionAsync(int institutionId)
+        public async Task<InstitutionDto> GetInstitutionAsync(int id)
         {
             var institution = await coinPurseDbContext.Institutions
                 .Include(i => i.Accounts)
-                .SingleAsync(i => i.Id == institutionId && i.IsActive);
+                .SingleAsync(i => i.Id == id && i.IsActive);
 
             return institution.ToDto();
         }
@@ -44,7 +44,7 @@ namespace CoinPurseApi.Services
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error creating institution");
-                throw;
+                throw new InvalidOperationException("An error occurred while creating the institution", ex);
             }
         }
 
@@ -56,11 +56,11 @@ namespace CoinPurseApi.Services
 
             if(institution == null)
             {
-                //Todo: determine error logging here
+                _logger.LogError("Institution with ID {InstitutionId} not found", institutionId);
                 throw new KeyNotFoundException($"Institution with ID {institutionId} not found");
             }
 
-            return institution.Accounts.ToList().Select(a => a.ToDto());
+            return institution.Accounts.Select(a => a.ToDto());
         }
     }
 }
