@@ -31,6 +31,7 @@ export default function Accounts() {
     if (accountStatus === "pending" || balanceStatus === "pending")
         return <p>Loading...</p>;
     if (accountStatus === "rejected") return <p>Error: {accountError}</p>;
+    if( balanceStatus === "rejected") return <p>Error: {balanceError}</p>;
     return (
         <Grid2
             container
