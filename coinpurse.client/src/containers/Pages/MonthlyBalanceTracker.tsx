@@ -1,10 +1,5 @@
 import AccountBalance from "@mui/icons-material/AccountBalance";
 import CheckCircle from "@mui/icons-material/CheckCircle";
-import ExpandMore from "@mui/icons-material/ExpandMore";
-import TrendingUp from "@mui/icons-material/TrendingUp";
-import Accordion from "@mui/material/Accordion";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import AccordionSummary from "@mui/material/AccordionSummary";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
@@ -54,12 +49,12 @@ const MonthlyBalanceTracker = () => {
     const currentPeriod =
         periods.length > 0
             ? periods.reduce(
-                  (latest, p) =>
-                      new Date(p.endDate) > new Date(latest.endDate)
-                          ? p
-                          : latest,
-                  periods[0]
-              )
+                (latest, p) =>
+                    new Date(p.endDate) > new Date(latest.endDate)
+                        ? p
+                        : latest,
+                periods[0]
+            )
             : null;
 
     // Optionally, prefill balances with latestBalance for each account
@@ -107,6 +102,7 @@ const MonthlyBalanceTracker = () => {
             setSubmitStatus("success");
             setTimeout(() => setSubmitStatus("idle"), 3000);
         } catch (error) {
+            console.error("Error submitting balances:", error);
             setSubmitStatus("error");
         }
     };
@@ -267,12 +263,14 @@ const MonthlyBalanceTracker = () => {
                                                 )
                                             }
                                             placeholder="0.00"
-                                            InputProps={{
-                                                startAdornment: (
-                                                    <InputAdornment position="start">
-                                                        $
-                                                    </InputAdornment>
-                                                ),
+                                            slotProps={{
+                                                input: {
+                                                    startAdornment: (
+                                                        <InputAdornment position="start">
+                                                            $
+                                                        </InputAdornment>
+                                                    ),
+                                                },
                                             }}
                                             size="small"
                                             variant="outlined"
@@ -305,39 +303,6 @@ const MonthlyBalanceTracker = () => {
                     </Grid2>
                 ))}
             </Grid2>
-
-            {/* Historical View Accordion */}
-            <Accordion sx={{ mb: 4, border: 1, borderColor: "grey.300" }}>
-                <AccordionSummary
-                    expandIcon={<ExpandMore />}
-                    sx={{
-                        "&:hover": {
-                            bgcolor: "grey.50",
-                        },
-                    }}
-                >
-                    <Typography
-                        variant="h6"
-                        sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1,
-                            fontWeight: 600,
-                        }}
-                    >
-                        <TrendingUp color="primary" />
-                        View Historical Balances
-                    </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                    <Typography variant="body1" color="text.secondary">
-                        Historical balance data and trends would be displayed
-                        here. This could include charts showing balance changes
-                        over time, year-over-year comparisons, and growth
-                        analytics.
-                    </Typography>
-                </AccordionDetails>
-            </Accordion>
 
             {/* Submit Button */}
             <Box sx={{ display: "flex", justifyContent: "center" }}>
