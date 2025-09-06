@@ -10,7 +10,7 @@ namespace CoinPurseApi.Models
         public int Amount { get; set; }
         public DateTime CreatedAt { get; set; }
 
-        public required Account Account { get; set; }
-        public required Period Period { get; set; }
+        public Account? Account { get; set; }
+        public Period? Period { get; set; }
     }
 }

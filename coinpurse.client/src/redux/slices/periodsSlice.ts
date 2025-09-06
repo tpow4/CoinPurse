@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createEntityAdapter, createSlice, EntityState } from "@reduxjs/toolkit";
 import { getPeriods, Period } from "../../services/periodService";
 import { RootState } from "../store";
 import axios from "axios";
@@ -21,17 +21,17 @@ export const fetchPeriods = createAsyncThunk(
     }
 );
 
-interface PeriodsState {
-    periods: Period[];
+interface PeriodsState extends EntityState<Period, number> {
     status: 'idle' | 'pending' | 'succeeded' | 'rejected';
     error: string | null;
 }
 
-const initialState: PeriodsState = {
-    periods: [],
+const periodsAdapter = createEntityAdapter<Period>();
+
+const initialState: PeriodsState = periodsAdapter.getInitialState({
     status: 'idle',
     error: null
-};
+});
 
 const periodsSlice = createSlice({
     name: "periods",
@@ -40,12 +40,12 @@ const periodsSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(fetchPeriods.pending, (state) => {
-                state.status = 'pending';
-                state.error = null;
+                state.status = 'idle';
+                state.error = null
             })
             .addCase(fetchPeriods.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.periods = action.payload;
+                periodsAdapter.setAll(state, action.payload)
             })
             .addCase(fetchPeriods.rejected, (state, action) => {
                 state.status = 'rejected';
@@ -55,6 +55,8 @@ const periodsSlice = createSlice({
 });
 
 export default periodsSlice.reducer;
-export const selectAllPeriods = (state: RootState) => state.periods.periods;
+export const { selectAll: selectAllPeriods, selectById: selectPeriodById } =
+    periodsAdapter.getSelectors((state: RootState) => state.periods)
+
 export const selectPeriodsStatus = (state: RootState) => state.periods.status;
 export const selectPeriodsError = (state: RootState) => state.periods.error;

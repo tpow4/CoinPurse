@@ -1,4 +1,7 @@
-import { AppBar, styled, Toolbar, Typography } from "@mui/material";
+import Typography from '@mui/material/Typography';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import { styled } from '@mui/material/styles';
 
 const AppHeader = styled(AppBar)(({ theme }) => ({
     zIndex: theme.zIndex.drawer + 1,
@@ -6,7 +9,7 @@ const AppHeader = styled(AppBar)(({ theme }) => ({
 
 const TopAppBar = () => {
     return (
-        <AppHeader position="fixed">
+        <AppHeader position="static" color="primary" enableColorOnDark>
             <Toolbar>
                 <Typography variant="h6" noWrap>
                     {"Coin Purse"}
