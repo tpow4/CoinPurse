@@ -6,20 +6,13 @@ namespace CoinPurseApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AccountController : ControllerBase
+    public class AccountController(IAccountService accountService, ILogger<AccountController> logger) : ControllerBase
     {
-        private readonly IAccountService _accountService;
-
-        public AccountController(IAccountService accountService, ILogger<AccountController> logger)
-        {
-            _accountService = accountService;
-        }
-
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<AccountDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<AccountDto>>> GetAccounts()
         {
-            var accounts = await _accountService.GetAccountsAsync();
+            var accounts = await accountService.GetAccountsAsync();
             return Ok(accounts);
         }
 
@@ -28,9 +21,10 @@ namespace CoinPurseApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AccountDto>> GetAccount(int id)
         {
-            var account = await _accountService.GetAccountAsync(id);
+            var account = await accountService.GetAccountAsync(id);
             if (account == null)
             {
+                logger.LogWarning("Account with ID {Id} not found", id);
                 return NotFound();
             }
 
@@ -47,7 +41,7 @@ namespace CoinPurseApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var createdAccount = await _accountService.CreateAccountAsync(accountDto);
+            var createdAccount = await accountService.CreateAccountAsync(accountDto);
             return CreatedAtAction(nameof(GetAccount), new { id = createdAccount.Id }, createdAccount);
         }
 
@@ -64,11 +58,12 @@ namespace CoinPurseApi.Controllers
 
             try
             {
-                var updatedAccount = await _accountService.UpdateAccountAsync(id, accountDto);
+                var updatedAccount = await accountService.UpdateAccountAsync(id, accountDto);
                 return Ok(updatedAccount);
             }
             catch (KeyNotFoundException)
             {
+                logger.LogWarning("Attempted to update non-existent account with ID {Id}", id);
                 return NotFound($"Account with ID {id} not found");
             }
         }
@@ -78,9 +73,10 @@ namespace CoinPurseApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteAccount(int id)
         {
-            var result = await _accountService.DeleteAccountAsync(id);
+            var result = await accountService.DeleteAccountAsync(id);
             if (!result)
             {
+                logger.LogWarning("Attempted to delete non-existent account with ID {Id}", id);
                 return NotFound($"Account with ID {id} not found");
             }
 
@@ -92,7 +88,7 @@ namespace CoinPurseApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<AccountBalanceDto>>> GetAccountBalances(int id)
         {
-            var balances = await _accountService.GetAccountBalancesAsync(id);
+            var balances = await accountService.GetAccountBalancesAsync(id);
             return Ok(balances);
         }
     }

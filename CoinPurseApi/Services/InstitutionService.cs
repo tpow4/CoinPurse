@@ -4,20 +4,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CoinPurseApi.Services
 {
-    public class InstitutionService : IInstitutionService
+    public class InstitutionService(CoinPurseDbContext coinPurseDbContext, ILogger<InstitutionService> logger) : IInstitutionService
     {
-        private readonly CoinPurseDbContext _context;
-        private readonly ILogger<InstitutionService> _logger;
-
-        public InstitutionService(CoinPurseDbContext coinPurseDbContext, ILogger<InstitutionService> logger)
-        {
-            _context = coinPurseDbContext;
-            _logger = logger;
-        }
-
         public async Task<IEnumerable<InstitutionDto>> GetInstitutionsAsync()
         {
-            var institutions = await _context.Institutions
+            var institutions = await coinPurseDbContext.Institutions
                 .Include(i => i.Accounts)
                 .Where(i => i.IsActive)
                 .ToListAsync();
@@ -27,7 +18,7 @@ namespace CoinPurseApi.Services
 
         public async Task<InstitutionDto> GetInstitutionAsync(int id)
         {
-            var institution = await _context.Institutions
+            var institution = await coinPurseDbContext.Institutions
                 .Include(i => i.Accounts)
                 .SingleAsync(i => i.Id == id && i.IsActive);
 
@@ -40,11 +31,11 @@ namespace CoinPurseApi.Services
 
             try
             {
-                _context.Institutions.Add(institution);
-                await _context.SaveChangesAsync();
+                coinPurseDbContext.Institutions.Add(institution);
+                await coinPurseDbContext.SaveChangesAsync();
 
                 // Reload the account with relations
-                institution = await _context.Institutions
+                institution = await coinPurseDbContext.Institutions
                     .Include(i => i.Accounts)
                     .SingleAsync(i => i.Id == institution.Id && i.IsActive);
 
@@ -52,20 +43,20 @@ namespace CoinPurseApi.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating institution");
+                logger.LogError(ex, "Error creating institution");
                 throw new InvalidOperationException("An error occurred while creating the institution", ex);
             }
         }
 
         public async Task<IEnumerable<AccountDto>> GetInstitutionAccountsAsync(int institutionId)
         {
-            var institution = await _context.Institutions
+            var institution = await coinPurseDbContext.Institutions
                 .Include(i => i.Accounts)
                 .SingleAsync(i => i.Id == institutionId && i.IsActive);
 
             if(institution == null)
             {
-                _logger.LogError("Institution with ID {InstitutionId} not found", institutionId);
+                logger.LogError("Institution with ID {InstitutionId} not found", institutionId);
                 throw new KeyNotFoundException($"Institution with ID {institutionId} not found");
             }
 

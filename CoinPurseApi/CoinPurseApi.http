@@ -34,7 +34,8 @@ Content-Type: application/json
 
 {
   "AccountId": 1,
-  "Amount": 1000
+  "PeriodId": 2,
+  "Amount": 2000
 }
 
 ###

@@ -1,6 +1,6 @@
 import { createAsyncThunk, createEntityAdapter, createSlice, EntityState } from "@reduxjs/toolkit";
 import axios from "axios";
-import { getBalances } from "../../services/balanceService";
+import { getBalances, submitBalances } from "../../services/balanceService";
 import { RootState } from "../store";
 
 export const fetchBalances = createAsyncThunk(
@@ -8,6 +8,25 @@ export const fetchBalances = createAsyncThunk(
     async (_, thunkAPI) => {
         try {
             const response = await getBalances();
+            return response;
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                return thunkAPI.rejectWithValue(error.response.data);
+            }
+            else if (error instanceof Error) {
+                return thunkAPI.rejectWithValue(error.message);
+            }
+            return thunkAPI.rejectWithValue("Unknown error");
+        }
+    }
+);
+
+// Bulk submit balances thunk
+export const submitBalancesThunk = createAsyncThunk(
+    "balance/submitBalances",
+    async (balances: { accountId: number; periodId: number; amount: number }[], thunkAPI) => {
+        try {
+            const response = await submitBalances(balances);
             return response;
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {
@@ -46,7 +65,6 @@ const balancesAdapter = createEntityAdapter({
     }
 });
 
-
 const initialState: BalancesState = balancesAdapter.getInitialState({
     status: 'idle',
     error: null
@@ -58,6 +76,19 @@ const balancesSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder
+            .addCase(submitBalancesThunk.pending, (state) => {
+                state.status = 'pending';
+                state.error = null;
+            })
+            .addCase(submitBalancesThunk.fulfilled, (state, action) => {
+                state.status = 'succeeded';
+                // Add or update balances in state
+                balancesAdapter.upsertMany(state, action.payload);
+            })
+            .addCase(submitBalancesThunk.rejected, (state, action) => {
+                state.status = 'rejected';
+                state.error = action.payload as string;
+            })
             .addCase(fetchBalances.pending, (state) => {
                 state.status = 'idle';
                 state.error = null

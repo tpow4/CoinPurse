@@ -1,4 +1,4 @@
-﻿using CoinPurseApi.Dtos;
+using CoinPurseApi.Dtos;
 using CoinPurseApi.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,20 +6,13 @@ namespace CoinPurseApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class BalanceController : ControllerBase
+    public class BalanceController(IBalanceService balanceService, ILogger<BalanceController> logger) : ControllerBase
     {
-        private readonly IBalanceService _balanceService;
-
-        public BalanceController(IBalanceService balanceService)
-        {
-            _balanceService = balanceService;
-        }
-
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<AccountBalanceDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllBalances()
         {
-            var balances = await _balanceService.GetAllBalancesAsync();
+            var balances = await balanceService.GetAllBalancesAsync();
             return Ok(balances);
         }
 
@@ -27,7 +20,7 @@ namespace CoinPurseApi.Controllers
         [ProducesResponseType(typeof(IEnumerable<AccountBalanceDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetBalancesByAccountId(int accountId)
         {
-            var balances = await _balanceService.GetBalancesByAccountIdAsync(accountId);
+            var balances = await balanceService.GetBalancesByAccountIdAsync(accountId);
             return Ok(balances);
         }
 
@@ -41,7 +34,7 @@ namespace CoinPurseApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var balance = await _balanceService.CreateBalanceAsync(balanceDto);
+            var balance = await balanceService.CreateBalanceAsync(balanceDto);
 
             return CreatedAtAction(
                 nameof(GetBalancesByAccountId),
@@ -52,6 +45,32 @@ namespace CoinPurseApi.Controllers
                     endPeriodId = balance.PeriodId
                 },
                 balance);
+        }
+
+        // Bulk create balances
+        [HttpPost("bulk")]
+        [ProducesResponseType(typeof(IEnumerable<AccountBalanceDto>), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IEnumerable<AccountBalanceDto>>> CreateBalancesBulk([FromBody] List<CreateAccountBalanceDto> balancesDto)
+        {
+            if (balancesDto == null || balancesDto.Count == 0)
+            {
+                logger.LogWarning("No balances provided for bulk creation");
+                return BadRequest("No balances provided");
+            }
+
+            var createdBalances = new List<AccountBalanceDto>();
+            foreach (var dto in balancesDto)
+            {
+                if (dto == null)
+                {
+                    logger.LogWarning("Invalid balance data provided for bulk creation");
+                    return BadRequest("Invalid balance data provided");
+                }
+                var created = await balanceService.CreateBalanceAsync(dto);
+                createdBalances.Add(created);
+            }
+            return Created("/api/balance/bulk", createdBalances);
         }
     }
 }

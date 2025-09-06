@@ -6,21 +6,15 @@ namespace CoinPurseApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class InstitutionController : ControllerBase
+    public class InstitutionController(
+        IInstitutionService institutionService,
+        ILogger<InstitutionController> logger) : ControllerBase
     {
-        private readonly IInstitutionService _institutionService;
-
-        public InstitutionController(
-            IInstitutionService institutionService)
-        {
-            _institutionService = institutionService;
-        }
-
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<InstitutionDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<InstitutionDto>>> GetInstitutions()
         {
-            var institutions = await _institutionService.GetInstitutionsAsync();
+            var institutions = await institutionService.GetInstitutionsAsync();
             return Ok(institutions);
         }
 
@@ -30,9 +24,10 @@ namespace CoinPurseApi.Controllers
         public async Task<ActionResult<InstitutionDto>> GetInstitution(int id)
         {
             
-            var institution = await _institutionService.GetInstitutionAsync(id);
+            var institution = await institutionService.GetInstitutionAsync(id);
             if (institution == null)
             {
+                logger.LogWarning("Institution with ID {Id} not found", id);
                 return NotFound($"Institution with ID {id} not found");
             }
 
@@ -49,7 +44,7 @@ namespace CoinPurseApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var institution = await _institutionService.CreateInstitutionAsync(institutionDto);
+            var institution = await institutionService.CreateInstitutionAsync(institutionDto);
 
             return CreatedAtAction(
                 nameof(GetInstitution),
@@ -62,13 +57,14 @@ namespace CoinPurseApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<AccountDto>>> GetInstitutionAccounts(int id)
         {
-            var institution = await _institutionService.GetInstitutionAsync(id);
+            var institution = await institutionService.GetInstitutionAsync(id);
             if (institution == null)
             {
+                logger.LogWarning("Institution with ID {Id} not found", id);
                 return NotFound($"Institution with ID {id} not found");
             }
 
-            var accounts = await _institutionService.GetInstitutionAccountsAsync(id);
+            var accounts = await institutionService.GetInstitutionAccountsAsync(id);
             return Ok(accounts);
         }
     }

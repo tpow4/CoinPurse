@@ -12,7 +12,7 @@ namespace CoinPurseApi.Models
         public int InstitutionId { get; set; }
         public bool IsActive { get; set; }
 
-        public Institution Institution { get; set; }
+        public Institution? Institution { get; set; }
         public ICollection<AccountBalance> AccountPeriods { get; set; } = [];
     }
 
@@ -22,6 +22,5 @@ namespace CoinPurseApi.Models
         Roth = 2,
         Traditional = 3,
         TaxFree = 4
-
     }
 }

@@ -4,22 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CoinPurseApi.Services
 {
-    public class AccountService : IAccountService
+    public class AccountService(
+        CoinPurseDbContext context,
+        ILogger<AccountService> logger) : IAccountService
     {
-        private readonly CoinPurseDbContext _context;
-        private readonly ILogger<AccountService> _logger;
-
-        public AccountService(
-            CoinPurseDbContext context,
-            ILogger<AccountService> logger)
-        {
-            _context = context;
-            _logger = logger;
-        }
-
         public async Task<AccountDto> GetAccountAsync(int id)
         {
-            var account = await _context.Accounts
+            var account = await context.Accounts
                 .Include(a => a.Institution)
                 .Include(a => a.AccountPeriods)
                 .SingleAsync(a => a.Id == id);
@@ -29,7 +20,7 @@ namespace CoinPurseApi.Services
 
         public async Task<IEnumerable<AccountDto>> GetAccountsAsync()
         {
-            var accounts = await _context.Accounts
+            var accounts = await context.Accounts
                 .Include(a => a.Institution)
                 .Include(a => a.AccountPeriods)
                 .ToListAsync();
@@ -44,11 +35,11 @@ namespace CoinPurseApi.Services
 
             try
             {
-                _context.Accounts.Add(account);
-                await _context.SaveChangesAsync();
+                context.Accounts.Add(account);
+                await context.SaveChangesAsync();
 
                 // Reload the account with relations
-                account = await _context.Accounts
+                account = await context.Accounts
                     .Include(a => a.Institution)
                     .Include(a => a.AccountPeriods)
                     .SingleAsync(a => a.Id == account.Id);
@@ -57,14 +48,14 @@ namespace CoinPurseApi.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating account");
+                logger.LogError(ex, "Error creating account");
                 throw;
             }
         }
 
         public async Task<AccountDto> UpdateAccountAsync(int id, UpdateAccountDto accountDto)
         {
-            var account = await _context.Accounts
+            var account = await context.Accounts
                 .Include(a => a.Institution)
                 .Include(a => a.AccountPeriods)
                 .SingleOrDefaultAsync(a => a.Id == id);
@@ -78,32 +69,32 @@ namespace CoinPurseApi.Services
 
             try
             {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
                 return account.ToDto();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating account {AccountId}", id);
+                logger.LogError(ex, "Error updating account {AccountId}", id);
                 throw;
             }
         }
 
         public async Task<bool> DeleteAccountAsync(int id)
         {
-            var account = await _context.Accounts.FindAsync(id);
+            var account = await context.Accounts.FindAsync(id);
             if (account == null)
             {
                 return false;
             }
 
-            _context.Accounts.Remove(account);
-            await _context.SaveChangesAsync();
+            context.Accounts.Remove(account);
+            await context.SaveChangesAsync();
             return true;
         }
 
         public async Task<IEnumerable<AccountBalanceDto>> GetAccountBalancesAsync(int accountId)
         {
-            var balances = await _context.AccountBalances
+            var balances = await context.AccountBalances
                 .Include(b => b.Account)
                 .Where(b => b.AccountId == accountId)
                 .OrderByDescending(b => b.PeriodId)
