@@ -1,5 +1,5 @@
 using CoinPurseApi.Dtos;
-using CoinPurseApi.Services;
+using CoinPurseApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CoinPurseApi.Controllers
@@ -71,6 +71,13 @@ namespace CoinPurseApi.Controllers
                 createdBalances.Add(created);
             }
             return Created("/api/balance/bulk", createdBalances);
+        }
+
+        [HttpGet("missing/{periodId}")]
+        public async Task<IActionResult> GetAccountsMissingBalance(int periodId)
+        {
+            var accounts = await balanceService.GetAccountsMissingBalanceForPeriod(periodId);
+            return Ok(accounts);
         }
     }
 }
