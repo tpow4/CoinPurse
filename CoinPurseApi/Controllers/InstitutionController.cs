@@ -1,5 +1,5 @@
 ﻿using CoinPurseApi.Dtos;
-using CoinPurseApi.Services;
+using CoinPurseApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CoinPurseApi.Controllers

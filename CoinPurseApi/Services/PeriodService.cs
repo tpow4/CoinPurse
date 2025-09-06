@@ -1,5 +1,6 @@
 ﻿using CoinPurseApi.Data;
 using CoinPurseApi.Dtos;
+using CoinPurseApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace CoinPurseApi.Services
