@@ -8,8 +8,8 @@ function App() {
     return (
         <Routes>
             <Route path="/" element={<AppLayout />}>
-                <Route index element={<MonthlyBalanceTracker />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route index element={<DashboardPage />} />
+                <Route path="/tracker" element={<MonthlyBalanceTracker />} />
                 <Route path="/settings" element={<SettingsPage />} />
             </Route>
         </Routes>
