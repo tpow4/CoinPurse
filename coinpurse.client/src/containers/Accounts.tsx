@@ -26,7 +26,6 @@ export default function Accounts() {
             container
             spacing={2}
             columns={12}
-            sx={{ mb: (theme) => theme.spacing(2) }}
         >
             {accounts.map((account) => (
                 <Grid2 key={account.id} size={{ xs: 12, md: 6 }}>

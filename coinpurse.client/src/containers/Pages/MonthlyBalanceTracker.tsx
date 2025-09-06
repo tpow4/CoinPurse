@@ -124,7 +124,7 @@ const MonthlyBalanceTracker = () => {
     }
 
     return (
-        <Box sx={{ maxWidth: 900, mx: "auto", p: 3 }}>
+        <Box sx={{ mx: "auto", p: 3 }}>
             {/* Header */}
             <Box sx={{ mb: 4 }}>
                 <Typography
