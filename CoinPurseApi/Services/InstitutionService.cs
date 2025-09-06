@@ -56,7 +56,7 @@ namespace CoinPurseApi.Services
 
             if(institution == null)
             {
-                _logger.LogError("Institution with ID {InstitutionId} not found", institutionId);
+                logger.LogError("Institution with ID {InstitutionId} not found", institutionId);
                 throw new KeyNotFoundException($"Institution with ID {institutionId} not found");
             }
 

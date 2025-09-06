@@ -1,20 +1,24 @@
 import "../../App.css";
-import { Container, Stack, Fab } from "@mui/material";
+import { Container, Stack, Fab, Typography } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import Accounts from "../Accounts";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CreateAccountModal from "../CreateAccountModal";
-import { useAppDispatch } from "../../redux/hooks";
-import { createAccount } from "../../redux/slices/accountsSlice";
-import { selectAllInstitutions } from "../../redux/slices/institutionsSlice";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { createAccount, selectAccountsError, selectAccountsStatus } from "../../redux/slices/accountsSlice";
+import { selectAllInstitutions, fetchInstitutions } from "../../redux/slices/institutionsSlice";
 import { useSelector } from "react-redux";
-import { useEffect } from "react";
-import { fetchInstitutions } from "../../redux/slices/institutionsSlice";
+import { selectBalancesStatus } from "../../redux/slices/balancesSlice";
+import { CreateAccountPayload } from "../../services/accountService";
 
 function DashboardPage() {
     const [open, setOpen] = useState(false);
     const dispatch = useAppDispatch();
     const institutions = useSelector(selectAllInstitutions);
+    const accountStatus = useAppSelector(selectAccountsStatus);
+    const accountError = useAppSelector(selectAccountsError);
+    const balanceStatus = useAppSelector(selectBalancesStatus);
+    const balanceError = useAppSelector(selectAccountsError);
 
     useEffect(() => {
         dispatch(fetchInstitutions());
@@ -22,7 +26,7 @@ function DashboardPage() {
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
-    const handleSubmit = async (data: any) => {
+    const handleSubmit = async (data: CreateAccountPayload) => {
         const result = await dispatch(createAccount(data));
         if (createAccount.fulfilled.match(result)) {
             setOpen(false);
@@ -32,6 +36,11 @@ function DashboardPage() {
         }
     };
 
+    if (accountStatus === "pending" || balanceStatus === "pending" )
+        return <Typography variant="h2">Loading...</Typography>;
+    if (accountStatus === "rejected") return <Typography variant="h2">Error: {accountError}</Typography>;
+    if (balanceStatus === "rejected") return <Typography variant="h2">Error: {balanceError}</Typography>;
+    
     return (
         <Stack
             spacing={2}

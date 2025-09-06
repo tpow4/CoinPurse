@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, createEntityAdapter, EntityState } from "@reduxjs/toolkit";
-import { getAccounts, createAccount as createAccountService } from "../../services/accountService";
+import { getAccounts, createAccount as createAccountService, CreateAccountPayload } from "../../services/accountService";
 import axios from "axios";
 import { RootState } from "../store";
 
@@ -23,7 +23,7 @@ export const fetchAccounts = createAsyncThunk(
 
 export const createAccount = createAsyncThunk(
     "account/createAccount",
-    async (data: any, thunkAPI) => {
+    async (data: CreateAccountPayload, thunkAPI) => {
         try {
             const response = await createAccountService(data);
             thunkAPI.dispatch(fetchAccounts());

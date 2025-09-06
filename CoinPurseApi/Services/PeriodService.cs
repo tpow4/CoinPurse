@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CoinPurseApi.Services
 {
-    public class PeriodService(CoinPurseDbContext context, ILogger<AccountService> logger) : IPeriodService
+    public class PeriodService(CoinPurseDbContext context) : IPeriodService
     {
         public async Task<IEnumerable<PeriodDto>> GetPeriods()
         {

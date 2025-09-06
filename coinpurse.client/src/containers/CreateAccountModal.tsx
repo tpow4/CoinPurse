@@ -99,8 +99,8 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ open, onClose, 
                     <Stack direction="row" alignItems="center" spacing={2}>
                         <Stack direction="column" spacing={0.5}>
                             <Typography variant="subtitle2">Picture</Typography>
-                            <Button variant="contained" component="label">
-                                Upload Picture
+                            <Button variant="contained" component="label">``
+                                {"Upload Picture"}
                                 <input
                                     type="file"
                                     accept="image/*"
@@ -123,4 +123,4 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ open, onClose, 
     );
 };
 
-export default CreateAccountModal;
+export default CreateAccountModal; 
