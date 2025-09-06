@@ -2,10 +2,11 @@ import { LineChart } from "@mui/x-charts/LineChart";
 import { Account } from "../redux/slices/accountsSlice";
 import { Balance } from "../redux/slices/balancesSlice";
 import { useTheme } from "@mui/material/styles";
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
 interface AccountChartProps {
     account: Account;
@@ -32,7 +33,7 @@ export default function AccountChart({
     return (
         <Card variant="outlined" sx={{ width: "100%" }}>
             <CardContent>
-                <div key={account.id} style={{ marginBottom: "2rem" }}>
+                <Box key={account.id}>
                     <Typography component="h3" variant="h5" gutterBottom>
                         {`${account.institutionName} ${account.name}`}
                     </Typography>
@@ -45,14 +46,18 @@ export default function AccountChart({
                         }}
                     >
                         <Typography variant="h6" component="p">
-                            {account.latestBalance}
+                            {account.latestBalance ?? 0}
                         </Typography>
-                        {/* <Chip size="small" color="success" label="+35%" /> */}
                     </Stack>
                     <LineChart
                         colors={colorPalette}
                         height={250}
-                        margin={{ left: 50, right: 20, top: 20, bottom: 20 }}
+                        margin={{
+                            left: 50,
+                            right: 20,
+                            top: 20,
+                            bottom: 20,
+                        }}
                         xAxis={[
                             {
                                 scaleType: "point",
@@ -89,7 +94,7 @@ export default function AccountChart({
                             id="balance"
                         />
                     </LineChart>
-                </div>
+                </Box>
             </CardContent>
         </Card>
     );

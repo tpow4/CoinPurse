@@ -1,5 +1,6 @@
 using CoinPurseApi.Data;
 using CoinPurseApi.Services;
+using CoinPurseApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 

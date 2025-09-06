@@ -12,7 +12,6 @@ import {
     fetchPeriods,
     selectAllPeriods,
 } from "../../redux/slices/periodsSlice";
-
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
@@ -52,7 +51,7 @@ function CheckupPage() {
             return;
         }
         const payload = Object.entries(balances)
-            .filter(([_, v]) => v && !isNaN(Number(v)))
+            .filter(([v]) => v && !isNaN(Number(v)))
             .map(([accountId, amount]) => ({
                 accountId: Number(accountId),
                 periodId: period.id,

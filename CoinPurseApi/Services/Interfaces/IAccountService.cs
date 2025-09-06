@@ -1,6 +1,6 @@
 ﻿using CoinPurseApi.Dtos;
 
-namespace CoinPurseApi.Services
+namespace CoinPurseApi.Services.Interfaces
 {
     public interface IAccountService
     {

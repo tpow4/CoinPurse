@@ -1,5 +1,6 @@
 ﻿using CoinPurseApi.Data;
 using CoinPurseApi.Dtos;
+using CoinPurseApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace CoinPurseApi.Services
@@ -49,6 +50,22 @@ namespace CoinPurseApi.Services
                 .ToListAsync();
 
             return accountBalances.Select(ap => ap.ToDto());
+        }
+
+        public async Task<IEnumerable<AccountDto>> GetAccountsMissingBalanceForPeriod(int periodId)
+        {
+            var accountsWithBalance = await context.AccountBalances
+                .Where(ab => ab.PeriodId == periodId)
+                .Select(ab => ab.AccountId)
+                .ToListAsync();
+
+            var allActiveAccounts = await context.Accounts
+                .Include(a => a.Institution)
+                .Where(a => a.IsActive)
+                .Where(a => !accountsWithBalance.Contains(a.Id))
+                .ToListAsync();
+
+            return allActiveAccounts.Select(a => a.ToDto());
         }
     }
 }
