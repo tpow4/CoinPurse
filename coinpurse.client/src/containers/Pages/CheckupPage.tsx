@@ -1,11 +1,3 @@
-import {
-    Stack,
-    TextField,
-    Typography,
-    Avatar,
-    Box,
-    Button,
-} from "@mui/material";
 import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../redux/hooks";
 import {
@@ -20,6 +12,13 @@ import {
     fetchPeriods,
     selectAllPeriods,
 } from "../../redux/slices/periodsSlice";
+
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 
 function CheckupPage() {
     const dispatch = useAppDispatch();

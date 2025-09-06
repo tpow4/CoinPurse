@@ -23,7 +23,13 @@ export default tseslint.config(
                 'warn',
                 { allowConstantExport: true },
             ],
-            'indent': ['warn', 4]
+            'indent': ['warn', 4],
+            "no-restricted-imports": [
+                "error",
+                {
+                    "patterns": [{ "regex": "^@mui/[^/]+$" }]
+                }
+            ]
         },
     },
 )

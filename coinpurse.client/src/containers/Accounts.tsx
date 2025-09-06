@@ -3,13 +3,16 @@ import {
     fetchAccounts,
     selectAllAccounts,
 } from "../redux/slices/accountsSlice";
-import { Grid2 } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import {
     fetchBalances,
     selectAllBalances,
 } from "../redux/slices/balancesSlice";
 import AccountChart from "./AccountChart";
+
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Grid2 from '@mui/material/Grid2';
 
 export default function Accounts() {
     const dispatch = useAppDispatch();

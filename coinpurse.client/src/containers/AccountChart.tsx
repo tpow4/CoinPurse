@@ -2,7 +2,10 @@ import { LineChart } from "@mui/x-charts/LineChart";
 import { Account } from "../redux/slices/accountsSlice";
 import { Balance } from "../redux/slices/balancesSlice";
 import { useTheme } from "@mui/material/styles";
-import { Card, CardContent, Stack, Typography } from "@mui/material";
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 
 interface AccountChartProps {
     account: Account;

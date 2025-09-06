@@ -1,5 +1,4 @@
 import "../../App.css";
-import { Container, Stack, Fab, Typography } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import Accounts from "../Accounts";
 import { useState, useEffect } from "react";
@@ -10,6 +9,15 @@ import { selectAllInstitutions, fetchInstitutions } from "../../redux/slices/ins
 import { useSelector } from "react-redux";
 import { selectBalancesStatus } from "../../redux/slices/balancesSlice";
 import { CreateAccountPayload } from "../../services/accountService";
+
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
+import Fab from '@mui/material/Fab';
 
 function DashboardPage() {
     const [open, setOpen] = useState(false);
