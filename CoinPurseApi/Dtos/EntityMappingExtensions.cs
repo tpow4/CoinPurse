@@ -77,5 +77,32 @@ namespace CoinPurseApi.Dtos
             account.IsActive = dto.IsActive;
         }
 
+        public static PeriodDto ToDto(this Period period)
+        {
+            var now = DateTime.Now;
+            var isCurrentWeek = period.StartDate.Date <= now.Date && period.EndDate.Date >= now.Date;
+
+            return new PeriodDto
+            {
+                Id = period.Id,
+                Name = period.Name,
+                StartDate = period.StartDate,
+                EndDate = period.EndDate,
+                IsCurrentWeek = isCurrentWeek,
+                WeekRange = $"{period.StartDate:MMM d} - {period.EndDate:MMM d, yyyy}"
+            };
+        }
+
+        public static AccountBalance ToEntityFromBulk(this CreateAccountBalanceDto dto, int periodId)
+        {
+            return new AccountBalance
+            {
+                AccountId = dto.AccountId,
+                PeriodId = periodId,
+                Amount = dto.Amount,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
+
     }
 }
