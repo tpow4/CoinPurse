@@ -7,7 +7,7 @@ import {
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import {
     fetchBalances,
-    selectBalancesByAccount, // ✅ Use the memoized selector
+    selectBalancesByAccount,
     selectBalancesStatus
 } from "../redux/slices/balancesSlice";
 import {

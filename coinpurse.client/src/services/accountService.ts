@@ -1,31 +1,48 @@
 import axios from 'axios';
 
-export interface CreateAccountPayload {
-    institutionId: string;
+export interface CreateAccountDto {
+    institutionId: number;
     name: string;
-    description?: string;
-    taxTypeId: string;
-    picture?: File | null;
+    taxTypeId: number;
 }
 
-export const createAccount = async (data: CreateAccountPayload) => {
-    const formData = new FormData();
-    formData.append('institutionId', data.institutionId);
-    formData.append('name', data.name);
-    formData.append('description', data.description || '');
-    formData.append('taxTypeId', data.taxTypeId);
-    if (data.picture) {
-        formData.append('picture', data.picture);
-    }
-    const response = await axios.post('/api/account', formData, {
+export interface AccountDto {
+    id: number;
+    name: string;
+    taxTypeId: number;
+    institutionName: string;
+    isActive: boolean;
+    latestBalance?: number;
+}
+
+export const createAccount = async (data: CreateAccountDto): Promise<AccountDto> => {
+    const response = await axios.post('/api/account', data, {
         headers: {
-            'Content-Type': 'multipart/form-data',
+            'Content-Type': 'application/json',
         },
     });
     return response.data;
 };
 
-export const getAccounts = async () => {
+export const getAccounts = async (): Promise<AccountDto[]> => {
     const response = await axios.get('/api/account');
     return response.data;
+};
+
+export const getAccount = async (id: number): Promise<AccountDto> => {
+    const response = await axios.get(`/api/account/${id}`);
+    return response.data;
+};
+
+export const updateAccount = async (id: number, data: Partial<CreateAccountDto & { isActive: boolean }>): Promise<AccountDto> => {
+    const response = await axios.put(`/api/account/${id}`, data, {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+    return response.data;
+};
+
+export const deleteAccount = async (id: number): Promise<void> => {
+    await axios.delete(`/api/account/${id}`);
 };

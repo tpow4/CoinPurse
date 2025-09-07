@@ -13,7 +13,7 @@ import {
     fetchInstitutions,
 } from "../../redux/slices/institutionsSlice";
 import { selectBalancesStatus } from "../../redux/slices/balancesSlice";
-import { CreateAccountPayload } from "../../services/accountService";
+import { CreateAccountDto } from "../../services/accountService";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import Fab from "@mui/material/Fab";
@@ -34,7 +34,7 @@ function DashboardPage() {
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
-    const handleSubmit = async (data: CreateAccountPayload) => {
+    const handleSubmit = async (data: CreateAccountDto) => {
         const result = await dispatch(createAccount(data));
         if (createAccount.fulfilled.match(result)) {
             setOpen(false);

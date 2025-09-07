@@ -12,114 +12,104 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Stack from '@mui/material/Stack';
-import Avatar from '@mui/material/Avatar';
-import Typography from '@mui/material/Typography';
+import InputLabel from '@mui/material/InputLabel';
+import { CreateAccountDto } from "../services/accountService";
 
 interface CreateAccountModalProps {
     open: boolean;
     onClose: () => void;
-    onSubmit: (data: any) => void;
+    onSubmit: (data: CreateAccountDto) => Promise<void>;
     institutions: Institution[];
 }
 
-const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ open, onClose, onSubmit, institutions}) => {
-    const [institution, setInstitution] = useState("");
+const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ 
+    open, 
+    onClose, 
+    onSubmit, 
+    institutions
+}) => {
+    const [institutionId, setInstitutionId] = useState<number | "">("");
     const [name, setName] = useState("");
-    const [description, setDescription] = useState("");
-    const [taxType, setTaxType] = useState<TaxType>(TaxType.Standard);
-    const [picture, setPicture] = useState<File | null>(null);
-    const [picturePreview, setPicturePreview] = useState<string | null>(null);
-
-    const handlePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            setPicture(e.target.files[0]);
-            setPicturePreview(URL.createObjectURL(e.target.files[0]));
-        }
-    };
+    const [taxTypeId, setTaxTypeId] = useState<number | "">(""); 
 
     const handleSubmit = () => {
-        onSubmit({ institution, name, description, taxType, picture });
+        onSubmit({ 
+            institutionId: Number(institutionId), 
+            name, 
+            taxTypeId: Number(taxTypeId) 
+        });
     };
 
+    const handleClose = () => {
+        // Reset form when closing
+        setInstitutionId("");
+        setName("");
+        setTaxTypeId("");
+        onClose();
+    };
+
+    // Convert TaxType enum to array with IDs
+    const taxTypeOptions = Object.entries(TaxType)
+        .filter(([key]) => !isNaN(Number(key))) // Only get numeric keys
+        .map(([id, label]) => ({ id: Number(id), label: label as string }));
+
     return (
-        <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+        <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
             <DialogTitle>Create New Account</DialogTitle>
             <DialogContent>
-                <Stack spacing={2}>
-                    <Typography variant="subtitle2">Institution</Typography>
+                <Stack spacing={3} sx={{ mt: 1 }}>
                     <FormControl fullWidth required>
+                        <InputLabel>Institution</InputLabel>
                         <Select
-                            value={institution}
-                            onChange={e => setInstitution(e.target.value)}
-                            displayEmpty
+                            value={institutionId}
+                            label="Institution"
+                            onChange={e => setInstitutionId(e.target.value as number)}
                         >
-                            <MenuItem value="" disabled>
-                                Select institution
-                            </MenuItem>
-                            {institutions.map((inst) => (
-                                <MenuItem key={inst.id} value={inst.id}>{inst.name}</MenuItem>
+                            {institutions.map((institution) => (
+                                <MenuItem key={institution.id} value={institution.id}>
+                                    {institution.name}
+                                </MenuItem>
                             ))}
                         </Select>
                     </FormControl>
-                    <Typography variant="subtitle2">Name</Typography>
+                    
                     <TextField
+                        fullWidth
+                        required
+                        label="Account Name"
                         value={name}
                         onChange={e => setName(e.target.value)}
-                        required
-                        fullWidth
-                        placeholder="Enter account name"
-                        variant="outlined"
+                        placeholder="e.g., Checking Account, Savings, 401k"
                     />
-                    <Typography variant="subtitle2">Description</Typography>
-                    <TextField
-                        value={description}
-                        onChange={e => setDescription(e.target.value)}
-                        multiline
-                        rows={2}
-                        fullWidth
-                        placeholder="Enter description (optional)"
-                        variant="outlined"
-                    />
-                    <Typography variant="subtitle2">Tax Type</Typography>
+                    
                     <FormControl fullWidth required>
+                        <InputLabel>Tax Type</InputLabel>
                         <Select
-                            value={taxType}
-                            onChange={e => setTaxType(e.target.value as TaxType)}
-                            displayEmpty
+                            value={taxTypeId}
+                            label="Tax Type"
+                            onChange={e => setTaxTypeId(e.target.value as number)}
                         >
-                            <MenuItem value="" disabled>
-                                Select tax type
-                            </MenuItem>
-                            {Object.values(TaxType).map((taxType) => (
-                                <MenuItem key={taxType} value={taxType}>{taxType}</MenuItem>
+                            {taxTypeOptions.map((option) => (
+                                <MenuItem key={option.id} value={option.id}>
+                                    {option.label}
+                                </MenuItem>
                             ))}
                         </Select>
                     </FormControl>
-                    <Stack direction="row" alignItems="center" spacing={2}>
-                        <Stack direction="column" spacing={0.5}>
-                            <Typography variant="subtitle2">Picture</Typography>
-                            <Button variant="contained" component="label">``
-                                {"Upload Picture"}
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    hidden
-                                    onChange={handlePictureChange}
-                                />
-                            </Button>
-                        </Stack>
-                        {picturePreview && (
-                            <Avatar src={picturePreview} sx={{ width: 48, height: 48 }} />
-                        )}
-                    </Stack>
                 </Stack>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose}>Cancel</Button>
-                <Button onClick={handleSubmit} variant="contained" disabled={!institution || !name || !taxType}>Create</Button>
+                <Button onClick={handleClose}>Cancel</Button>
+                <Button 
+                    onClick={handleSubmit} 
+                    variant="contained" 
+                    disabled={!institutionId || !name || !taxTypeId}
+                >
+                    Create Account
+                </Button>
             </DialogActions>
         </Dialog>
     );
 };
 
-export default CreateAccountModal; 
+export default CreateAccountModal;

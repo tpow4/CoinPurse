@@ -11,7 +11,7 @@ namespace CoinPurseApi.Data
         public DbSet<AccountBalance> AccountBalances { get; set; }
 
         private readonly IConfiguration _configuration = configuration;
-        private const int NUMBER_YEARS_SEEDED_DATA = 5;
+        private const int NUMBER_MONTHS_SEEDED_DATA = 5;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder
@@ -22,7 +22,7 @@ namespace CoinPurseApi.Data
             {
                 if(!context.Set<Period>().Any())
                 {
-                    var fiscalPeriods = GetSeedingPeriods(NUMBER_YEARS_SEEDED_DATA);
+                    var fiscalPeriods = GetSeedingPeriods(NUMBER_MONTHS_SEEDED_DATA);
                     context.Set<Period>().AddRange(fiscalPeriods);
                     context.SaveChanges();
                 }
@@ -31,36 +31,48 @@ namespace CoinPurseApi.Data
             {
                 if (!context.Set<Period>().Any())
                 {
-                    var fiscalPeriods = GetSeedingPeriods(NUMBER_YEARS_SEEDED_DATA);
+                    var fiscalPeriods = GetSeedingPeriods(NUMBER_MONTHS_SEEDED_DATA);
                     await context.Set<Period>().AddRangeAsync(fiscalPeriods, cancellationToken);
                     await context.SaveChangesAsync(cancellationToken);
                 }
             });
 
-        private static List<Period> GetSeedingPeriods(int numberYears)
+        private static List<Period> GetSeedingPeriods(int numberMonths)
         {
-            var currentYear = DateTime.Now.Year;
-            var currentPeriodId = 1;
+            var now = DateTime.UtcNow;
+            var startingDate = now.AddMonths(-numberMonths + 1);
             var fiscalPeriods = new List<Period>();
-            for (var yearIndex = 0; yearIndex < numberYears; yearIndex++)
+
+            var currentPeriodId = 1;
+            var selectedMonth = startingDate.Month;
+            var selectedYear = startingDate.Year;
+
+            for (var i = 0; i < numberMonths; i++)
             {
-                var selectedYear = currentYear + yearIndex;
-                for (var monthIndex = 1; monthIndex <= 12; monthIndex++)
+                var daysInMonth = DateTime.DaysInMonth(selectedYear, selectedMonth);
+                fiscalPeriods.Add(new Period
                 {
-                    fiscalPeriods.AddRange([
-                        new Period
-                            {
-                                Id = currentPeriodId,
-                                Name = $"periods.name.{currentPeriodId}",
-                                StartDate = new DateTime(currentYear + yearIndex, monthIndex, 1, 0, 0, 0, DateTimeKind.Utc),
-                                EndDate = new DateTime(currentYear + yearIndex, monthIndex, DateTime.DaysInMonth(selectedYear, monthIndex), 23, 59, 59, DateTimeKind.Utc)
-                            }
-                    ]);
-                    currentPeriodId++;
+                    Id = currentPeriodId,
+                    Name = $"periods.name.{currentPeriodId}",
+                    StartDate = new DateTime(selectedYear, selectedMonth, 1, 0, 0, 0, DateTimeKind.Utc),
+                    EndDate = new DateTime(selectedYear, selectedMonth, daysInMonth, 23, 59, 59, DateTimeKind.Utc)
+                });
+
+                if (selectedMonth == 12)
+                {
+                    selectedMonth = 1;
+                    selectedYear++;
                 }
+                else
+                {
+                    selectedMonth++;
+                }
+
+                currentPeriodId++;
             }
 
             return fiscalPeriods;
         }
+
     }
 }
