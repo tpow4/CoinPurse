@@ -40,17 +40,6 @@ namespace CoinPurseApi.Dtos
             };
         }
 
-        public static AccountBalance ToEntity(this CreateAccountBalanceDto dto)
-        {
-            return new AccountBalance
-            {
-                PeriodId = dto.PeriodId,
-                AccountId = dto.AccountId,
-                Amount = dto.Amount,
-                CreatedAt = DateTime.UtcNow
-            };
-        }
-
         public static Account ToEntity(this CreateAccountDto dto)
         {
             return new Account

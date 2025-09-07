@@ -11,6 +11,7 @@ import LinearProgress from "@mui/material/LinearProgress";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import Alert from "@mui/material/Alert";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import {
@@ -24,7 +25,10 @@ import {
 import {
     fetchBalances,
     selectAllBalances,
-    submitBalancesThunk,
+    submitBalancesForDateThunk,
+    selectBalancesStatus,
+    selectBalancesError,
+    clearBalancesError,
 } from "../../redux/slices/balancesSlice";
 
 const MonthlyBalanceTracker = () => {
@@ -32,78 +36,104 @@ const MonthlyBalanceTracker = () => {
     const accounts = useAppSelector(selectAllAccounts);
     const periods = useAppSelector(selectAllPeriods);
     const balancesList = useAppSelector(selectAllBalances);
+    const balancesStatus = useAppSelector(selectBalancesStatus);
+    const balancesError = useAppSelector(selectBalancesError);
+    
     const [balances, setBalances] = useState<{ [key: number]: string }>({});
-    const [submitStatus, setSubmitStatus] = useState("idle"); // idle, pending, success, error
-    const [completedAccounts, setCompletedAccounts] = useState(
-        new Set<number>()
-    );
+    const [completedAccounts, setCompletedAccounts] = useState(new Set<number>());
+    const [submitSuccess, setSubmitSuccess] = useState(false);
 
-    // Fetch accounts, periods, and balances on mount
+    // Fetch data on mount
     useEffect(() => {
         dispatch(fetchAccounts());
         dispatch(fetchPeriods());
         dispatch(fetchBalances());
     }, [dispatch]);
 
-    // Select the current period (latest by endDate)
-    const currentPeriod =
-        periods.length > 0
-            ? periods.reduce(
-                (latest, p) =>
-                    new Date(p.endDate) > new Date(latest.endDate)
-                        ? p
-                        : latest,
-                periods[0]
-            )
-            : null;
+    // Find current period (most recent period that contains today)
+    const currentPeriod = periods.find(p => {
+        const today = new Date();
+        const start = new Date(p.startDate);
+        const end = new Date(p.endDate);
+        return today >= start && today <= end;
+    }) || periods.sort((a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime())[0];
 
-    // Optionally, prefill balances with latestBalance for each account
+    // Prefill balances with existing data for current period
     useEffect(() => {
         if (accounts.length > 0 && currentPeriod) {
             const initial = {} as { [key: number]: string };
+            const completed = new Set<number>();
+
             accounts.forEach((acc) => {
-                // Find balance for this account and period
                 const bal = balancesList.find(
-                    (b) =>
-                        b.accountId === acc.id &&
-                        b.periodId === currentPeriod.id
+                    (b) => b.accountId === acc.id && b.periodId === currentPeriod.id
                 );
-                initial[acc.id] = bal ? bal.amount.toString() : "";
+                if (bal) {
+                    initial[acc.id] = (bal.amount / 100).toFixed(2);
+                    completed.add(acc.id);
+                } else {
+                    // Use latest balance as placeholder if available
+                    initial[acc.id] = acc.latestBalance ? (acc.latestBalance / 100).toFixed(2) : "";
+                }
             });
+
             setBalances(initial);
+            setCompletedAccounts(completed);
         }
     }, [accounts, balancesList, currentPeriod]);
 
+    // Clear success message after 3 seconds
+    useEffect(() => {
+        if (submitSuccess) {
+            const timer = setTimeout(() => setSubmitSuccess(false), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [submitSuccess]);
+
     const handleBalanceChange = (accountId: number, value: string) => {
         setBalances((prev) => ({ ...prev, [accountId]: value }));
-        // Mark as completed if value is entered
-        if (value && value.trim() !== "") {
-            setCompletedAccounts((prev) => new Set([...prev, accountId]));
+        
+        // Update completed status
+        if (value.trim() && !isNaN(parseFloat(value))) {
+            setCompletedAccounts(prev => new Set([...prev, accountId]));
         } else {
-            setCompletedAccounts((prev) => {
+            setCompletedAccounts(prev => {
                 const newSet = new Set(prev);
                 newSet.delete(accountId);
                 return newSet;
             });
         }
+
+        // Clear errors when user starts typing
+        if (balancesError) {
+            dispatch(clearBalancesError());
+        }
     };
 
     const handleSubmit = async () => {
-        setSubmitStatus("pending");
+        setSubmitSuccess(false);
+
+        // Convert balances to API format
+        const balancesArray = Object.entries(balances)
+            .filter(([value]) => value.trim() !== '' && !isNaN(parseFloat(value)))
+            .map(([accountId, amount]) => ({
+                accountId: parseInt(accountId),
+                amount: Math.round(parseFloat(amount) * 100), // Convert to cents
+            }));
+
+        if (balancesArray.length === 0) return;
+
         try {
-            const balanceData = Object.entries(balances)
-                .filter(([value]) => value && value.trim() !== "")
-                .map(([accountId, amount]) => ({
-                    accountId: parseInt(accountId),
-                    periodId: currentPeriod?.id ?? 0,
-                    amount: parseInt(amount),
-                }));
-            await dispatch(submitBalancesThunk(balanceData)).unwrap();
-            setSubmitStatus("success");
-            setTimeout(() => setSubmitStatus("idle"), 3000);
+            await dispatch(submitBalancesForDateThunk({
+                balances: balancesArray,
+                targetDate: new Date()
+            })).unwrap();
+            
+            setSubmitSuccess(true);
+            // Refresh data to show updated balances
+            dispatch(fetchBalances());
         } catch (error) {
-            console.error("Error submitting balances:", error);
-            setSubmitStatus("error");
+            console.error('Failed to submit balances:', error);
         }
     };
 
@@ -111,192 +141,127 @@ const MonthlyBalanceTracker = () => {
         return new Intl.NumberFormat("en-US", {
             style: "currency",
             currency: "USD",
-        }).format(amount);
+        }).format(amount / 100); // Convert from cents
     };
 
-    const progress =
-        accounts.length > 0
-            ? (completedAccounts.size / accounts.length) * 100
-            : 0;
-
-    if (!currentPeriod) {
-        return <Typography>Loading period data...</Typography>;
-    }
+    const progressValue = accounts.length > 0 ? (completedAccounts.size / accounts.length) * 100 : 0;
 
     return (
-        <Box sx={{ mx: "auto", p: 3 }}>
+        <Box sx={{ maxWidth: 1200, mx: "auto", p: 3 }}>
             {/* Header */}
             <Box sx={{ mb: 4 }}>
-                <Typography
-                    variant="h4"
-                    gutterBottom
-                    sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        fontWeight: 600,
-                    }}
-                >
-                    <AccountBalance color="primary" fontSize="large" />
-                    Monthly Balance Entry
+                <Typography variant="h4" component="h1" gutterBottom>
+                    Monthly Balance Tracker
                 </Typography>
-                <Typography variant="subtitle1" color="text.secondary">
-                    Record account balances for {currentPeriod.name}
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                    {currentPeriod 
+                        ? `Current Period: ${currentPeriod.name} (${new Date(currentPeriod.startDate).toLocaleDateString()} - ${new Date(currentPeriod.endDate).toLocaleDateString()})`
+                        : "Update your account balances. A new period will be created automatically."
+                    }
                 </Typography>
-            </Box>
 
-            {/* Progress Indicator */}
-            <Card
-                sx={{
-                    mb: 3,
-                    bgcolor: "primary.50",
-                    border: 1,
-                    borderColor: "primary.200",
-                }}
-            >
-                <CardContent>
-                    <Stack
-                        direction="row"
-                        alignItems="center"
-                        justifyContent="space-between"
-                        sx={{ mb: 2 }}
-                    >
-                        <Typography variant="h6" fontWeight={600}>
+                {/* Progress */}
+                <Box sx={{ mb: 2 }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                        <Typography variant="body2" fontWeight={500}>
                             Progress
                         </Typography>
-                        <Chip
-                            label={`${completedAccounts.size}/${accounts.length} completed`}
-                            color={
-                                completedAccounts.size === accounts.length &&
-                                accounts.length > 0
-                                    ? "success"
-                                    : "default"
-                            }
-                            variant={
-                                completedAccounts.size === accounts.length &&
-                                accounts.length > 0
-                                    ? "filled"
-                                    : "outlined"
-                            }
-                        />
-                    </Stack>
+                        <Typography variant="body2" color="text.secondary">
+                            {completedAccounts.size} of {accounts.length} accounts completed
+                        </Typography>
+                    </Box>
                     <LinearProgress
                         variant="determinate"
-                        value={progress}
-                        sx={{
-                            height: 8,
-                            borderRadius: 4,
-                            bgcolor: "grey.200",
-                            "& .MuiLinearProgress-bar": {
-                                borderRadius: 4,
-                            },
-                        }}
+                        value={progressValue}
+                        sx={{ height: 8, borderRadius: 4 }}
                     />
-                </CardContent>
-            </Card>
+                </Box>
+            </Box>
 
+            {/* Alerts */}
+            {submitSuccess && (
+                <Alert severity="success" sx={{ mb: 3 }}>
+                    Balances submitted successfully!
+                </Alert>
+            )}
+
+            {balancesError && (
+                <Alert severity="error" sx={{ mb: 3 }}>
+                    {balancesError}
+                </Alert>
+            )}
+
+            {/* Account Cards Grid */}
             <Grid2 container spacing={3} sx={{ mb: 4 }}>
                 {accounts.map((account) => (
-                    <Grid2 key={account.id} size={{ xs: 12, sm: 6 }}>
-                        <Card
-                            elevation={
-                                completedAccounts.has(account.id) ? 4 : 1
-                            }
-                            sx={{
+                    <Grid2 key={account.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                        <Card 
+                            variant="outlined"
+                            sx={{ 
                                 height: "100%",
-                                border: 2,
-                                borderColor: completedAccounts.has(account.id)
-                                    ? "success.main"
-                                    : "grey.200",
-                                transition: "all 0.2s ease-in-out",
-                                "&:hover": {
-                                    borderColor: completedAccounts.has(
-                                        account.id
-                                    )
-                                        ? "success.main"
-                                        : "grey.400",
-                                    elevation: 3,
-                                },
+                                transition: "all 0.2s",
+                                "&:hover": { boxShadow: 2 },
+                                ...(completedAccounts.has(account.id) && {
+                                    borderColor: "success.main",
+                                    bgcolor: "success.50"
+                                })
                             }}
                         >
                             <CardContent>
-                                <Stack spacing={2.5}>
-                                    <Box>
-                                        <Typography
-                                            variant="h6"
-                                            gutterBottom
-                                            fontWeight={600}
-                                        >
-                                            {account.name}
-                                        </Typography>
-                                        <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                        >
-                                            {account.institutionName}
-                                        </Typography>
-                                    </Box>
-
-                                    <Box>
-                                        <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                            gutterBottom
-                                            sx={{ mb: 1.5 }}
-                                        >
-                                            Previous Balance:{" "}
-                                            <strong>
-                                                {formatCurrency(
-                                                    account.latestBalance
-                                                )}
-                                            </strong>
-                                        </Typography>
-                                        <TextField
-                                            fullWidth
-                                            label="Current Balance"
-                                            type="number"
-                                            value={balances[account.id] || ""}
-                                            onChange={(e) =>
-                                                handleBalanceChange(
-                                                    account.id,
-                                                    e.target.value
-                                                )
-                                            }
-                                            placeholder="0.00"
-                                            slotProps={{
-                                                input: {
-                                                    startAdornment: (
-                                                        <InputAdornment position="start">
-                                                            $
-                                                        </InputAdornment>
-                                                    ),
-                                                },
-                                            }}
-                                            size="small"
-                                            variant="outlined"
-                                        />
-                                    </Box>
-
-                                    {completedAccounts.has(account.id) && (
-                                        <Box
-                                            sx={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                color: "success.main",
-                                            }}
-                                        >
-                                            <CheckCircle
-                                                fontSize="small"
-                                                sx={{ mr: 1 }}
-                                            />
-                                            <Typography
-                                                variant="body2"
-                                                fontWeight={500}
-                                            >
-                                                Complete
+                                <Stack spacing={2}>
+                                    {/* Account Header */}
+                                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                                        <AccountBalance color="primary" />
+                                        <Box sx={{ flex: 1 }}>
+                                            <Typography variant="h6" component="div">
+                                                {account.name}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                {account.institutionName}
                                             </Typography>
                                         </Box>
+                                        {completedAccounts.has(account.id) && (
+                                            <Chip 
+                                                icon={<CheckCircle />} 
+                                                label="Complete" 
+                                                size="small" 
+                                                color="success" 
+                                                variant="filled"
+                                            />
+                                        )}
+                                    </Box>
+
+                                    {/* Previous Balance */}
+                                    {!!account.latestBalance && (
+                                        <Typography variant="body2" color="text.secondary">
+                                            Previous: <strong>{formatCurrency(account.latestBalance)}</strong>
+                                        </Typography>
                                     )}
+
+                                    {/* Balance Input */}
+                                    <TextField
+                                        fullWidth
+                                        label="Current Balance"
+                                        type="number"
+                                        value={balances[account.id] || ""}
+                                        onChange={(e) => handleBalanceChange(account.id, e.target.value)}
+                                        placeholder="0.00"
+                                        slotProps={{
+                                            input: {
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        $
+                                                    </InputAdornment>
+                                                ),
+                                                inputProps: {
+                                                    min: 0,
+                                                    step: 0.01,
+                                                }
+                                            },
+                                        }}
+                                        size="medium"
+                                        variant="outlined"
+                                    />
                                 </Stack>
                             </CardContent>
                         </Card>
@@ -310,10 +275,7 @@ const MonthlyBalanceTracker = () => {
                     variant="contained"
                     size="large"
                     onClick={handleSubmit}
-                    disabled={
-                        completedAccounts.size === 0 ||
-                        submitStatus === "pending"
-                    }
+                    disabled={completedAccounts.size === 0 || balancesStatus === "pending"}
                     sx={{
                         minWidth: 200,
                         py: 1.5,
@@ -321,9 +283,7 @@ const MonthlyBalanceTracker = () => {
                         fontSize: "1.1rem",
                     }}
                 >
-                    {submitStatus === "pending"
-                        ? "Submitting..."
-                        : "Submit Balances"}
+                    {balancesStatus === "pending" ? "Submitting..." : "Submit Balances"}
                 </Button>
             </Box>
         </Box>

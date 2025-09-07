@@ -1,6 +1,6 @@
 import { createAsyncThunk, createEntityAdapter, createSlice, EntityState } from "@reduxjs/toolkit";
 import axios from "axios";
-import { getBalances, submitBalances } from "../../services/balanceService";
+import { getBalances, getBalancesByAccountId, submitBalancesForDate, submitBalancesForMonth, CreateBalance } from "../../services/balanceService";
 import { RootState } from "../store";
 
 export const fetchBalances = createAsyncThunk(
@@ -13,7 +13,7 @@ export const fetchBalances = createAsyncThunk(
             if (axios.isAxiosError(error) && error.response) {
                 return thunkAPI.rejectWithValue(error.response.data);
             }
-            else if (error instanceof Error) {
+            if (error instanceof Error) {
                 return thunkAPI.rejectWithValue(error.message);
             }
             return thunkAPI.rejectWithValue("Unknown error");
@@ -21,18 +21,80 @@ export const fetchBalances = createAsyncThunk(
     }
 );
 
-// Bulk submit balances thunk
-export const submitBalancesThunk = createAsyncThunk(
-    "balance/submitBalances",
-    async (balances: { accountId: number; periodId: number; amount: number }[], thunkAPI) => {
+export const fetchBalancesByAccountId = createAsyncThunk(
+    "balance/fetchBalancesByAccountId",
+    async (accountId: number, thunkAPI) => {
         try {
-            const response = await submitBalances(balances);
+            const response = await getBalancesByAccountId(accountId);
             return response;
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {
                 return thunkAPI.rejectWithValue(error.response.data);
             }
-            else if (error instanceof Error) {
+            if (error instanceof Error) {
+                return thunkAPI.rejectWithValue(error.message);
+            }
+            return thunkAPI.rejectWithValue("Unknown error");
+        }
+    }
+);
+
+export const submitBalancesForMonthThunk = createAsyncThunk(
+    "balance/submitBalancesForMonth",
+    async (
+        { 
+            balances, 
+            year,
+            month
+        }: { 
+            balances: CreateBalance[]; 
+            year: number;
+            month: number;
+        }, 
+        thunkAPI
+    ) => {
+        try {
+            const response = await submitBalancesForMonth({
+                year,
+                month,
+                balances
+            });
+            return response;
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                return thunkAPI.rejectWithValue(error.response.data);
+            }
+            if (error instanceof Error) {
+                return thunkAPI.rejectWithValue(error.message);
+            }
+            return thunkAPI.rejectWithValue("Unknown error");
+        }
+    }
+);
+
+export const submitBalancesForDateThunk = createAsyncThunk(
+    "balance/submitBalancesForDate",
+    async (
+        { 
+            balances, 
+            targetDate
+        }: { 
+            balances: CreateBalance[]; 
+            targetDate: Date;
+        }, 
+        thunkAPI
+    ) => {
+        try {
+            const response = await submitBalancesForDate({
+                targetDate: targetDate.toISOString(),
+                balances
+            });
+            return response;
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                return thunkAPI.rejectWithValue(error.response.data);
+            }
+            if (error instanceof Error) {
                 return thunkAPI.rejectWithValue(error.message);
             }
             return thunkAPI.rejectWithValue("Unknown error");
@@ -60,7 +122,6 @@ const balancesAdapter = createEntityAdapter({
         if (a.accountId > b.accountId) {
             return 1;
         }
-
         return a.periodId - b.periodId;
     }
 });
@@ -73,41 +134,65 @@ const initialState: BalancesState = balancesAdapter.getInitialState({
 const balancesSlice = createSlice({
     name: "balances",
     initialState,
-    reducers: {},
+    reducers: {
+        clearBalancesError: (state) => {
+            state.error = null;
+        }
+    },
     extraReducers: (builder) => {
         builder
-            .addCase(submitBalancesThunk.pending, (state) => {
+            // Submit balances for month
+            .addCase(submitBalancesForMonthThunk.pending, (state) => {
                 state.status = 'pending';
                 state.error = null;
             })
-            .addCase(submitBalancesThunk.fulfilled, (state, action) => {
+            .addCase(submitBalancesForMonthThunk.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                // Add or update balances in state
                 balancesAdapter.upsertMany(state, action.payload);
             })
-            .addCase(submitBalancesThunk.rejected, (state, action) => {
+            .addCase(submitBalancesForMonthThunk.rejected, (state, action) => {
                 state.status = 'rejected';
                 state.error = action.payload as string;
             })
+            // Submit balances for date
+            .addCase(submitBalancesForDateThunk.pending, (state) => {
+                state.status = 'pending';
+                state.error = null;
+            })
+            .addCase(submitBalancesForDateThunk.fulfilled, (state, action) => {
+                state.status = 'succeeded';
+                balancesAdapter.upsertMany(state, action.payload);
+            })
+            .addCase(submitBalancesForDateThunk.rejected, (state, action) => {
+                state.status = 'rejected';
+                state.error = action.payload as string;
+            })
+            // Fetch all balances
             .addCase(fetchBalances.pending, (state) => {
-                state.status = 'idle';
-                state.error = null
+                state.status = 'pending';
+                state.error = null;
             })
             .addCase(fetchBalances.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                balancesAdapter.setAll(state, action.payload)
+                balancesAdapter.setAll(state, action.payload);
             })
             .addCase(fetchBalances.rejected, (state, action) => {
-                state.status = 'rejected'
+                state.status = 'rejected';
                 state.error = action.payload as string;
+            })
+            // Fetch balances by account ID
+            .addCase(fetchBalancesByAccountId.fulfilled, (state, action) => {
+                // Add/update the fetched balances without changing overall status
+                balancesAdapter.upsertMany(state, action.payload);
             });
     },
 });
 
-export default balancesSlice.reducer;
+export const { clearBalancesError } = balancesSlice.actions;
 
-export const { selectAll: selectAllBalances, selectById: selectBalanceById } = 
+export default balancesSlice.reducer;
+export const { selectAll: selectAllBalances, selectById: selectBalanceById } =
     balancesAdapter.getSelectors((state: RootState) => state.balances);
 
 export const selectBalancesStatus = (state: RootState) => state.balances.status;
-export const selectBalancesError = (state: RootState) => state.balances.error
+export const selectBalancesError = (state: RootState) => state.balances.error;

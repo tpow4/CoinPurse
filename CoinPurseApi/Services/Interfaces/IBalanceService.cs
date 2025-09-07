@@ -6,8 +6,8 @@ namespace CoinPurseApi.Services.Interfaces
     {
         Task<IEnumerable<AccountBalanceDto>> GetAllBalancesAsync();
         Task<IEnumerable<AccountBalanceDto>> GetBalancesByAccountIdAsync(int accountId);
-        Task<AccountBalanceDto> CreateBalanceAsync(CreateAccountBalanceDto balanceDto);
+        Task<IEnumerable<AccountBalanceDto>> CreateBalancesForMonthAsync(CreateBalancesForMonthDto dto);
+        Task<IEnumerable<AccountBalanceDto>> CreateBalancesForDateAsync(CreateBalancesForDateDto dto);
 
-        Task<IEnumerable<AccountDto>> GetAccountsMissingBalanceForPeriod(int periodId);
     }
 }

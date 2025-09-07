@@ -5,12 +5,13 @@ import {
     fetchAccounts,
 } from "../../redux/slices/accountsSlice";
 import {
-    submitBalancesThunk,
+    submitBalancesForDateThunk,
     selectBalancesStatus,
+    selectBalancesError,
+    clearBalancesError,
 } from "../../redux/slices/balancesSlice";
 import {
     fetchPeriods,
-    selectAllPeriods,
 } from "../../redux/slices/periodsSlice";
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
@@ -18,209 +19,149 @@ import TextField from '@mui/material/TextField';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Alert from '@mui/material/Alert';
+import InputAdornment from '@mui/material/InputAdornment';
 
 function CheckupPage() {
     const dispatch = useAppDispatch();
     const accounts = useAppSelector(selectAllAccounts);
-    const [balances, setBalances] = useState<{ [accountId: number]: string }>(
-        {}
-    );
+    const [balances, setBalances] = useState<{ [accountId: number]: string }>({});
     const balancesStatus = useAppSelector(selectBalancesStatus);
-    const periods = useAppSelector(selectAllPeriods);
-    const [periodError, setPeriodError] = useState<string | null>(null);
+    const balancesError = useAppSelector(selectBalancesError);
+    const [submitSuccess, setSubmitSuccess] = useState(false);
 
     useEffect(() => {
         dispatch(fetchAccounts());
         dispatch(fetchPeriods());
     }, [dispatch]);
 
+    // Clear success message after 3 seconds
+    useEffect(() => {
+        if (submitSuccess) {
+            const timer = setTimeout(() => setSubmitSuccess(false), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [submitSuccess]);
+
     const handleBalanceChange = (accountId: number, value: string) => {
         setBalances((prev) => ({ ...prev, [accountId]: value }));
+        // Clear any previous errors when user starts typing
+        if (balancesError) {
+            dispatch(clearBalancesError());
+        }
     };
 
     const handleSubmit = async () => {
-        setPeriodError(null);
-        const today = new Date();
-        const period = periods.find((p) => {
-            const start = new Date(p.startDate);
-            const end = new Date(p.endDate);
-            return today >= start && today <= end;
-        });
-        if (!period) {
-            setPeriodError("No fiscal period found for today.");
-            return;
-        }
-        const payload = Object.entries(balances)
-            .filter(([v]) => v && !isNaN(Number(v)))
+        setSubmitSuccess(false);
+
+        // Convert balances to the format expected by the API
+        const balancesArray = Object.entries(balances)
+            .filter(([value]) => value.trim() !== '' && !isNaN(parseFloat(value)))
             .map(([accountId, amount]) => ({
-                accountId: Number(accountId),
-                periodId: period.id,
-                amount: Number(amount),
+                accountId: parseInt(accountId),
+                amount: Math.round(parseFloat(amount) * 100), // Convert to cents
             }));
-        if (payload.length === 0) return;
-        const result = await dispatch(submitBalancesThunk(payload));
-        if (submitBalancesThunk.fulfilled.match(result)) {
-            setBalances({}); // clear on success
+
+        if (balancesArray.length === 0) {
+            return; // Let the disabled button state handle this
+        }
+
+        try {
+            await dispatch(submitBalancesForDateThunk({
+                balances: balancesArray,
+                targetDate: new Date()
+            })).unwrap();
+            
+            setSubmitSuccess(true);
+            setBalances({}); // Clear form on success
+        } catch (error) {
+            // Error is handled by Redux and displayed via balancesError
+            console.error('Failed to submit balances:', error);
         }
     };
 
+    const hasValidBalances = Object.values(balances).some(
+        value => value.trim() !== '' && !isNaN(parseFloat(value)) && parseFloat(value) >= 0
+    );
+
     return (
-        <Box
-            sx={{
-                maxWidth: 1400,
-                width: "100%",
-                mx: "auto",
-                px: { xs: 1, sm: 2, md: 3 },
-            }}
-        >
-            <form autoComplete="off">
-                <Stack spacing={2} sx={{ mt: 2 }}>
-                    {accounts.map((account) => (
-                        <Box
-                            key={account.id}
-                            sx={{
-                                display: "flex",
-                                flexDirection: { xs: "column", sm: "row" },
-                                textAlign: "left",
-                                alignItems: { sm: "center" },
-                                gap: 2,
-                                p: 2,
-                                borderRadius: 2,
-                                border: "1px solid #e0e0e0",
-                                boxShadow: 1,
-                                background: "white",
-                                width: "100%",
-                            }}
-                        >
-                            <Avatar
-                                src={undefined}
-                                alt={account.name}
-                                sx={{ mr: { sm: 2 }, mb: { xs: 1, sm: 0 } }}
-                            />
-                            <Box
-                                sx={{
-                                    flex: 2,
-                                    minWidth: 120,
-                                    maxWidth: 400,
-                                    flexBasis: 0,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "flex-start",
-                                    width: 0,
-                                }}
-                            >
-                                <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                    sx={{
-                                        whiteSpace: "nowrap",
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-                                        width: "100%",
-                                    }}
-                                >
-                                    {account.institutionName}
-                                </Typography>
-                                <Typography
-                                    variant="subtitle1"
-                                    sx={{
-                                        whiteSpace: "nowrap",
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-                                        width: "100%",
-                                    }}
-                                >
-                                    {account.name}
-                                </Typography>
-                            </Box>
-                            <Box
-                                sx={{
-                                    flex: 2,
-                                    minWidth: 120,
-                                    maxWidth: 400,
-                                    flexBasis: 0,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "flex-start",
-                                    width: 0,
-                                }}
-                            >
-                                <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                    sx={{
-                                        whiteSpace: "nowrap",
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-                                        width: "100%",
-                                    }}
-                                >
-                                    {"Previous Balance"}
-                                </Typography>
-                                <Typography
-                                    variant="subtitle1"
-                                    sx={{
-                                        whiteSpace: "nowrap",
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-                                        width: "100%",
-                                    }}
-                                >
-                                    {`$${
-                                        account.latestBalance?.toLocaleString(
-                                            "en-US",
-                                            {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2,
-                                            }
-                                        ) ?? "0.00"
-                                    }`}
-                                </Typography>
-                            </Box>
-                            <TextField
-                                type="number"
-                                label="Enter balance"
-                                value={balances[account.id] ?? ""}
-                                slotProps={{
-                                    input: {
-                                        startAdornment: "$",
-                                        inputMode: "decimal",
-                                    },
-                                }}
-                                sx={{ flex: 2, minWidth: 160 }}
-                                onChange={(e) =>
-                                    handleBalanceChange(
-                                        account.id,
-                                        e.target.value
-                                    )
-                                }
-                            />
-                        </Box>
-                    ))}
-                </Stack>
-            </form>
-            {periodError && (
-                <Typography color="error" align="center" sx={{ mt: 2 }}>
-                    {periodError}
-                </Typography>
+        <Box sx={{ maxWidth: 600, mx: 'auto', p: 3 }}>
+            <Typography variant="h4" component="h1" gutterBottom>
+                Monthly Balance Checkup
+            </Typography>
+            
+            <Typography variant="body1" sx={{ mb: 3, color: 'text.secondary' }}>
+                Enter your current account balances. A period will be automatically created for this month if it doesn't exist.
+            </Typography>
+
+            {submitSuccess && (
+                <Alert severity="success" sx={{ mb: 2 }}>
+                    Balances submitted successfully!
+                </Alert>
             )}
-            <Stack direction="row" justifyContent="center" sx={{ mt: 4 }}>
+
+            {balancesError && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    {balancesError}
+                </Alert>
+            )}
+
+            <Stack spacing={3}>
+                {accounts.map((account) => (
+                    <Box key={account.id} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Avatar sx={{ bgcolor: 'primary.main', width: 48, height: 48 }}>
+                            {account.name.charAt(0).toUpperCase()}
+                        </Avatar>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="subtitle1" fontWeight={600}>
+                                {account.name}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                {account.institutionName}
+                            </Typography>
+                            {!!account.latestBalance && (
+                                <Typography variant="caption" color="text.secondary">
+                                    Previous: ${(account.latestBalance / 100).toFixed(2)}
+                                </Typography>
+                            )}
+                        </Box>
+                        <TextField
+                            type="number"
+                            label="Current Balance"
+                            value={balances[account.id] || ''}
+                            onChange={(e) => handleBalanceChange(account.id, e.target.value)}
+                            sx={{ width: 200 }}
+                            slotProps={{
+                                input: {
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            $
+                                        </InputAdornment>
+                                    ),
+                                    inputProps: {
+                                        min: 0,
+                                        step: 0.01,
+                                    }
+                                },
+                            }}
+                            placeholder="0.00"
+                            size="medium"
+                        />
+                    </Box>
+                ))}
+            </Stack>
+
+            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
                 <Button
                     variant="contained"
-                    color="secondary"
-                    disabled={
-                        balancesStatus === "pending" ||
-                        !Object.values(balances).some(
-                            (v) => v && !isNaN(Number(v))
-                        )
-                    }
                     onClick={handleSubmit}
+                    disabled={balancesStatus === 'pending' || !hasValidBalances}
+                    size="large"
+                    sx={{ minWidth: 200, py: 1.5 }}
                 >
-                    {balancesStatus === "pending"
-                        ? "Submitting..."
-                        : "Submit All"}
+                    {balancesStatus === 'pending' ? 'Submitting...' : 'Submit Balances'}
                 </Button>
-            </Stack>
+            </Box>
         </Box>
     );
 }
