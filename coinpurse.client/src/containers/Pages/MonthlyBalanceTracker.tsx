@@ -5,13 +5,13 @@ import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Chip from "@mui/material/Chip";
-import Grid2 from "@mui/material/Grid2";
 import InputAdornment from "@mui/material/InputAdornment";
 import LinearProgress from "@mui/material/LinearProgress";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Alert from "@mui/material/Alert";
+import Grid from '@mui/material/Grid';
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import {
@@ -192,9 +192,9 @@ const MonthlyBalanceTracker = () => {
             )}
 
             {/* Account Cards Grid */}
-            <Grid2 container spacing={3} sx={{ mb: 4 }}>
+            <Grid container spacing={3} sx={{ mb: 4 }}>
                 {accounts.map((account) => (
-                    <Grid2 key={account.id} size={{ xs: 12, sm: 6}}>
+                    <Grid key={account.id} size={{ xs: 12, sm: 6}}>
                         <Card 
                             variant="outlined"
                             sx={{ 
@@ -262,9 +262,9 @@ const MonthlyBalanceTracker = () => {
                                 </Stack>
                             </CardContent>
                         </Card>
-                    </Grid2>
+                    </Grid>
                 ))}
-            </Grid2>
+            </Grid>
 
             {/* Submit Button */}
             <Box sx={{ display: "flex", justifyContent: "center" }}>

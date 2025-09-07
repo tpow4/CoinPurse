@@ -162,16 +162,12 @@ export default function AccountChart({
                             },
                         ]}
                         grid={{ horizontal: true }}
-                        slotProps={{
-                            legend: {
-                                hidden: true,
-                            },
-                        }}
                         sx={{
                             "& .MuiAreaElement-series-balance": {
                                 fill: "url('#balance')",
                             },
                         }}
+                        hideLegend={true}
                     >
                         <AreaGradient
                             color={theme.palette.primary.main}

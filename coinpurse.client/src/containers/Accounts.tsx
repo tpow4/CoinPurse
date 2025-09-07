@@ -15,7 +15,7 @@ import {
     selectPeriodsStatus
 } from "../redux/slices/periodsSlice";
 import AccountChart from "./AccountChart";
-import Grid2 from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 
@@ -98,21 +98,21 @@ export default function Accounts() {
                 {accounts.length} accounts with {totalBalances} balance records
             </Typography>
             
-            <Grid2
+            <Grid
                 container
                 spacing={2}
                 columns={12}
                 sx={{ mb: (theme) => theme.spacing(2) }}
             >
                 {accounts.map((account) => (
-                    <Grid2 key={account.id} size={{ xs: 12, md: 6 }}>
+                    <Grid key={account.id} size={{ xs: 12, md: 6 }}>
                         <AccountChart
                             account={account}
                             balances={balancesByAccount[account.id] ?? []}
                         />
-                    </Grid2>
+                    </Grid>
                 ))}
-            </Grid2>
+            </Grid>
         </Box>
     );
 }
