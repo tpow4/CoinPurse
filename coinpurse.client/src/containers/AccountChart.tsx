@@ -1,7 +1,7 @@
 import { LineChart } from "@mui/x-charts/LineChart";
 import { Account } from "../redux/slices/accountsSlice";
 import { Balance } from "../redux/slices/balancesSlice";
-import { Period, selectAllPeriods } from "../redux/slices/periodsSlice";
+import { selectAllPeriods } from "../redux/slices/periodsSlice";
 import { useTheme } from "@mui/material/styles";
 import { useAppSelector } from "../redux/hooks";
 import { useMemo } from "react";
@@ -10,6 +10,7 @@ import CardContent from '@mui/material/CardContent';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Box from "@mui/material/Box";
+import { Period } from "../services/periodService";
 
 interface AccountChartProps {
     account: Account;
@@ -111,7 +112,6 @@ export default function AccountChart({
                         <Typography variant="h6" component="p">
                             {account.latestBalance}
                         </Typography>
-                        {/* <Chip size="small" color="success" label="+35%" /> */}
                     </Stack>
                     <LineChart
                         colors={colorPalette}

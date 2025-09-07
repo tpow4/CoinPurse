@@ -3,8 +3,6 @@ import { getPeriods, Period } from "../../services/periodService";
 import { RootState } from "../store";
 import axios from "axios";
 
-export type { Period } from "../../services/periodService";
-
 export const fetchPeriods = createAsyncThunk(
     "periods/fetchPeriods",
     async (_, thunkAPI) => {
