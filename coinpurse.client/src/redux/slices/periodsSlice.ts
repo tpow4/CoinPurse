@@ -3,6 +3,8 @@ import { getPeriods, Period } from "../../services/periodService";
 import { RootState } from "../store";
 import axios from "axios";
 
+export type { Period } from "../../services/periodService";
+
 export const fetchPeriods = createAsyncThunk(
     "periods/fetchPeriods",
     async (_, thunkAPI) => {
@@ -40,7 +42,7 @@ const periodsSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(fetchPeriods.pending, (state) => {
-                state.status = 'idle';
+                state.status = 'pending'; // Changed from 'idle' to 'pending'
                 state.error = null
             })
             .addCase(fetchPeriods.fulfilled, (state, action) => {
