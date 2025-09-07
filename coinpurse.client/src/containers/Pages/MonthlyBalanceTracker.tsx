@@ -194,7 +194,7 @@ const MonthlyBalanceTracker = () => {
             {/* Account Cards Grid */}
             <Grid2 container spacing={3} sx={{ mb: 4 }}>
                 {accounts.map((account) => (
-                    <Grid2 key={account.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Grid2 key={account.id} size={{ xs: 12, sm: 6}}>
                         <Card 
                             variant="outlined"
                             sx={{ 
@@ -231,12 +231,9 @@ const MonthlyBalanceTracker = () => {
                                         )}
                                     </Box>
 
-                                    {/* Previous Balance */}
-                                    {!!account.latestBalance && (
-                                        <Typography variant="body2" color="text.secondary">
-                                            Previous: <strong>{formatCurrency(account.latestBalance)}</strong>
-                                        </Typography>
-                                    )}
+                                    <Typography variant="body2" color="text.secondary">
+                                        Previous: <strong>{formatCurrency(account.latestBalance ?? 0)}</strong>
+                                    </Typography>
 
                                     {/* Balance Input */}
                                     <TextField
