@@ -26,7 +26,6 @@ export const createInstitutionThunk = createAsyncThunk(
     async (data: CreateInstitutionPayload, thunkAPI) => {
         try {
             const response = await createInstitution(data);
-            thunkAPI.dispatch(fetchInstitutions());
             return response;
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {
@@ -44,6 +43,7 @@ export interface Institution {
     id: number;
     name: string;
     description?: string;
+    accountCount: number;
 }
 
 interface InstitutionsState extends EntityState<Institution, number> {
@@ -56,7 +56,7 @@ const institutionsAdapter = createEntityAdapter<Institution>();
 const initialState: InstitutionsState = institutionsAdapter.getInitialState({
     status: 'idle',
     error: null
-});
+})
 
 const institutionsSlice = createSlice({
     name: "institutions",
@@ -66,22 +66,23 @@ const institutionsSlice = createSlice({
         builder
             .addCase(fetchInstitutions.pending, (state) => {
                 state.status = 'pending';
-                state.error = null;
+                state.error = null
             })
             .addCase(fetchInstitutions.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                institutionsAdapter.setAll(state, action.payload);
+                institutionsAdapter.setAll(state, action.payload)
             })
             .addCase(fetchInstitutions.rejected, (state, action) => {
-                state.status = 'rejected';
+                state.status = 'rejected'
                 state.error = action.payload as string;
             })
             .addCase(createInstitutionThunk.pending, (state) => {
                 state.status = 'pending';
                 state.error = null;
             })
-            .addCase(createInstitutionThunk.fulfilled, (state) => {
+            .addCase(createInstitutionThunk.fulfilled, (state, action) => {
                 state.status = 'succeeded';
+                institutionsAdapter.addOne(state, action.payload);
             })
             .addCase(createInstitutionThunk.rejected, (state, action) => {
                 state.status = 'rejected';
@@ -93,7 +94,7 @@ const institutionsSlice = createSlice({
 export default institutionsSlice.reducer;
 
 export const { selectAll: selectAllInstitutions, selectById: selectInstitutionById } =
-    institutionsAdapter.getSelectors((state: RootState) => state.institutions);
+    institutionsAdapter.getSelectors((state: RootState) => state.institutions)
 
-export const selectInstitutionsStatus = (state: RootState) => state.institutions.status;
-export const selectInstitutionsError = (state: RootState) => state.institutions.error;
+export const selectInstitutionsStatus = (state: RootState) => state.institutions.status
+export const selectInstitutionsError = (state: RootState) => state.institutions.error

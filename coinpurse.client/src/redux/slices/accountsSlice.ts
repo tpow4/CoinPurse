@@ -26,7 +26,6 @@ export const createAccount = createAsyncThunk(
     async (data: CreateAccountPayload, thunkAPI) => {
         try {
             const response = await createAccountService(data);
-            thunkAPI.dispatch(fetchAccounts());
             return response;
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {
@@ -75,7 +74,7 @@ const accountsSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(fetchAccounts.pending, (state) => {
-                state.status = 'idle';
+                state.status = 'pending'; // ✅ FIXED: Was 'idle', now 'pending'
                 state.error = null
             })
             .addCase(fetchAccounts.fulfilled, (state, action) => {
@@ -90,8 +89,9 @@ const accountsSlice = createSlice({
                 state.status = 'pending';
                 state.error = null;
             })
-            .addCase(createAccount.fulfilled, (state) => {
+            .addCase(createAccount.fulfilled, (state, action) => {
                 state.status = 'succeeded';
+                accountsAdapter.addOne(state, action.payload);
             })
             .addCase(createAccount.rejected, (state, action) => {
                 state.status = 'rejected';
