@@ -12,72 +12,86 @@ namespace CoinPurseApi.Controllers
         [ProducesResponseType(typeof(IEnumerable<AccountBalanceDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllBalances()
         {
-            var balances = await balanceService.GetAllBalancesAsync();
-            return Ok(balances);
+            try
+            {
+                var balances = await balanceService.GetAllBalancesAsync();
+                return Ok(balances);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error fetching balances");
+                return StatusCode(500, "An error occurred while fetching balances");
+            }
         }
 
         [HttpGet("{accountId}")]
         [ProducesResponseType(typeof(IEnumerable<AccountBalanceDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetBalancesByAccountId(int accountId)
         {
-            var balances = await balanceService.GetBalancesByAccountIdAsync(accountId);
-            return Ok(balances);
+            try
+            {
+                var balances = await balanceService.GetBalancesByAccountIdAsync(accountId);
+                return Ok(balances);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error fetching balances for account {AccountId}", accountId);
+                return StatusCode(500, "An error occurred while fetching balances");
+            }
         }
 
-        [HttpPost]
-        [ProducesResponseType(typeof(AccountBalanceDto), StatusCodes.Status201Created)]
+        [HttpPost("for-month")]
+        [ProducesResponseType(typeof(IEnumerable<AccountBalanceDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<AccountBalanceDto>> CreateBalance(CreateAccountBalanceDto balanceDto)
+        public async Task<ActionResult<IEnumerable<AccountBalanceDto>>> CreateBalancesForMonth(CreateBalancesForMonthDto dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var balance = await balanceService.CreateBalanceAsync(balanceDto);
+            if (dto.Balances == null || dto.Balances.Count == 0)
+            {
+                return BadRequest("At least one balance is required");
+            }
 
-            return CreatedAtAction(
-                nameof(GetBalancesByAccountId),
-                new
-                {
-                    accountId = balance.AccountId,
-                    startPeriodId = balance.PeriodId,
-                    endPeriodId = balance.PeriodId
-                },
-                balance);
+            try
+            {
+                var balances = await balanceService.CreateBalancesForMonthAsync(dto);
+                return CreatedAtAction(nameof(GetAllBalances), balances);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error creating balances for month {Year}-{Month}", dto.Year, dto.Month);
+                return StatusCode(500, "An error occurred while creating balances for the month");
+            }
         }
 
-        // Bulk create balances
-        [HttpPost("bulk")]
+        [HttpPost("for-date")]
         [ProducesResponseType(typeof(IEnumerable<AccountBalanceDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IEnumerable<AccountBalanceDto>>> CreateBalancesBulk([FromBody] List<CreateAccountBalanceDto> balancesDto)
+        public async Task<ActionResult<IEnumerable<AccountBalanceDto>>> CreateBalancesForDate(CreateBalancesForDateDto dto)
         {
-            if (balancesDto == null || balancesDto.Count == 0)
+            if (!ModelState.IsValid)
             {
-                logger.LogWarning("No balances provided for bulk creation");
-                return BadRequest("No balances provided");
+                return BadRequest(ModelState);
             }
 
-            var createdBalances = new List<AccountBalanceDto>();
-            foreach (var dto in balancesDto)
+            if (dto.Balances == null || dto.Balances.Count == 0)
             {
-                if (dto == null)
-                {
-                    logger.LogWarning("Invalid balance data provided for bulk creation");
-                    return BadRequest("Invalid balance data provided");
-                }
-                var created = await balanceService.CreateBalanceAsync(dto);
-                createdBalances.Add(created);
+                return BadRequest("At least one balance is required");
             }
-            return Created("/api/balance/bulk", createdBalances);
-        }
 
-        [HttpGet("missing/{periodId}")]
-        public async Task<IActionResult> GetAccountsMissingBalance(int periodId)
-        {
-            var accounts = await balanceService.GetAccountsMissingBalanceForPeriod(periodId);
-            return Ok(accounts);
+            try
+            {
+                var balances = await balanceService.CreateBalancesForDateAsync(dto);
+                return CreatedAtAction(nameof(GetAllBalances), balances);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error creating balances for date {Date}", dto.TargetDate);
+                return StatusCode(500, "An error occurred while creating balances for the date");
+            }
         }
     }
 }

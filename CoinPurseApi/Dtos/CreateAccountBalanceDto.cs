@@ -1,9 +1,13 @@
-﻿namespace CoinPurseApi.Dtos
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CoinPurseApi.Dtos
 {
     public class CreateAccountBalanceDto
     {
-        public int PeriodId { get; set; }
+        [Required]
         public int AccountId { get; set; }
+
+        [Required]
         public int Amount { get; set; }
     }
 }

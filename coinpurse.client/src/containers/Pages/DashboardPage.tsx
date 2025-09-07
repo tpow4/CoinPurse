@@ -12,7 +12,6 @@ import {
     selectAllInstitutions,
     fetchInstitutions,
 } from "../../redux/slices/institutionsSlice";
-import { useSelector } from "react-redux";
 import { selectBalancesStatus } from "../../redux/slices/balancesSlice";
 import { CreateAccountPayload } from "../../services/accountService";
 import Typography from "@mui/material/Typography";
@@ -24,11 +23,10 @@ import Analytics from "@mui/icons-material/Analytics";
 function DashboardPage() {
     const [open, setOpen] = useState(false);
     const dispatch = useAppDispatch();
-    const institutions = useSelector(selectAllInstitutions);
+    const institutions = useAppSelector(selectAllInstitutions);
     const accountStatus = useAppSelector(selectAccountsStatus);
     const accountError = useAppSelector(selectAccountsError);
     const balanceStatus = useAppSelector(selectBalancesStatus);
-    const balanceError = useAppSelector(selectAccountsError);
 
     useEffect(() => {
         dispatch(fetchInstitutions());
@@ -53,8 +51,6 @@ function DashboardPage() {
         return <Typography variant="h2">Loading...</Typography>;
     if (accountStatus === "rejected")
         return <Typography variant="h2">Error: {accountError}</Typography>;
-    if (balanceStatus === "rejected")
-        return <Typography variant="h2">Error: {balanceError}</Typography>;
 
     return (
         <Box sx={{ mx: "auto", p: 3 }}>

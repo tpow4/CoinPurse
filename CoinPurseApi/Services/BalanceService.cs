@@ -1,71 +1,104 @@
 ﻿using CoinPurseApi.Data;
 using CoinPurseApi.Dtos;
+using CoinPurseApi.Models;
 using CoinPurseApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace CoinPurseApi.Services
 {
-    public class BalanceService(
-        CoinPurseDbContext context,
-        ILogger<BalanceService> logger) : IBalanceService
+    public class BalanceService(CoinPurseDbContext context, IPeriodService periodService) : IBalanceService
     {
-        public async Task<AccountBalanceDto> CreateBalanceAsync(CreateAccountBalanceDto balanceDto)
+        public async Task<IEnumerable<AccountBalanceDto>> GetAllBalancesAsync()
         {
-            var accountBalance = balanceDto.ToEntity();
+            var balances = await context.AccountBalances
+                .Select(ab => new AccountBalanceDto
+                {
+                    PeriodId = ab.PeriodId,
+                    AccountId = ab.AccountId,
+                    Amount = ab.Amount
+                })
+                .ToListAsync();
 
-            try
-            {
-                context.AccountBalances.Add(accountBalance);
-                await context.SaveChangesAsync();
-
-                // Reload with account information
-                accountBalance = await context.AccountBalances
-                    .SingleAsync(ap => ap.AccountId == accountBalance.AccountId &&
-                                   ap.PeriodId == accountBalance.PeriodId);
-
-                return accountBalance.ToDto();
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error creating balance");
-                throw;
-            }
+            return balances;
         }
 
         public async Task<IEnumerable<AccountBalanceDto>> GetBalancesByAccountIdAsync(int accountId)
         {
-            var accountBalances = await context.AccountBalances
-                .Include(balance => balance.Account)
-                .Where(balance => balance.AccountId == accountId && balance.Account.IsActive)
+            var balances = await context.AccountBalances
+                .Where(ab => ab.AccountId == accountId)
+                .Select(ab => new AccountBalanceDto
+                {
+                    PeriodId = ab.PeriodId,
+                    AccountId = ab.AccountId,
+                    Amount = ab.Amount
+                })
                 .ToListAsync();
 
-            return accountBalances.Select(ap => ap.ToDto());
+            return balances;
         }
 
-        public async Task<IEnumerable<AccountBalanceDto>> GetAllBalancesAsync()
+        public async Task<IEnumerable<AccountBalanceDto>> CreateBalancesForMonthAsync(CreateBalancesForMonthDto dto)
         {
-            var accountBalances = await context.AccountBalances
-                .Include(balance => balance.Account)
-                .Where(balance => balance.Account.IsActive)
-                .ToListAsync();
+            // Ensure period exists for the specified month
+            var period = await periodService.GetOrCreatePeriodForMonth(dto.Year, dto.Month);
 
-            return accountBalances.Select(ap => ap.ToDto());
+            // Create or update balances
+            return await CreateOrUpdateBalancesForPeriod(dto.Balances, period.Id);
         }
 
-        public async Task<IEnumerable<AccountDto>> GetAccountsMissingBalanceForPeriod(int periodId)
+        public async Task<IEnumerable<AccountBalanceDto>> CreateBalancesForDateAsync(CreateBalancesForDateDto dto)
         {
-            var accountsWithBalance = await context.AccountBalances
-                .Where(ab => ab.PeriodId == periodId)
-                .Select(ab => ab.AccountId)
-                .ToListAsync();
+            var year = dto.TargetDate.Year;
+            var month = dto.TargetDate.Month;
 
-            var allActiveAccounts = await context.Accounts
-                .Include(a => a.Institution)
-                .Where(a => a.IsActive)
-                .Where(a => !accountsWithBalance.Contains(a.Id))
-                .ToListAsync();
+            // Ensure period exists for the month of the target date
+            var period = await periodService.GetOrCreatePeriodForMonth(year, month);
 
-            return allActiveAccounts.Select(a => a.ToDto());
+            // Create or update balances
+            return await CreateOrUpdateBalancesForPeriod(dto.Balances, period.Id);
+        }
+
+        private async Task<IEnumerable<AccountBalanceDto>> CreateOrUpdateBalancesForPeriod(
+            List<CreateAccountBalanceDto> balancesDto,
+            int periodId)
+        {
+            var results = new List<AccountBalanceDto>();
+
+            foreach (var balanceDto in balancesDto)
+            {
+                // Check if balance already exists for this account and period
+                var existingBalance = await context.AccountBalances
+                    .FirstOrDefaultAsync(ab => ab.AccountId == balanceDto.AccountId && ab.PeriodId == periodId);
+
+                if (existingBalance != null)
+                {
+                    // Update existing balance
+                    existingBalance.Amount = balanceDto.Amount;
+                    existingBalance.CreatedAt = DateTime.UtcNow;
+                }
+                else
+                {
+                    // Create new balance
+                    var balance = new AccountBalance
+                    {
+                        AccountId = balanceDto.AccountId,
+                        PeriodId = periodId,
+                        Amount = balanceDto.Amount,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    context.AccountBalances.Add(balance);
+                }
+
+                results.Add(new AccountBalanceDto
+                {
+                    AccountId = balanceDto.AccountId,
+                    PeriodId = periodId,
+                    Amount = balanceDto.Amount
+                });
+            }
+
+            await context.SaveChangesAsync();
+            return results;
         }
     }
 }
