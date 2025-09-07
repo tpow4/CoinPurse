@@ -40,7 +40,7 @@ const periodsSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(fetchPeriods.pending, (state) => {
-                state.status = 'idle';
+                state.status = 'pending'; // Changed from 'idle' to 'pending'
                 state.error = null
             })
             .addCase(fetchPeriods.fulfilled, (state, action) => {
