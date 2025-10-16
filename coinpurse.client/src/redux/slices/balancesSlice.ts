@@ -1,4 +1,4 @@
-import { createAsyncThunk, createEntityAdapter, createSlice, EntityState } from "@reduxjs/toolkit";
+import { createAsyncThunk, createEntityAdapter, createSlice, EntityState, createSelector } from "@reduxjs/toolkit";
 import axios from "axios";
 import { getBalances, getBalancesByAccountId, submitBalancesForDate, submitBalancesForMonth, CreateBalance } from "../../services/balanceService";
 import { RootState } from "../store";
@@ -196,3 +196,20 @@ export const { selectAll: selectAllBalances, selectById: selectBalanceById } =
 
 export const selectBalancesStatus = (state: RootState) => state.balances.status;
 export const selectBalancesError = (state: RootState) => state.balances.error;
+
+// Memoized selector that groups balances by account
+export const selectBalancesByAccount = createSelector(
+    [selectAllBalances],
+    (balances) => {
+        const grouped: { [accountId: number]: typeof balances } = {};
+        
+        balances.forEach(balance => {
+            if (!grouped[balance.accountId]) {
+                grouped[balance.accountId] = [];
+            }
+            grouped[balance.accountId].push(balance);
+        });
+        
+        return grouped;
+    }
+);

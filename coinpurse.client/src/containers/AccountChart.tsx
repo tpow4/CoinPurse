@@ -5,16 +5,17 @@ import { selectAllPeriods } from "../redux/slices/periodsSlice";
 import { useTheme } from "@mui/material/styles";
 import { useAppSelector } from "../redux/hooks";
 import { useMemo } from "react";
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { Period } from "../services/periodService";
+import { shallowEqual } from "react-redux";
 
 interface AccountChartProps {
     account: Account;
-    balances: Balance[];
+    balances: Balance[]; // This comes from memoized selector in parent
 }
 
 interface ChartDataPoint {
@@ -40,43 +41,63 @@ export default function AccountChart({
 }: Readonly<AccountChartProps>) {
     const theme = useTheme();
     const colorPalette = [theme.palette.primary.main];
-    const periods = useAppSelector(selectAllPeriods);
 
-    // Generate chart data for the last 12 periods
+    const periods = useAppSelector(selectAllPeriods, shallowEqual);
+
+    // 1. balances prop comes from memoized selector in parent component
+    // 2. periods uses shallowEqual comparison
+    // 3. account.id is a primitive value
+    // 4. ESLint is satisfied with proper dependencies
     const chartData = useMemo<ChartDataPoint[]>(() => {
         if (!periods.length) return [];
 
         // Sort periods by start date (newest first)
-        const sortedPeriods = [...periods].sort((a, b) => 
-            new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+        const sortedPeriods = [...periods].sort(
+            (a, b) =>
+                new Date(b.startDate).getTime() -
+                new Date(a.startDate).getTime()
         );
 
         // Get the last 12 periods
-        const last12Periods = sortedPeriods.slice(0, 12).reverse(); // Reverse to show chronologically
+        const last12Periods = sortedPeriods.slice(0, 12).reverse();
 
         // Create chart data points
-        return last12Periods.map(period => {
-            // Find balance for this period and account - using correct property names
-            const balance = balances.find(b => b.periodId === period.id && b.accountId === account.id);
-            
-            // Create a readable label from the period name or date
+        return last12Periods.map((period) => {
+            const balance = balances.find(
+                (b) => b.periodId === period.id && b.accountId === account.id
+            );
+
             const startDate = new Date(period.startDate);
-            const label = startDate.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'short' 
+            const label = startDate.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
             });
 
             return {
                 period,
-                amount: balance?.amount ?? null, 
-                label
+                amount: balance?.amount ?? null,
+                label,
             };
         });
-    }, [periods, balances, account.id]);
+    }, [periods, balances, account.id]); // ✅ ESLint happy!
 
-    // Prepare data for the chart
-    const chartLabels = chartData.map(point => point.label);
-    const chartValues = chartData.map(point => point.amount);
+    // Memoize chart preparation
+    const { chartLabels, chartValues } = useMemo(
+        () => ({
+            chartLabels: chartData.map((point) => point.label),
+            chartValues: chartData.map((point) => point.amount),
+        }),
+        [chartData]
+    );
+
+    // Memoize formatting
+    const formattedLatestBalance = useMemo(() => {
+        if (!account.latestBalance) return "No balance";
+        return new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "USD",
+        }).format(account.latestBalance / 100);
+    }, [account.latestBalance]);
 
     // Handle empty data case
     if (chartData.length === 0) {
@@ -89,6 +110,10 @@ export default function AccountChart({
                     <Typography variant="body2" color="text.secondary">
                         No period data available
                     </Typography>
+
+                    <Typography variant="h6" component="p" sx={{ mt: 1 }}>
+                        Latest: {formattedLatestBalance}
+                    </Typography>
                 </CardContent>
             </Card>
         );
@@ -97,7 +122,7 @@ export default function AccountChart({
     return (
         <Card variant="outlined" sx={{ width: "100%" }}>
             <CardContent>
-                <Box key={account.id} style={{ marginBottom: "2rem" }}>
+                <Box sx={{ marginBottom: 2 }}>
                     <Typography component="h3" variant="h5" gutterBottom>
                         {`${account.institutionName} ${account.name}`}
                     </Typography>
@@ -110,9 +135,11 @@ export default function AccountChart({
                         }}
                     >
                         <Typography variant="h6" component="p">
-                            {account.latestBalance}
+                            Latest: {formattedLatestBalance}
                         </Typography>
                     </Stack>
+                </Box>
+                <Box sx={{ width: "100%", height: 300 }}>
                     <LineChart
                         colors={colorPalette}
                         height={250}
@@ -130,7 +157,7 @@ export default function AccountChart({
                                 curve: "linear",
                                 area: true,
                                 data: chartValues,
-                                connectNulls: false, // leaves gaps for nulls
+                                connectNulls: false,
                                 label: `Balance`,
                             },
                         ]}
