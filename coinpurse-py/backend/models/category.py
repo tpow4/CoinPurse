@@ -1,4 +1,3 @@
-# models/category.py
 from datetime import datetime, timezone
 from .base import Base
 from sqlalchemy import Column, Integer, String, DateTime

@@ -1,4 +1,3 @@
-# models/transaction.py
 from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
