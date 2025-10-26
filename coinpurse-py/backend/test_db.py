@@ -1,4 +1,4 @@
-# test_db.py
+import traceback
 from datetime import date
 from database import get_session, init_db
 from models import Institution, Account, Category, Transaction, AccountBalance
@@ -172,13 +172,13 @@ def test_queries(session, data):
     
     # Get all transaction-tracking accounts
     trans_accounts = session.query(Account)\
-        .filter(Account.tracks_transactions == True)\
+        .filter(Account.tracks_transactions is True)\
         .all()
     print(f"✓ {len(trans_accounts)} account(s) track transactions")
     
     # Get all balance-tracking accounts
     balance_accounts = session.query(Account)\
-        .filter(Account.tracks_balances == True)\
+        .filter(Account.tracks_balances is True)\
         .all()
     print(f"✓ {len(balance_accounts)} account(s) track balances")
     
@@ -198,7 +198,7 @@ def test_queries(session, data):
         .group_by(Category.name)\
         .all()
     
-    print(f"✓ Spending by category:")
+    print("✓ Spending by category:")
     for cat_name, total in category_totals:
         print(f"  - {cat_name}: ${total/100:.2f}")
 
@@ -224,7 +224,6 @@ def run_all_tests():
     except Exception as e:
         print(f"\n❌ Error: {e}")
         session.rollback()
-        import traceback
         traceback.print_exc()
     finally:
         session.close()
