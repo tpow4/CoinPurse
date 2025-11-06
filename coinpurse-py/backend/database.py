@@ -22,5 +22,13 @@ def get_session():
     """Get a new database session"""
     return SessionLocal()
 
+def get_db():
+    """FastAPI dependency that provides a database session"""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 if __name__ == "__main__":
     init_db()

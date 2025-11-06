@@ -1,9 +1,8 @@
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 from enum import Enum as PyEnum
 
-# Shared base for all models
-Base = declarative_base()
-
+class Base(DeclarativeBase):
+    pass
 class AccountType(str, PyEnum):
     """Types of financial accounts"""
     CHECKING = "checking"

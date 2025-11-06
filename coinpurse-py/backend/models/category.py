@@ -1,18 +1,21 @@
 from datetime import datetime, timezone
+from typing import List
+
+from sqlalchemy.orm import relationship, Mapped, mapped_column
+
+from backend.models.transaction import Transaction
 from .base import Base
-from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.orm import relationship
 
 class Category(Base):
     """Transaction categories"""
     __tablename__ = 'categories'
     
-    category_id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True, nullable=False)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    category_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str]
+    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc))
     
     # Relationship: one category can have many transactions
-    transactions = relationship("Transaction", back_populates="category")
+    transactions: List[Mapped["Transaction"]] = relationship(back_populates="category")
     
     def __repr__(self):
         return f"<Category(id={self.category_id}, name='{self.name}')>"
