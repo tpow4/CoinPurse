@@ -487,3 +487,5 @@ $RECYCLE.BIN/
 *.swp
 CoinPurseApi/CoinPurse.db*
 CoinPurseApi/CoinPurseApi.http
+
+coinpurse-py/backend/coinpurse.db
