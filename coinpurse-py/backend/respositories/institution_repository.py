@@ -83,5 +83,5 @@ class InstitutionRepository:
         """
         stmt = select(Institution).where(Institution.name == name)
         if exclude_id:
-            stmt = stmt.where(Institution.id != exclude_id)
+            stmt = stmt.where(Institution.institution_id != exclude_id)
         return self.db.scalar(stmt) is not None

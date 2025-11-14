@@ -22,7 +22,7 @@ class InstitutionUpdate(BaseModel):
 
 class InstitutionResponse(InstitutionBase):
     """Schema for returning an institution (what API sends back)"""
-    id: int
+    institution_id: int
     created_at: datetime
     updated_at: datetime
     

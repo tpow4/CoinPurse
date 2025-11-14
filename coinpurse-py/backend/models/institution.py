@@ -10,7 +10,7 @@ class Institution(Base):
     """Financial institutions (banks, brokerages)"""
     __tablename__ = 'institutions'
     
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    institution_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(50), unique=True)
     is_active: Mapped[bool] = mapped_column(default=True)
     display_order: Mapped[int] = mapped_column(default=0)
@@ -21,4 +21,4 @@ class Institution(Base):
     accounts: Mapped[List["Account"]] = relationship(back_populates="institution")
 
     def __repr__(self):
-        return f"<Institution(id={self.id}, name='{self.name}')>"
+        return f"<Institution(id={self.institution_id}, name='{self.name}')>"

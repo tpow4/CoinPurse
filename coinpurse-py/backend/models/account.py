@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from datetime import datetime, timezone
 
 from sqlalchemy import ForeignKey
@@ -10,11 +10,11 @@ class Account(Base):
     """Financial accounts (checking, credit cards, investments)"""
     __tablename__ = 'accounts'
     
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    institution_id: Mapped[int] = mapped_column(ForeignKey('institutions.id'))
+    account_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    institution_id: Mapped[int] = mapped_column(ForeignKey('institutions.institution_id'))
     account_name: Mapped[str]
     account_type: Mapped[AccountType]
-    account_subtype: Mapped[str]
+    account_subtype: Mapped[Optional[str]]
     last_4_digits: Mapped[str]
     tracks_transactions: Mapped[bool] = mapped_column(default=False)
     tracks_balances: Mapped[bool] = mapped_column(default=False)
@@ -29,5 +29,5 @@ class Account(Base):
     balances: Mapped[List["AccountBalance"]] = relationship(back_populates="account", cascade="all, delete-orphan")
     
     def __repr__(self):
-        return f"<Account(id={self.id}, name='{self.account_name}', type={self.account_type.value})>"
+        return f"<Account(id={self.account_id}, name='{self.account_name}', type={self.account_type.value})>"
     

@@ -10,8 +10,8 @@ class AccountBalance(Base):
     """Weekly balance snapshots for investment/savings accounts"""
     __tablename__ = 'account_balances'
     
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    account_id: Mapped[int] = mapped_column(ForeignKey('accounts.id'))
+    balance_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    account_id: Mapped[int] = mapped_column(ForeignKey('accounts.account_id'))
     balance: Mapped[int]
     balance_date: Mapped[date]
     notes: Mapped[Optional[str]]
@@ -27,4 +27,4 @@ class AccountBalance(Base):
     )
     
     def __repr__(self):
-        return f"<AccountBalance(id={self.id}, account_id={self.account_id}, balance=${self.balance/100:.2f}, date={self.balance_date})>"
+        return f"<AccountBalance(id={self.balance_id}, account_id={self.account_id}, balance=${self.balance/100:.2f}, date={self.balance_date})>"

@@ -9,8 +9,8 @@ class Transaction(Base):
     """Individual transactions for checking/credit card accounts"""
     __tablename__ = 'transactions'
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    account_id: Mapped[int] = mapped_column(ForeignKey('accounts.id'))
+    transaction_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    account_id: Mapped[int] = mapped_column(ForeignKey('accounts.account_id'))
     category_id: Mapped[int] = mapped_column(ForeignKey('categories.category_id'))
     transaction_date: Mapped[date]
     posted_date: Mapped[date]
@@ -26,4 +26,4 @@ class Transaction(Base):
     category: Mapped["Category"] = relationship(back_populates="transactions")
     
     def __repr__(self):
-        return f"<Transaction(id={self.id}, amount=${self.amount/100:.2f}, desc='{self.description[:30]}')>"
+        return f"<Transaction(id={self.transaction_id}, amount=${self.amount/100:.2f}, desc='{self.description[:30]}')>"

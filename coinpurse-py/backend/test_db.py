@@ -40,6 +40,7 @@ def seed_initial_data(session):
         account_name="Roth IRA",
         account_type=AccountType.RETIREMENT,
         account_subtype="roth_ira",
+        last_4_digits="0000",
         tracks_transactions=False,
         tracks_balances=True,
         display_order=3
