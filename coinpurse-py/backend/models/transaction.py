@@ -3,8 +3,6 @@ from datetime import datetime, date, timezone
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from backend.models.account import Account
-from backend.models.category import Category
 from .base import Base, TransactionType
 
 class Transaction(Base):

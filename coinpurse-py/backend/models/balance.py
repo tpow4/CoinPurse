@@ -4,7 +4,6 @@ from datetime import datetime, date, timezone
 from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 
-from backend.models.account import Account
 from .base import Base
 
 class AccountBalance(Base):

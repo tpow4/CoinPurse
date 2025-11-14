@@ -3,7 +3,6 @@ from typing import List
 
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from backend.models.transaction import Transaction
 from .base import Base
 
 class Category(Base):
@@ -15,7 +14,7 @@ class Category(Base):
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc))
     
     # Relationship: one category can have many transactions
-    transactions: List[Mapped["Transaction"]] = relationship(back_populates="category")
+    transactions: Mapped[List["Transaction"]] = relationship(back_populates="category")
     
     def __repr__(self):
         return f"<Category(id={self.category_id}, name='{self.name}')>"

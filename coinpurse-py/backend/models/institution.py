@@ -4,7 +4,6 @@ from datetime import datetime, timezone
 from sqlalchemy import String
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 
-from backend.models.account import Account
 from .base import Base
 
 class Institution(Base):
