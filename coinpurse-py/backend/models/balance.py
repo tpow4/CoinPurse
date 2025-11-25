@@ -15,6 +15,7 @@ class AccountBalance(Base):
     balance: Mapped[int]
     balance_date: Mapped[date]
     notes: Mapped[Optional[str]]
+    is_active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc))
     modified_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
