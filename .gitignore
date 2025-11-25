@@ -489,3 +489,4 @@ CoinPurseApi/CoinPurse.db*
 CoinPurseApi/CoinPurseApi.http
 
 coinpurse-py/backend/coinpurse.db
+coinpurse.client/obj/Debug//package.g.props
