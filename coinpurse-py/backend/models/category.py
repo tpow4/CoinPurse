@@ -11,6 +11,7 @@ class Category(Base):
     
     category_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str]
+    is_active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc))
     
     # Relationship: one category can have many transactions
