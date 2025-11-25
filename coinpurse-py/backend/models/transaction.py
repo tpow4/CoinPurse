@@ -18,6 +18,7 @@ class Transaction(Base):
     description: Mapped[str]
     transaction_type: Mapped[TransactionType]
     notes: Mapped[str]
+    is_active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc))
     modified_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
