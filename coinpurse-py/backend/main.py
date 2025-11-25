@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from scalar_fastapi import get_scalar_api_reference
 
 from routers.institutions_router import router as institutions_router
+from routers.accounts_router import router as accounts_router
 
 # Create FastAPI app
 app = FastAPI(
@@ -26,6 +27,7 @@ app.add_middleware(
 
 # Register routers
 app.include_router(institutions_router, prefix="/api")
+app.include_router(accounts_router, prefix="/api")
 
 
 @app.get("/")
