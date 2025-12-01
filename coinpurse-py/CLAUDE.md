@@ -127,6 +127,6 @@ class Foo(Base):
 
 ## Important Notes
 
-- Schema field names may differ from model field names (e.g., `institution_name` in schema vs `name` in model)
+- Schema field should be the same as the model name.
 - All models use `created_at` and `updated_at` timestamps with UTC timezone
 - Primary keys follow pattern: `{table_name}_id` (e.g., `institution_id`, `account_id`)

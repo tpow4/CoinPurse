@@ -25,8 +25,8 @@ class InstitutionResponse(InstitutionBase):
     institution_id: int
     created_at: datetime
     updated_at: datetime
-    
-class Config:
-    """Pydantic configuration"""
-    # Allows Pydantic to work with SQLAlchemy models
-    from_attributes = True  
+
+    class Config:
+        """Pydantic configuration"""
+        # Allows Pydantic to work with SQLAlchemy models
+        from_attributes = True  

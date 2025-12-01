@@ -22,16 +22,16 @@ def create_institution(
 ):
     """
     Create a new institution
-    
-    - **institution_name**: Name of the financial institution (required)
+
+    - **name**: Name of the financial institution (required)
     """
     repo = InstitutionRepository(db)
     
     # Check if name already exists
-    if repo.name_exists(institution_data.institution_name):
+    if repo.name_exists(institution_data.name):
         raise HTTPException(
             status_code=400,
-            detail=f"Institution with name '{institution_data.institution_name}' already exists"
+            detail=f"Institution with name '{institution_data.name}' already exists"
         )
     
     db_institution = Institution(**institution_data.model_dump())
@@ -118,7 +118,7 @@ def update_institution(
         if repo.name_exists(institution_data.name, exclude_id=institution_id):
             raise HTTPException(
                 status_code=400,
-                detail=f"Institution with name '{institution_data.institution_name}' already exists"
+                detail=f"Institution with name '{institution_data.name}' already exists"
             )
     
     # Update only provided fields
