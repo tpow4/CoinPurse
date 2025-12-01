@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models.institution import Institution
-from respositories.institution_repository import InstitutionRepository
+from repositories.institution_repository import InstitutionRepository
 from schemas.institution import InstitutionCreate, InstitutionResponse, InstitutionUpdate
 
 router = APIRouter(prefix="/institutions", tags=["institutions"])

@@ -9,8 +9,8 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models.account import Account
-from respositories.account_repository import AccountRepository
-from respositories.institution_repository import InstitutionRepository
+from repositories.account_repository import AccountRepository
+from repositories.institution_repository import InstitutionRepository
 from schemas.account import AccountCreate, AccountResponse, AccountUpdate
 
 router = APIRouter(prefix="/accounts", tags=["accounts"])

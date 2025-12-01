@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models.category import Category
-from respositories.category_repository import CategoryRepository
+from repositories.category_repository import CategoryRepository
 from schemas.category import CategoryCreate, CategoryResponse, CategoryUpdate
 
 router = APIRouter(prefix="/categories", tags=["categories"])

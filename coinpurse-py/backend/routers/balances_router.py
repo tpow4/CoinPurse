@@ -10,8 +10,8 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models.balance import AccountBalance
-from respositories.balance_repository import BalanceRepository
-from respositories.account_repository import AccountRepository
+from repositories.balance_repository import BalanceRepository
+from repositories.account_repository import AccountRepository
 from schemas.balance import BalanceCreate, BalanceResponse, BalanceUpdate
 
 router = APIRouter(prefix="/balances", tags=["balances"])

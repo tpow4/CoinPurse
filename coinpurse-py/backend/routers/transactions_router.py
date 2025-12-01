@@ -10,9 +10,9 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models.transaction import Transaction
-from respositories.transaction_repository import TransactionRepository
-from respositories.account_repository import AccountRepository
-from respositories.category_repository import CategoryRepository
+from repositories.transaction_repository import TransactionRepository
+from repositories.account_repository import AccountRepository
+from repositories.category_repository import CategoryRepository
 from schemas.transaction import TransactionCreate, TransactionResponse, TransactionUpdate
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
