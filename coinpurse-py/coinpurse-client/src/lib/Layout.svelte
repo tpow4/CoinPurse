@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { location } from 'svelte-spa-router';
-
   // Reactive statement to check active route
   $: currentPath = $location;
 
@@ -14,30 +12,25 @@
     <div class="logo">
       <h2>CoinPurse</h2>
     </div>
-
     <ul class="nav-links">
       <li>
-        <a href="#/" class:active={isActive('/')}>
-          Home
-        </a>
+        <a href="#/" class:active={isActive("/")}> Home </a>
       </li>
       <li>
-        <a href="#/institutions" class:active={isActive('/institutions')}>
+        <a href="#/institutions" class:active={isActive("/institutions")}>
           Institutions
         </a>
       </li>
       <li>
-        <a href="#/categories" class:active={isActive('/categories')}>
+        <a href="#/categories" class:active={isActive("/categories")}>
           Categories
         </a>
       </li>
       <li>
-        <a href="#/accounts" class:active={isActive('/accounts')}>
-          Accounts
-        </a>
+        <a href="#/accounts" class:active={isActive("/accounts")}> Accounts </a>
       </li>
       <li>
-        <a href="#/transactions" class:active={isActive('/transactions')}>
+        <a href="#/transactions" class:active={isActive("/transactions")}>
           Transactions
         </a>
       </li>
