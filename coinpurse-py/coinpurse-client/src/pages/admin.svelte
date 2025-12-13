@@ -2,6 +2,7 @@
   import * as Tabs from "$lib/components/ui/tabs";
   import InstitutionsTab from "./admin/institutions-tab.svelte";
   import AccountsTab from "./admin/accounts-tab.svelte";
+    import GeneralTab from "./admin/general-tab.svelte";
 
   // State
   let activeTab = $state("institutions");
@@ -17,9 +18,14 @@
 
   <Tabs.Root value={activeTab} onValueChange={(value) => activeTab = value ?? "institutions"}>
     <Tabs.List class="mb-6">
+      <Tabs.Trigger value="general">General</Tabs.Trigger>
       <Tabs.Trigger value="institutions">Institutions</Tabs.Trigger>
       <Tabs.Trigger value="accounts">Accounts</Tabs.Trigger>
     </Tabs.List>
+
+    <Tabs.Content value="general">
+      <GeneralTab />
+    </Tabs.Content>
 
     <Tabs.Content value="institutions">
       <InstitutionsTab />
