@@ -3,7 +3,7 @@
   import InstitutionsTab from "./admin/institutions-tab.svelte";
   import AccountsTab from "./admin/accounts-tab.svelte";
 
-  // Default to institutions tab
+  // State
   let activeTab = $state("institutions");
 </script>
 
