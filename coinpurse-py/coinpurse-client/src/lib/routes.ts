@@ -2,12 +2,12 @@
  * Route definitions for svelte-spa-router
  */
 
-import Home from '../pages/Home.svelte';
-import Institutions from '../pages/Institutions.svelte';
-import Categories from '../pages/Categories.svelte';
-import Accounts from '../pages/Accounts.svelte';
-import Transactions from '../pages/Transactions.svelte';
-import NotFound from '../pages/NotFound.svelte';
+import Home from '../pages/home.svelte';
+import Institutions from '../pages/institutions.svelte';
+import Categories from '../pages/categories.svelte';
+import Accounts from '../pages/accounts.svelte';
+import Transactions from '../pages/transactions.svelte';
+import NotFound from '../pages/not-found.svelte';
 
 export const routes = {
   '/': Home,
