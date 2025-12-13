@@ -8,11 +8,10 @@ from pydantic import BaseModel, Field
 class InstitutionBase(BaseModel):
     """Shared fields"""
     name: str = Field(..., min_length=1, max_length=100)
-    is_active: bool = True
 
 class InstitutionCreate(InstitutionBase):
     """Schema for creating an institution (what user sends)"""
-    pass # No additional fields needed for creation
+    is_active: bool = True  # Optional with default value
 
 
 class InstitutionUpdate(BaseModel):
@@ -23,6 +22,7 @@ class InstitutionUpdate(BaseModel):
 class InstitutionResponse(InstitutionBase):
     """Schema for returning an institution (what API sends back)"""
     institution_id: int
+    is_active: bool
     created_at: datetime
     updated_at: datetime
 

@@ -1,22 +1,41 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { api, ApiException } from '../lib/api';
-  import type { Institution, InstitutionCreate, InstitutionUpdate } from '../lib/types';
+  import { onMount } from "svelte";
+  import { api, ApiException } from "../lib/api";
+  import type {
+    Institution,
+    InstitutionCreate,
+    InstitutionUpdate,
+  } from "../lib/types";
+  import * as Dialog from "$lib/components/ui/dialog";
+  import * as Field from "$lib/components/ui/field";
+  import { Input } from "$lib/components/ui/input";
+  import { Button } from "$lib/components/ui/button";
+  import InstitutionsDataTable from "./institutions/institutions-data-table.svelte";
+  import { createColumns } from "./institutions/columns";
 
   // State
   let institutions: Institution[] = [];
   let loading = false;
-  let error = '';
-  let searchTerm = '';
+  let error = "";
+  let searchTerm = "";
   let includeInactive = false;
+
+  // Create columns with callbacks
+  const columns = createColumns({
+    onEdit: openEditForm,
+    onDelete: (institution) => (deleteConfirm = institution.institution_id),
+  });
 
   // Form state
   let showForm = false;
   let editingId: number | null = null;
   let formData = {
-    name: ''
+    name: "",
   };
-  let formError = '';
+  let formErrors = {
+    name: "",
+  };
+  let formError = "";
   let formLoading = false;
 
   // Delete state
@@ -31,14 +50,14 @@
   // Load institutions from API
   async function loadInstitutions() {
     loading = true;
-    error = '';
+    error = "";
     try {
       institutions = await api.institutions.getAll(includeInactive);
     } catch (e) {
       if (e instanceof ApiException) {
         error = e.detail;
       } else {
-        error = 'Failed to load institutions';
+        error = "Failed to load institutions";
       }
     } finally {
       loading = false;
@@ -53,25 +72,43 @@
     }
 
     loading = true;
-    error = '';
+    error = "";
     try {
       institutions = await api.institutions.search(searchTerm);
     } catch (e) {
       if (e instanceof ApiException) {
         error = e.detail;
       } else {
-        error = 'Search failed';
+        error = "Search failed";
       }
     } finally {
       loading = false;
     }
   }
 
+  // Validate form
+  function validateForm(): boolean {
+    formErrors.name = "";
+
+    if (!formData.name.trim()) {
+      formErrors.name = "Institution name is required";
+      return false;
+    }
+
+    if (formData.name.length > 100) {
+      formErrors.name = "Name is too long (max 100 characters)";
+      return false;
+    }
+
+    return true;
+  }
+
   // Open form for creating new institution
   function openCreateForm() {
     editingId = null;
-    formData = { name: '' };
-    formError = '';
+    formData = { name: "" };
+    formErrors = { name: "" };
+    formError = "";
     showForm = true;
   }
 
@@ -79,7 +116,8 @@
   function openEditForm(institution: Institution) {
     editingId = institution.institution_id;
     formData = { name: institution.name };
-    formError = '';
+    formErrors = { name: "" };
+    formError = "";
     showForm = true;
   }
 
@@ -87,16 +125,16 @@
   function closeForm() {
     showForm = false;
     editingId = null;
-    formData = { name: '' };
-    formError = '';
+    formData = { name: "" };
+    formErrors = { name: "" };
+    formError = "";
   }
 
   // Submit form (create or update)
   async function handleSubmit() {
-    formError = '';
+    formError = "";
 
-    if (!formData.name.trim()) {
-      formError = 'Institution name is required';
+    if (!validateForm()) {
       return;
     }
 
@@ -105,13 +143,13 @@
       if (editingId !== null) {
         // Update existing
         const updateData: InstitutionUpdate = {
-          name: formData.name
+          name: formData.name,
         };
         await api.institutions.update(editingId, updateData);
       } else {
         // Create new
         const createData: InstitutionCreate = {
-          name: formData.name
+          name: formData.name,
         };
         await api.institutions.create(createData);
       }
@@ -122,7 +160,7 @@
       if (e instanceof ApiException) {
         formError = e.detail;
       } else {
-        formError = 'Failed to save institution';
+        formError = "Failed to save institution";
       }
     } finally {
       formLoading = false;
@@ -132,7 +170,7 @@
   // Delete institution
   async function handleDelete(id: number, hardDelete = false) {
     deleteLoading = true;
-    error = '';
+    error = "";
     try {
       await api.institutions.delete(id, hardDelete);
       deleteConfirm = null;
@@ -141,7 +179,7 @@
       if (e instanceof ApiException) {
         error = e.detail;
       } else {
-        error = 'Failed to delete institution';
+        error = "Failed to delete institution";
       }
     } finally {
       deleteLoading = false;
@@ -155,16 +193,17 @@
   }
 </script>
 
-<div class="page">
-  <div class="page-header">
-    <h1>Institutions</h1>
-    <button on:click={openCreateForm}>+ Add Institution</button>
+<div class="p-8 max-w-[1200px] mx-auto">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="m-0 text-2xl font-semibold">Institutions</h1>
+    <Button onclick={openCreateForm}>+ Add Institution</Button>
   </div>
 
   <!-- Search and filters -->
-  <div class="controls">
-    <div class="search-box">
+  <div class="flex gap-4 mb-6 items-center">
+    <div class="flex-1 max-w-[400px]">
       <input
+        class="max-w-full"
         type="text"
         placeholder="Search institutions..."
         bind:value={searchTerm}
@@ -192,149 +231,103 @@
   {:else if institutions.length === 0}
     <div class="empty-state">
       <p>No institutions found</p>
-      <button on:click={openCreateForm}>Add your first institution</button>
+      <Button onclick={openCreateForm}>Add your first institution</Button>
     </div>
   {:else}
-    <!-- Institutions table -->
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Status</th>
-          <th>Created</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {#each institutions as institution}
-          <tr class:inactive={!institution.is_active}>
-            <td>{institution.name}</td>
-            <td>
-              <span class="status" class:active={institution.is_active}>
-                {institution.is_active ? 'Active' : 'Inactive'}
-              </span>
-            </td>
-            <td>{new Date(institution.created_at).toLocaleDateString()}</td>
-            <td>
-              <div class="actions">
-                <button class="btn-edit" on:click={() => openEditForm(institution)}>
-                  Edit
-                </button>
-                <button
-                  class="btn-delete"
-                  on:click={() => deleteConfirm = institution.institution_id}
-                >
-                  Delete
-                </button>
-              </div>
-            </td>
-          </tr>
-        {/each}
-      </tbody>
-    </table>
+    <!-- Institutions data table -->
+    <InstitutionsDataTable data={institutions} {columns} />
   {/if}
 </div>
 
 <!-- Create/Edit Form Modal -->
-{#if showForm}
-  <div class="modal-backdrop" on:click={closeForm}>
-    <div class="modal" on:click|stopPropagation>
-      <div class="modal-header">
-        <h2>{editingId !== null ? 'Edit Institution' : 'Add Institution'}</h2>
-        <button class="close-btn" on:click={closeForm}>&times;</button>
-      </div>
+<Dialog.Root
+  open={showForm}
+  onOpenChange={(open) => {
+    if (!open) closeForm();
+  }}
+>
+  <Dialog.Content class="sm:max-w-[425px]">
+    <Dialog.Header>
+      <Dialog.Title
+        >{editingId !== null
+          ? "Edit Institution"
+          : "Add Institution"}</Dialog.Title
+      >
+      <Dialog.Description>
+        {editingId !== null
+          ? "Update the institution details below."
+          : "Add a new financial institution to track your accounts."}
+      </Dialog.Description>
+    </Dialog.Header>
 
-      <form on:submit|preventDefault={handleSubmit}>
-        {#if formError}
-          <div class="error-message">{formError}</div>
+    <form on:submit|preventDefault={handleSubmit}>
+      {#if formError}
+        <div class="error-message">{formError}</div>
+      {/if}
+
+      <Field.Field data-invalid={formErrors.name ? true : undefined}>
+        <Field.Label for="institution_name">Institution Name</Field.Label>
+        <Input
+          type="text"
+          id="institution_name"
+          bind:value={formData.name}
+          placeholder="e.g., Chase Bank"
+          aria-invalid={formErrors.name ? true : undefined}
+        />
+        {#if formErrors.name}
+          <Field.Error>{formErrors.name}</Field.Error>
         {/if}
+      </Field.Field>
 
-        <div class="form-group">
-          <label for="institution_name">Institution Name</label>
-          <input
-            type="text"
-            id="institution_name"
-            bind:value={formData.name}
-            placeholder="e.g., Chase Bank"
-            required
-          />
-        </div>
-
-        <div class="form-actions">
-          <button type="button" class="btn-secondary" on:click={closeForm}>
-            Cancel
-          </button>
-          <button type="submit" disabled={formLoading}>
-            {formLoading ? 'Saving...' : (editingId !== null ? 'Update' : 'Create')}
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-{/if}
+      <Dialog.Footer>
+        <Button type="button" variant="outline" onclick={closeForm}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={formLoading}>
+          {formLoading ? "Saving..." : editingId !== null ? "Update" : "Create"}
+        </Button>
+      </Dialog.Footer>
+    </form>
+  </Dialog.Content>
+</Dialog.Root>
 
 <!-- Delete Confirmation Modal -->
-{#if deleteConfirm !== null}
-  <div class="modal-backdrop" on:click={() => deleteConfirm = null}>
-    <div class="modal modal-small" on:click|stopPropagation>
-      <div class="modal-header">
-        <h2>Delete Institution</h2>
-        <button class="close-btn" on:click={() => deleteConfirm = null}>&times;</button>
-      </div>
+<Dialog.Root
+  open={deleteConfirm !== null}
+  onOpenChange={(open) => {
+    if (!open) deleteConfirm = null;
+  }}
+>
+  <Dialog.Content class="sm:max-w-[425px]">
+    <Dialog.Header>
+      <Dialog.Title>Delete Institution</Dialog.Title>
+      <Dialog.Description>
+        Are you sure you want to delete this institution?
+      </Dialog.Description>
+    </Dialog.Header>
 
-      <p>Are you sure you want to delete this institution?</p>
-      <p class="warning">This will perform a soft delete (set to inactive).</p>
+    <p class="warning">This will perform a soft delete (set to inactive).</p>
 
-      <div class="form-actions">
-        <button class="btn-secondary" on:click={() => deleteConfirm = null}>
-          Cancel
-        </button>
-        <button
-          class="btn-delete"
-          on:click={() => handleDelete(deleteConfirm, false)}
-          disabled={deleteLoading}
-        >
-          {deleteLoading ? 'Deleting...' : 'Delete'}
-        </button>
-      </div>
-    </div>
-  </div>
-{/if}
+    <Dialog.Footer>
+      <Button
+        type="button"
+        variant="outline"
+        onclick={() => (deleteConfirm = null)}
+      >
+        Cancel
+      </Button>
+      <Button
+        variant="destructive"
+        onclick={() => deleteConfirm !== null && handleDelete(deleteConfirm, false)}
+        disabled={deleteLoading}
+      >
+        {deleteLoading ? "Deleting..." : "Delete"}
+      </Button>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
 
 <style>
-  .page {
-    padding: 2rem;
-    max-width: 1200px;
-  }
-
-  .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-  }
-
-  .page-header h1 {
-    margin: 0;
-    font-size: 2rem;
-  }
-
-  .controls {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    align-items: center;
-  }
-
-  .search-box {
-    flex: 1;
-    max-width: 400px;
-  }
-
-  .search-box input {
-    width: 100%;
-  }
-
   .checkbox-label {
     display: flex;
     align-items: center;
@@ -372,143 +365,6 @@
     padding: 1rem;
     border-radius: 4px;
     margin-bottom: 1rem;
-  }
-
-  table {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  }
-
-  tr.inactive {
-    opacity: 0.6;
-  }
-
-  .status {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
-    font-size: 0.875rem;
-    background: #e0e0e0;
-    color: #666;
-  }
-
-  .status.active {
-    background: #d4edda;
-    color: #155724;
-  }
-
-  .actions {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  .btn-edit,
-  .btn-delete {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.875rem;
-  }
-
-  .btn-edit {
-    background: #6c757d;
-  }
-
-  .btn-edit:hover {
-    background: #5a6268;
-  }
-
-  .btn-delete {
-    background: #dc3545;
-  }
-
-  .btn-delete:hover {
-    background: #c82333;
-  }
-
-  .btn-secondary {
-    background: #6c757d;
-  }
-
-  .btn-secondary:hover {
-    background: #5a6268;
-  }
-
-  /* Modal styles */
-  .modal-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-
-  .modal {
-    background: white;
-    border-radius: 8px;
-    padding: 2rem;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-
-  .modal-small {
-    max-width: 400px;
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-  }
-
-  .modal-header h2 {
-    margin: 0;
-    font-size: 1.5rem;
-  }
-
-  .close-btn {
-    background: none;
-    border: none;
-    font-size: 2rem;
-    color: #999;
-    cursor: pointer;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .close-btn:hover {
-    color: #333;
-  }
-
-  .form-group {
-    margin-bottom: 1.5rem;
-  }
-
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-  }
-
-  .form-group input {
-    width: 100%;
-  }
-
-  .form-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
   }
 
   .warning {

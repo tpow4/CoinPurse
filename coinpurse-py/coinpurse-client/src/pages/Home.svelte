@@ -1,5 +1,11 @@
 <script lang="ts">
-  import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "$lib/components/ui/card";
+  import {
+    Card,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+    CardContent,
+  } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
 </script>
 
