@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { api, ApiException } from "../../lib/api";
   import type {
     Account,
@@ -18,32 +17,36 @@
   import { createColumns, type AccountWithInstitution } from "../accounts/columns";
 
   // State
-  let accounts: Account[] = [];
-  let institutions: Institution[] = [];
-  let accountsWithInstitutions: AccountWithInstitution[] = [];
-  let loading = false;
-  let error = "";
-  let searchTerm = "";
-  let includeInactive = false;
+  let accounts = $state<Account[]>([]);
+  let institutions = $state<Institution[]>([]);
+  const accountsWithInstitutions = $derived(
+    joinAccountsWithInstitutions(accounts, institutions)
+  );
+  let loading = $state(false);
+  let error = $state("");
+  let searchTerm = $state("");
+  let includeInactive = $state(false);
 
   // Add/edit state
-  let showForm = false;
-  let editingAccount: Account | null = null;
-  let formErrors = {
+  let showForm = $state(false);
+  let editingAccount = $state<Account | null>(null);
+  let formErrors = $state({
     account_name: "",
     institution_id: "",
     account_type: "",
     last_4_digits: "",
-  };
-  let formError = "";
-  let formLoading = false;
+  });
+  let formError = $state("");
+  let formLoading = $state(false);
 
   // Delete state
-  let deleteConfirm: number | null = null;
-  let deleteLoading = false;
+  let deleteConfirm = $state<number | null>(null);
+  let deleteLoading = $state(false);
+  const deleteDialogOpen = $derived(deleteConfirm !== null);
 
-  // Load accounts and institutions on mount
-  onMount(() => {
+  // Load accounts and institutions on mount / includeInactive changes
+  $effect(() => {
+    includeInactive;
     loadData();
   });
 
@@ -65,9 +68,6 @@
 
       accounts = accountsData;
       institutions = institutionsData;
-
-      // Join accounts with institution names
-      accountsWithInstitutions = joinAccountsWithInstitutions(accounts, institutions);
     } catch (e) {
       if (e instanceof ApiException) {
         error = e.detail;
@@ -106,7 +106,6 @@
     error = "";
     try {
       accounts = await api.accounts.search(searchTerm);
-      accountsWithInstitutions = joinAccountsWithInstitutions(accounts, institutions);
     } catch (e) {
       if (e instanceof ApiException) {
         error = e.detail;
@@ -295,7 +294,6 @@
         checked={includeInactive}
         onCheckedChange={(checked) => {
           includeInactive = checked === true;
-          loadData();
         }}
       />
       <Label
@@ -335,7 +333,7 @@
 />
 
 <DeleteAccountDialog
-  open={deleteConfirm !== null}
+  open={deleteDialogOpen}
   loading={deleteLoading}
   onOpenChange={(open) => {
     if (!open) {

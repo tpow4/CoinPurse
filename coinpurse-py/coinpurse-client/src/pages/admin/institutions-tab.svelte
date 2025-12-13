@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { api, ApiException } from "../../lib/api";
   import type {
     Institution,
@@ -16,27 +15,30 @@
   import { createColumns } from "../institutions/columns";
 
   // State
-  let institutions: Institution[] = [];
-  let loading = false;
-  let error = "";
-  let searchTerm = "";
-  let includeInactive = false;
+  let institutions = $state<Institution[]>([]);
+  let loading = $state(false);
+  let error = $state("");
+  let searchTerm = $state("");
+  let includeInactive = $state(false);
 
   // Add/edit state
-  let showForm = false;
-  let editingInstitution: Institution | null = null;
-  let formErrors = {
+  let showForm = $state(false);
+  let editingInstitution = $state<Institution | null>(null);
+  let formErrors = $state({
     name: "",
-  };
-  let formError = "";
-  let formLoading = false;
+  });
+  let formError = $state("");
+  let formLoading = $state(false);
 
   // Delete state
-  let deleteConfirm: number | null = null;
-  let deleteLoading = false;
+  let deleteConfirm = $state<number | null>(null);
+  let deleteLoading = $state(false);
 
-  // Load institutions on mount
-  onMount(() => {
+  const deleteDialogOpen = $derived(deleteConfirm !== null);
+
+  // Load institutions on mount and whenever includeInactive changes
+  $effect(() => {
+    includeInactive;
     loadInstitutions();
   });
 
@@ -197,7 +199,6 @@
         checked={includeInactive}
         onCheckedChange={(checked) => {
           includeInactive = checked === true;
-          loadInstitutions();
         }}
       />
       <Label
@@ -237,7 +238,7 @@
 />
 
 <DeleteInstitutionDialog
-  open={deleteConfirm !== null}
+  open={deleteDialogOpen}
   loading={deleteLoading}
   onOpenChange={(open) => {
     if (!open) {
