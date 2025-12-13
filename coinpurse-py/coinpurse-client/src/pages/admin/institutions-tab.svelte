@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, ApiException } from "../../lib/api";
+  import { ApiException } from "../../lib/api";
   import type {
     Institution,
     InstitutionCreate,
@@ -13,6 +13,7 @@
   import DeleteInstitutionDialog from "../institutions/delete-institution-dialog.svelte";
   import AddEditInstitutionDialog from "../institutions/add-edit-institution-dialog.svelte";
   import { createColumns } from "../institutions/columns";
+  import { institutionsApi } from "$lib/api/institutions";
 
   // State
   let institutions = $state<Institution[]>([]);
@@ -52,7 +53,7 @@
     loading = true;
     error = "";
     try {
-      institutions = await api.institutions.getAll(includeInactive);
+      institutions = await institutionsApi.getAll(includeInactive);
     } catch (e) {
       if (e instanceof ApiException) {
         error = e.detail;
@@ -73,7 +74,7 @@
     loading = true;
     error = "";
     try {
-      institutions = await api.institutions.search(searchTerm, includeInactive);
+      institutions = await institutionsApi.search(searchTerm, includeInactive);
     } catch (e) {
       if (e instanceof ApiException) {
         error = e.detail;
@@ -136,13 +137,13 @@
         const updateData: InstitutionUpdate = {
           name: data.name,
         };
-        await api.institutions.update(editingInstitution.institution_id, updateData);
+        await institutionsApi.update(editingInstitution.institution_id, updateData);
       } else {
         // Create new
         const createData: InstitutionCreate = {
           name: data.name,
         };
-        await api.institutions.create(createData);
+        await institutionsApi.create(createData);
       }
 
       closeForm();
@@ -162,7 +163,7 @@
     deleteLoading = true;
     error = "";
     try {
-      await api.institutions.delete(id, hardDelete);
+      await institutionsApi.delete(id, hardDelete);
       deleteConfirm = null;
       loadInstitutions();
     } catch (e) {

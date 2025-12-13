@@ -2,7 +2,7 @@
  * Route definitions for svelte-spa-router
  */
 
-import Home from '../pages/home.svelte';
+import Dashboard from '../pages/dashboard.svelte';
 import Categories from '../pages/categories.svelte';
 import Accounts from '../pages/accounts.svelte';
 import Transactions from '../pages/transactions.svelte';
@@ -10,7 +10,7 @@ import Admin from '../pages/admin.svelte';
 import NotFound from '../pages/not-found.svelte';
 
 export const routes = {
-  '/': Home,
+  '/': Dashboard,
   '/categories': Categories,
   '/accounts': Accounts,
   '/transactions': Transactions,

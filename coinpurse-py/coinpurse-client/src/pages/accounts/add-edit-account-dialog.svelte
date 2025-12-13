@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Account, Institution, AccountType } from "$lib/types";
 	import { AccountType as AccountTypeEnum } from "$lib/types";
-	import { api } from "$lib/api";
 	import * as Dialog from "$lib/components/ui/dialog";
 	import * as Field from "$lib/components/ui/field";
 	import { Combobox } from "$lib/components/ui/combobox";
@@ -9,6 +8,7 @@
 	import { Button } from "$lib/components/ui/button";
 	import { Checkbox } from "$lib/components/ui/checkbox";
 	import { Label } from "$lib/components/ui/label";
+    import { institutionsApi } from "$lib/api/institutions";
 
 	interface Props {
 		open: boolean;
@@ -87,7 +87,7 @@
 		if (!open || institutionsLoaded || loadingInstitutions) return;
 
 		loadingInstitutions = true;
-		api.institutions
+		institutionsApi
 			.getAll(false) // active only
 			.then((res) => {
 				institutions = res;

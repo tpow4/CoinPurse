@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, ApiException } from "../../lib/api";
+  import { ApiException } from "../../lib/api";
   import type {
     Account,
     AccountCreate,
@@ -15,6 +15,8 @@
   import DeleteAccountDialog from "../accounts/delete-account-dialog.svelte";
   import AddEditAccountDialog from "../accounts/add-edit-account-dialog.svelte";
   import { createColumns, type AccountWithInstitution } from "../accounts/columns";
+    import { accountsApi } from "$lib/api/accounts";
+    import { institutionsApi } from "$lib/api/institutions";
 
   // State
   let accounts = $state<Account[]>([]);
@@ -62,8 +64,8 @@
     try {
       // Load both accounts and institutions in parallel
       const [accountsData, institutionsData] = await Promise.all([
-        api.accounts.getAll(includeInactive),
-        api.institutions.getAll(false), // active only for lookup
+        accountsApi.getAll(includeInactive),
+        institutionsApi.getAll(false), // active only for lookup
       ]);
 
       accounts = accountsData;
@@ -105,7 +107,7 @@
     loading = true;
     error = "";
     try {
-      accounts = await api.accounts.search(searchTerm);
+      accounts = await accountsApi.search(searchTerm);
     } catch (e) {
       if (e instanceof ApiException) {
         error = e.detail;
@@ -224,7 +226,7 @@
           tracks_balances: data.tracks_balances,
           display_order: data.display_order,
         };
-        await api.accounts.update(editingAccount.account_id, updateData);
+        await accountsApi.update(editingAccount.account_id, updateData);
       } else {
         // Create new
         const createData: AccountCreate = {
@@ -237,7 +239,7 @@
           tracks_balances: data.tracks_balances,
           display_order: data.display_order,
         };
-        await api.accounts.create(createData);
+        await accountsApi.create(createData);
       }
 
       closeForm();
@@ -257,7 +259,7 @@
     deleteLoading = true;
     error = "";
     try {
-      await api.accounts.delete(id, hardDelete);
+      await accountsApi.delete(id, hardDelete);
       deleteConfirm = null;
       loadData();
     } catch (e) {
