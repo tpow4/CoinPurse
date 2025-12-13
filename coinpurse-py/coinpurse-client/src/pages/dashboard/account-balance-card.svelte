@@ -4,6 +4,7 @@
   import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import BalanceChartPlaceholder from "./balance-chart-placeholder.svelte";
+    import PlaceholderChart from "./placeholder-chart.svelte";
 
   interface Props {
     account: (Account & { institution_name?: string }) | Account;
@@ -56,7 +57,7 @@
     {/if}
 
     <div class="mt-4">
-      <BalanceChartPlaceholder accountId={account.account_id} />
+      <PlaceholderChart />
     </div>
   </CardContent>
 
