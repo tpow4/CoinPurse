@@ -1,6 +1,6 @@
 <script lang="ts">
   import * as Sidebar from "$lib/components/ui/sidebar";
-  import { House, Building, Tag, Wallet, ArrowLeftRight } from "@lucide/svelte";
+  import { House, Building, Tag, Wallet, ArrowLeftRight, Settings } from "@lucide/svelte";
   import { location } from "svelte-spa-router";
 
   const navItems = [
@@ -23,6 +23,12 @@
       label: "Transactions",
       icon: ArrowLeftRight,
       path: "/transactions",
+    },
+    {
+      href: "#/admin",
+      label: "Admin",
+      icon: Settings,
+      path: "/admin",
     },
   ];
 </script>
