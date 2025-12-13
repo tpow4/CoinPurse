@@ -6,11 +6,13 @@
     InstitutionCreate,
     InstitutionUpdate,
   } from "../lib/types";
-  import * as Dialog from "$lib/components/ui/dialog";
-  import * as Field from "$lib/components/ui/field";
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
+  import { Label } from "$lib/components/ui/label";
+  import { Checkbox } from "$lib/components/ui/checkbox";
   import InstitutionsDataTable from "./institutions/institutions-data-table.svelte";
+  import DeleteInstitutionDialog from "./institutions/delete-institution-dialog.svelte";
+  import AddEditInstitutionDialog from "./institutions/add-edit-institution-dialog.svelte";
   import { createColumns } from "./institutions/columns";
 
   // State
@@ -20,18 +22,9 @@
   let searchTerm = "";
   let includeInactive = false;
 
-  // Create columns with callbacks
-  const columns = createColumns({
-    onEdit: openEditForm,
-    onDelete: (institution) => (deleteConfirm = institution.institution_id),
-  });
-
-  // Form state
+  // Add/edit state
   let showForm = false;
-  let editingId: number | null = null;
-  let formData = {
-    name: "",
-  };
+  let editingInstitution: Institution | null = null;
   let formErrors = {
     name: "",
   };
@@ -47,7 +40,12 @@
     loadInstitutions();
   });
 
-  // Load institutions from API
+  // Create grid columns with callbacks
+  const columns = createColumns({
+    onEdit: openEditForm,
+    onDelete: (institution) => (deleteConfirm = institution.institution_id),
+  });
+
   async function loadInstitutions() {
     loading = true;
     error = "";
@@ -64,7 +62,6 @@
     }
   }
 
-  // Search institutions
   async function handleSearch() {
     if (!searchTerm.trim()) {
       loadInstitutions();
@@ -74,7 +71,7 @@
     loading = true;
     error = "";
     try {
-      institutions = await api.institutions.search(searchTerm);
+      institutions = await api.institutions.search(searchTerm, includeInactive);
     } catch (e) {
       if (e instanceof ApiException) {
         error = e.detail;
@@ -86,16 +83,15 @@
     }
   }
 
-  // Validate form
-  function validateForm(): boolean {
+  function validateForm(name: string): boolean {
     formErrors.name = "";
 
-    if (!formData.name.trim()) {
+    if (!name.trim()) {
       formErrors.name = "Institution name is required";
       return false;
     }
 
-    if (formData.name.length > 100) {
+    if (name.length > 100) {
       formErrors.name = "Name is too long (max 100 characters)";
       return false;
     }
@@ -103,53 +99,46 @@
     return true;
   }
 
-  // Open form for creating new institution
   function openCreateForm() {
-    editingId = null;
-    formData = { name: "" };
+    editingInstitution = null;
     formErrors = { name: "" };
     formError = "";
     showForm = true;
   }
 
-  // Open form for editing institution
   function openEditForm(institution: Institution) {
-    editingId = institution.institution_id;
-    formData = { name: institution.name };
+    editingInstitution = institution;
     formErrors = { name: "" };
     formError = "";
     showForm = true;
   }
 
-  // Close form
   function closeForm() {
     showForm = false;
-    editingId = null;
-    formData = { name: "" };
+    editingInstitution = null;
     formErrors = { name: "" };
     formError = "";
   }
 
-  // Submit form (create or update)
-  async function handleSubmit() {
+  async function handleFormSubmit(data: { name: string }) {
     formError = "";
 
-    if (!validateForm()) {
+    if (!validateForm(data.name)) {
       return;
     }
 
     formLoading = true;
     try {
-      if (editingId !== null) {
+      if (editingInstitution !== null) {
         // Update existing
         const updateData: InstitutionUpdate = {
-          name: formData.name,
+          name: data.name,
         };
-        await api.institutions.update(editingId, updateData);
+        await api.institutions.update(editingInstitution.institution_id, updateData);
       } else {
         // Create new
         const createData: InstitutionCreate = {
-          name: formData.name,
+          name: data.name,
         };
         await api.institutions.create(createData);
       }
@@ -167,7 +156,6 @@
     }
   }
 
-  // Delete institution
   async function handleDelete(id: number, hardDelete = false) {
     deleteLoading = true;
     error = "";
@@ -185,12 +173,6 @@
       deleteLoading = false;
     }
   }
-
-  // Toggle inactive filter
-  function toggleInactive() {
-    includeInactive = !includeInactive;
-    loadInstitutions();
-  }
 </script>
 
 <div class="p-8 max-w-[1200px] mx-auto">
@@ -202,176 +184,65 @@
   <!-- Search and filters -->
   <div class="flex gap-4 mb-6 items-center">
     <div class="flex-1 max-w-[400px]">
-      <input
-        class="max-w-full"
+      <Input
         type="text"
         placeholder="Search institutions..."
         bind:value={searchTerm}
-        on:input={handleSearch}
+        oninput={handleSearch}
       />
     </div>
-    <label class="checkbox-label">
-      <input
-        type="checkbox"
-        bind:checked={includeInactive}
-        on:change={toggleInactive}
+    <div class="flex items-center gap-2">
+      <Checkbox
+        id="include-inactive"
+        checked={includeInactive}
+        onCheckedChange={(checked) => {
+          includeInactive = checked === true;
+          loadInstitutions();
+        }}
       />
-      Include inactive
-    </label>
+      <Label
+        for="include-inactive"
+        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+      >
+        Include inactive
+      </Label>
+    </div>
   </div>
 
   <!-- Error message -->
   {#if error}
-    <div class="error-message">{error}</div>
+    <div class="bg-red-50 text-red-700 p-4 rounded mb-4">{error}</div>
   {/if}
 
   <!-- Loading state -->
   {#if loading}
-    <div class="loading">Loading institutions...</div>
-  {:else if institutions.length === 0}
-    <div class="empty-state">
-      <p>No institutions found</p>
-      <Button onclick={openCreateForm}>Add your first institution</Button>
-    </div>
+    <div class="text-center py-8 text-gray-600">Loading institutions...</div>
   {:else}
     <!-- Institutions data table -->
     <InstitutionsDataTable data={institutions} {columns} />
   {/if}
 </div>
 
-<!-- Create/Edit Form Modal -->
-<Dialog.Root
+<!-- Modals -->
+<AddEditInstitutionDialog
   open={showForm}
+  editingInstitution={editingInstitution}
+  loading={formLoading}
+  error={formError}
+  fieldErrors={formErrors}
   onOpenChange={(open) => {
     if (!open) closeForm();
   }}
->
-  <Dialog.Content class="sm:max-w-[425px]">
-    <Dialog.Header>
-      <Dialog.Title
-        >{editingId !== null
-          ? "Edit Institution"
-          : "Add Institution"}</Dialog.Title
-      >
-      <Dialog.Description>
-        {editingId !== null
-          ? "Update the institution details below."
-          : "Add a new financial institution to track your accounts."}
-      </Dialog.Description>
-    </Dialog.Header>
+  onSubmit={handleFormSubmit}
+/>
 
-    <form on:submit|preventDefault={handleSubmit}>
-      {#if formError}
-        <div class="error-message">{formError}</div>
-      {/if}
-
-      <Field.Field data-invalid={formErrors.name ? true : undefined}>
-        <Field.Label for="institution_name">Institution Name</Field.Label>
-        <Input
-          type="text"
-          id="institution_name"
-          bind:value={formData.name}
-          placeholder="e.g., Chase Bank"
-          aria-invalid={formErrors.name ? true : undefined}
-        />
-        {#if formErrors.name}
-          <Field.Error>{formErrors.name}</Field.Error>
-        {/if}
-      </Field.Field>
-
-      <Dialog.Footer>
-        <Button type="button" variant="outline" onclick={closeForm}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={formLoading}>
-          {formLoading ? "Saving..." : editingId !== null ? "Update" : "Create"}
-        </Button>
-      </Dialog.Footer>
-    </form>
-  </Dialog.Content>
-</Dialog.Root>
-
-<!-- Delete Confirmation Modal -->
-<Dialog.Root
+<DeleteInstitutionDialog
   open={deleteConfirm !== null}
+  loading={deleteLoading}
   onOpenChange={(open) => {
-    if (!open) deleteConfirm = null;
+    if (!open) {
+        deleteConfirm = null;
+    } 
   }}
->
-  <Dialog.Content class="sm:max-w-[425px]">
-    <Dialog.Header>
-      <Dialog.Title>Delete Institution</Dialog.Title>
-      <Dialog.Description>
-        Are you sure you want to delete this institution?
-      </Dialog.Description>
-    </Dialog.Header>
-
-    <p class="warning">This will perform a soft delete (set to inactive).</p>
-
-    <Dialog.Footer>
-      <Button
-        type="button"
-        variant="outline"
-        onclick={() => (deleteConfirm = null)}
-      >
-        Cancel
-      </Button>
-      <Button
-        variant="destructive"
-        onclick={() => deleteConfirm !== null && handleDelete(deleteConfirm, false)}
-        disabled={deleteLoading}
-      >
-        {deleteLoading ? "Deleting..." : "Delete"}
-      </Button>
-    </Dialog.Footer>
-  </Dialog.Content>
-</Dialog.Root>
-
-<style>
-  .checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .checkbox-label input[type="checkbox"] {
-    cursor: pointer;
-  }
-
-  .loading {
-    text-align: center;
-    padding: 2rem;
-    color: #666;
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: 3rem;
-    background: white;
-    border-radius: 8px;
-    border: 1px dashed #ddd;
-  }
-
-  .empty-state p {
-    color: #666;
-    margin-bottom: 1rem;
-  }
-
-  .error-message {
-    background: #fee;
-    color: #c33;
-    padding: 1rem;
-    border-radius: 4px;
-    margin-bottom: 1rem;
-  }
-
-  .warning {
-    color: #856404;
-    background: #fff3cd;
-    padding: 0.5rem;
-    border-radius: 4px;
-    font-size: 0.875rem;
-  }
-</style>
+  onConfirm={() => deleteConfirm !== null && handleDelete(deleteConfirm, false)}
+/>

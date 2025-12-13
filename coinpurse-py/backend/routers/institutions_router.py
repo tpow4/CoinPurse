@@ -58,15 +58,17 @@ def list_institutions(
 @router.get("/search", response_model=List[InstitutionResponse])
 def search_institutions(
     q: str = Query(..., min_length=1, description="Search term"),
+    include_inactive: bool = Query(False, description="Include inactive institutions"),
     db: Session = Depends(get_db)
 ):
     """
     Search institutions by name (case-insensitive partial match)
-    
+
     - **q**: Search term to match against institution names
+    - **include_inactive**: Set to true to include inactive institutions
     """
     repo = InstitutionRepository(db)
-    return repo.search_by_name(q)
+    return repo.search_by_name(q, include_inactive=include_inactive)
 
 
 @router.get("/{institution_id}", response_model=InstitutionResponse)

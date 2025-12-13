@@ -15,6 +15,7 @@
 	<Button
 		variant="secondary"
 		size="sm"
+		disabled={!institution.is_active}
 		onclick={() => onEdit?.(institution)}
 	>
 		Edit
@@ -22,6 +23,7 @@
 	<Button
 		variant="destructive"
 		size="sm"
+		disabled={!institution.is_active}
 		onclick={() => onDelete?.(institution)}
 	>
 		Delete

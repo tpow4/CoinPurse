@@ -38,12 +38,20 @@ class InstitutionRepository:
         stmt = select(Institution).where(Institution.name == name)
         return self.db.scalar(stmt)
     
-    def search_by_name(self, search_term: str) -> List[Institution]:
-        """Search institutions by partial name match"""
+    def search_by_name(self, search_term: str, include_inactive: bool = False) -> List[Institution]:
+        """
+        Search institutions by partial name match
+
+        Args:
+            search_term: The term to search for in institution names
+            include_inactive: If True, includes inactive institutions
+        """
         stmt = select(Institution).where(
-            Institution.name.ilike(f"%{search_term}%"),
-            Institution.is_active
-        ).order_by(Institution.name)
+            Institution.name.ilike(f"%{search_term}%")
+        )
+        if not include_inactive:
+            stmt = stmt.where(Institution.is_active)
+        stmt = stmt.order_by(Institution.name)
         return list(self.db.scalars(stmt))
     
     def create(self, institution: Institution) -> Institution:

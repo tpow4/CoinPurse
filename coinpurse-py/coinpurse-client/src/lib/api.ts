@@ -121,8 +121,8 @@ export const institutionsApi = {
   /**
    * Search institutions by name
    */
-  search(searchTerm: string): Promise<Institution[]> {
-    const query = buildQueryString({ q: searchTerm });
+  search(searchTerm: string, includeInactive = false): Promise<Institution[]> {
+    const query = buildQueryString({ q: searchTerm, include_inactive: includeInactive });
     return apiFetch<Institution[]>(`/institutions/search${query}`);
   },
 
