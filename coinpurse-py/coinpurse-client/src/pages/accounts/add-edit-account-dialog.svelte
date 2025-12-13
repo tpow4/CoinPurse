@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { onMount } from "svelte";
 	import type { Account, Institution, AccountType } from "$lib/types";
 	import { AccountType as AccountTypeEnum } from "$lib/types";
-	import { api, ApiException } from "$lib/api";
+	import { api } from "$lib/api";
 	import * as Dialog from "$lib/components/ui/dialog";
 	import * as Field from "$lib/components/ui/field";
-	import * as Select from "$lib/components/ui/select";
+	import { Combobox } from "$lib/components/ui/combobox";
 	import { Input } from "$lib/components/ui/input";
 	import { Button } from "$lib/components/ui/button";
 	import { Checkbox } from "$lib/components/ui/checkbox";
@@ -35,41 +34,43 @@
 		}) => void;
 	}
 
-	export let open: boolean = false;
-	export let editingAccount: Account | null = null;
-	export let loading: boolean = false;
-	export let error: string = "";
-	export let fieldErrors: {
-		account_name?: string;
-		institution_id?: string;
-		account_type?: string;
-		last_4_digits?: string;
-	} = {};
-	export let onOpenChange: (open: boolean) => void;
-	export let onSubmit: (data: {
+	let {
+		open = false,
+		editingAccount = null,
+		loading = false,
+		error = "",
+		fieldErrors = {},
+		onOpenChange,
+		onSubmit,
+	}: Props = $props();
+
+	type FormData = {
 		account_name: string;
-		institution_id: number;
+		institution_id: string;
 		account_type: AccountType;
-		account_subtype: string | null;
+		account_subtype: string;
 		last_4_digits: string;
 		tracks_transactions: boolean;
 		tracks_balances: boolean;
 		display_order: number;
-	}) => void;
+	};
 
-	let institutions: Institution[] = [];
-	let loadingInstitutions = false;
-
-	let formData = {
+	const defaultFormData: FormData = {
 		account_name: "",
-		institution_id: "" as string,
-		account_type: AccountTypeEnum.CHECKING as AccountType,
+		institution_id: "",
+		account_type: AccountTypeEnum.CHECKING,
 		account_subtype: "",
 		last_4_digits: "",
 		tracks_transactions: true,
 		tracks_balances: true,
 		display_order: 0,
 	};
+
+	let institutions = $state<Institution[]>([]);
+	let loadingInstitutions = $state(false);
+	let institutionsLoaded = $state(false);
+
+	let formData = $state<FormData>({ ...defaultFormData });
 
 	// Account type options
 	const accountTypes = [
@@ -81,38 +82,50 @@
 		{ value: AccountTypeEnum.BROKERAGE, label: "Brokerage" },
 	];
 
-	// Load institutions on mount
-	onMount(async () => {
+	// Lazy-load institutions when dialog opens
+	$effect(() => {
+		if (!open || institutionsLoaded || loadingInstitutions) return;
+
 		loadingInstitutions = true;
-		try {
-			institutions = await api.institutions.getAll(false); // active only
-		} catch (e) {
-			console.error("Failed to load institutions:", e);
-		} finally {
-			loadingInstitutions = false;
-		}
+		api.institutions
+			.getAll(false) // active only
+			.then((res) => {
+				institutions = res;
+				institutionsLoaded = true;
+			})
+			.catch((e) => {
+				console.error("Failed to load institutions:", e);
+			})
+			.finally(() => {
+				loadingInstitutions = false;
+			});
 	});
 
 	// Update form data when editing account changes
-	$: if (editingAccount) {
-		formData.account_name = editingAccount.account_name;
-		formData.institution_id = String(editingAccount.institution_id);
-		formData.account_type = editingAccount.account_type;
-		formData.account_subtype = editingAccount.account_subtype || "";
-		formData.last_4_digits = editingAccount.last_4_digits;
-		formData.tracks_transactions = editingAccount.tracks_transactions;
-		formData.tracks_balances = editingAccount.tracks_balances;
-		formData.display_order = editingAccount.display_order;
-	} else {
-		formData.account_name = "";
-		formData.institution_id = "";
-		formData.account_type = AccountTypeEnum.CHECKING;
-		formData.account_subtype = "";
-		formData.last_4_digits = "";
-		formData.tracks_transactions = true;
-		formData.tracks_balances = true;
-		formData.display_order = 0;
-	}
+	$effect(() => {
+		if (editingAccount) {
+			Object.assign(formData, {
+				account_name: editingAccount.account_name,
+				institution_id: String(editingAccount.institution_id),
+				account_type: editingAccount.account_type,
+				account_subtype: editingAccount.account_subtype ?? "",
+				last_4_digits: editingAccount.last_4_digits,
+				tracks_transactions: editingAccount.tracks_transactions,
+				tracks_balances: editingAccount.tracks_balances,
+				display_order: editingAccount.display_order,
+			} satisfies FormData);
+			return;
+		}
+
+		Object.assign(formData, defaultFormData);
+	});
+
+	const institutionItems = $derived(
+		institutions.map((institution) => ({
+			value: String(institution.institution_id),
+			label: institution.name,
+		})),
+	);
 
 	function handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
@@ -166,25 +179,14 @@
 				<!-- Institution -->
 				<Field.Field data-invalid={fieldErrors.institution_id ? true : undefined}>
 					<Field.Label for="institution_id">Institution</Field.Label>
-					<Select.Root
-						type="multiple"
-						value={formData.institution_id ? [formData.institution_id] : []}
-						onValueChange={(v: string[]) => formData.institution_id = v[0] || ""}
-						disabled={loadingInstitutions}
-					>
-						<Select.Trigger class="w-full">
-							<span data-slot="select-value">
-								{institutions.find(i => i.institution_id.toString() === formData.institution_id)?.name || "Select an institution"}
-							</span>
-						</Select.Trigger>
-						<Select.Content>
-							{#each institutions as institution}
-								<Select.Item value={institution.institution_id.toString()} label={institution.name}>
-									{institution.name}
-								</Select.Item>
-							{/each}
-						</Select.Content>
-					</Select.Root>
+                    <Combobox
+						id="institution"
+						items={institutionItems}
+						bind:value={formData.institution_id}
+						placeholder="Select institution"
+						searchPlaceholder="Search institutions..."
+						ariaInvalid={fieldErrors.institution_id ? true : false}
+					/>
 					{#if fieldErrors.institution_id}
 						<Field.Error>{fieldErrors.institution_id}</Field.Error>
 					{/if}
@@ -193,24 +195,14 @@
 				<!-- Account Type -->
 				<Field.Field data-invalid={fieldErrors.account_type ? true : undefined}>
 					<Field.Label for="account_type">Account Type</Field.Label>
-					<Select.Root
-						type="multiple"
-						value={formData.account_type ? [formData.account_type] : []}
-						onValueChange={(v: string[]) => formData.account_type = (v[0] as AccountType) || AccountTypeEnum.CHECKING}
-					>
-						<Select.Trigger class="w-full">
-							<span data-slot="select-value">
-								{accountTypes.find(t => t.value === formData.account_type)?.label || "Select account type"}
-							</span>
-						</Select.Trigger>
-						<Select.Content>
-							{#each accountTypes as type}
-								<Select.Item value={type.value} label={type.label}>
-									{type.label}
-								</Select.Item>
-							{/each}
-						</Select.Content>
-					</Select.Root>
+					<Combobox
+						id="account_type"
+						items={accountTypes}
+						bind:value={formData.account_type}
+						placeholder="Select account type"
+						searchPlaceholder="Search account types..."
+						ariaInvalid={fieldErrors.account_type ? true : false}
+					/>
 					{#if fieldErrors.account_type}
 						<Field.Error>{fieldErrors.account_type}</Field.Error>
 					{/if}

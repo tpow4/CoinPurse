@@ -6,12 +6,6 @@
   const navItems = [
     { href: "#/", label: "Home", icon: House, path: "/" },
     {
-      href: "#/institutions",
-      label: "Institutions",
-      icon: Building,
-      path: "/institutions",
-    },
-    {
       href: "#/categories",
       label: "Categories",
       icon: Tag,
