@@ -5,7 +5,7 @@
     import GeneralTab from "./admin/general-tab.svelte";
 
   // State
-  let activeTab = $state("institutions");
+  let activeTab = $state("general");
 </script>
 
 <div class="p-8 max-w-[1400px] mx-auto">
