@@ -29,7 +29,6 @@ export const institutionsApi = {
    * Create new institution
    */
   create(data: InstitutionCreate): Promise<Institution> {
-    console.log('Creating institution with data:', data);
     return apiFetch<Institution>('/institutions/', {
       method: 'POST',
       body: JSON.stringify(data),

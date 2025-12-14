@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ApiException } from "$lib/api";
-  import type { Account, AccountBalance, AccountCreate, Institution, AccountType } from "$lib/types";
+  import type { Account, AccountBalance, AccountCreate, Institution, AccountType, BalanceCreate } from "$lib/types";
 
   import { Button } from "$lib/components/ui/button";
   import AddEditAccountDialog from "./accounts/add-edit-account-dialog.svelte";
@@ -52,6 +52,15 @@
   );
 
   const latestBalanceByAccountId = $derived(getLatestBalanceByAccountId(balances));
+  const balancesByAccountId = $derived(
+    balances.reduce(
+      (map, bal) => {
+        (map[bal.account_id] ??= []).push(bal);
+        return map;
+      },
+      {} as Record<number, AccountBalance[]>
+    )
+  );
 
   const accountsWithInstitutionName = $derived(
     accounts
@@ -225,6 +234,11 @@
       institutionFormLoading = false;
     }
   }
+
+  async function handleCreateBalance(data: BalanceCreate) {
+    const created = await balancesApi.create(data);
+    balances = [...balances, created];
+  }
 </script>
 
 <div class="p-8 max-w-[1400px] mx-auto">
@@ -255,6 +269,8 @@
         <AccountBalanceCard
           account={account}
           latestBalance={latestBalanceByAccountId[account.account_id] ?? null}
+          balances={balancesByAccountId[account.account_id] ?? []}
+          onCreateBalance={handleCreateBalance}
         />
       {/each}
     </div>
@@ -286,4 +302,3 @@
   }}
   onSubmit={handleCreateInstitution}
 />
-
