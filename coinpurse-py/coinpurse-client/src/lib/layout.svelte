@@ -13,7 +13,6 @@
       icon: Tag,
       path: "/categories",
     },
-    { href: "#/accounts", label: "Accounts", icon: Wallet, path: "/accounts" },
     {
       href: "#/transactions",
       label: "Transactions",
