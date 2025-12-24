@@ -1,5 +1,5 @@
 import { apiFetch, buildQueryString } from '../api';
-import type { AccountBalance, BalanceCreate } from '../types';
+import type { AccountBalance, BalanceCreate, MonthlyBalanceAggregateResponse, AggregatedMonthlyParams } from '../types';
 
 export const balancesApi = {
   /**
@@ -26,5 +26,14 @@ export const balancesApi = {
       method: 'POST',
       body: JSON.stringify(data),
     });
+  },
+
+  /**
+   * Get aggregated monthly balance data for all accounts
+   * Returns normalized end-of-month snapshots with forward-fill
+   */
+  getAggregatedMonthly(params?: AggregatedMonthlyParams): Promise<MonthlyBalanceAggregateResponse> {
+    const query = buildQueryString(params ?? {});
+    return apiFetch<MonthlyBalanceAggregateResponse>(`/balances/aggregated/monthly${query}`);
   },
 };

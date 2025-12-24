@@ -6,6 +6,7 @@
   import AddEditAccountDialog from "./accounts/add-edit-account-dialog.svelte";
   import AddEditInstitutionDialog from "./institutions/add-edit-institution-dialog.svelte";
   import AccountBalanceCard from "./dashboard/account-balance-card.svelte";
+  import StackedBalanceChart from "./dashboard/stacked-balance-chart.svelte";
     import { accountsApi } from "$lib/api/accounts";
     import { institutionsApi } from "$lib/api/institutions";
     import { balancesApi } from "$lib/api/balances";
@@ -255,6 +256,13 @@
 
   {#if error}
     <div class="bg-red-50 text-red-700 p-4 rounded mb-6">{error}</div>
+  {/if}
+
+  {#if !loading && accountsWithInstitutionName.length > 0}
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold mb-4">Portfolio Overview</h2>
+      <StackedBalanceChart />
+    </div>
   {/if}
 
   {#if loading}

@@ -163,6 +163,32 @@ export interface BalanceCreate {
   balance: number;
 }
 
+// Aggregated monthly balance types
+
+export interface MonthlyBalancePoint {
+  balance_date: string; // ISO date string - end of month
+  balance: number; // Balance in cents
+}
+
+export interface AccountBalanceSeries {
+  account_id: number;
+  account_name: string;
+  institution_name: string;
+  account_type: string;
+  data: MonthlyBalancePoint[];
+}
+
+export interface MonthlyBalanceAggregateResponse {
+  month_end_dates: string[]; // ISO date strings - all end-of-month dates in range
+  series: AccountBalanceSeries[]; // Balance time series for each account
+}
+
+export interface AggregatedMonthlyParams {
+  start_date?: string; // ISO date string (YYYY-MM-DD)
+  end_date?: string; // ISO date string (YYYY-MM-DD)
+  include_inactive_accounts?: boolean;
+}
+
 // API query parameters
 
 export interface TransactionFilters {
