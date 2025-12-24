@@ -72,6 +72,23 @@
 
 	let formData = $state<FormData>({ ...defaultFormData });
 
+	function resetFormData() {
+		Object.assign(formData, defaultFormData);
+	}
+
+	function populateFormData(account: Account) {
+		Object.assign(formData, {
+			account_name: account.account_name,
+			institution_id: String(account.institution_id),
+			account_type: account.account_type,
+			account_subtype: account.account_subtype ?? "",
+			last_4_digits: account.last_4_digits,
+			tracks_transactions: account.tracks_transactions,
+			tracks_balances: account.tracks_balances,
+			display_order: account.display_order,
+		} satisfies FormData);
+	}
+
 	// Account type options
 	const accountTypes = [
 		{ value: AccountTypeEnum.CHECKING, label: "Checking" },
@@ -101,23 +118,17 @@
 			});
 	});
 
-	// Update form data when editing account changes
+	// (Re)initialize form when dialog opens (prevents stale values when re-opening "Add")
 	$effect(() => {
-		if (editingAccount) {
-			Object.assign(formData, {
-				account_name: editingAccount.account_name,
-				institution_id: String(editingAccount.institution_id),
-				account_type: editingAccount.account_type,
-				account_subtype: editingAccount.account_subtype ?? "",
-				last_4_digits: editingAccount.last_4_digits,
-				tracks_transactions: editingAccount.tracks_transactions,
-				tracks_balances: editingAccount.tracks_balances,
-				display_order: editingAccount.display_order,
-			} satisfies FormData);
-			return;
-		}
+		if (!open) return;
+		if (editingAccount) populateFormData(editingAccount);
+		else resetFormData();
+	});
 
-		Object.assign(formData, defaultFormData);
+	// Also reset on close so the next open starts clean
+	$effect(() => {
+		if (open) return;
+		resetFormData();
 	});
 
 	const institutionItems = $derived(
