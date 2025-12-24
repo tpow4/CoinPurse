@@ -39,3 +39,24 @@ class BalanceResponse(BalanceBase):
         """Pydantic configuration"""
         # Allows Pydantic to work with SQLAlchemy models
         from_attributes = True
+
+
+class MonthlyBalancePoint(BaseModel):
+    """Single month/balance data point"""
+    balance_date: date = Field(..., description="End of month date")
+    balance: int = Field(..., description="Balance in cents")
+
+
+class AccountBalanceSeries(BaseModel):
+    """Time series of monthly balances for one account"""
+    account_id: int
+    account_name: str
+    institution_name: str
+    account_type: str
+    data: list[MonthlyBalancePoint]
+
+
+class MonthlyBalanceAggregateResponse(BaseModel):
+    """Aggregated monthly balance data for all accounts"""
+    month_end_dates: list[date] = Field(..., description="All end-of-month dates in the range")
+    series: list[AccountBalanceSeries] = Field(..., description="Balance time series for each account")

@@ -12,7 +12,8 @@ from database import get_db
 from models.balance import AccountBalance
 from repositories.balance_repository import BalanceRepository
 from repositories.account_repository import AccountRepository
-from schemas.balance import BalanceCreate, BalanceResponse, BalanceUpdate
+from schemas.balance import BalanceCreate, BalanceResponse, BalanceUpdate, MonthlyBalanceAggregateResponse
+from services.balance_aggregation_service import get_aggregated_monthly_data
 
 router = APIRouter(prefix="/balances", tags=["balances"])
 
@@ -83,6 +84,38 @@ def list_balances(
         )
 
     return repo.get_all(include_inactive=include_inactive)
+
+
+@router.get("/aggregated/monthly", response_model=MonthlyBalanceAggregateResponse)
+def get_aggregated_monthly_balances(
+    start_date: date | None = Query(None, description="Start date (defaults to earliest balance)"),
+    end_date: date | None = Query(None, description="End date (defaults to end of current month)"),
+    include_inactive_accounts: bool = Query(False, description="Include inactive accounts"),
+    db: Session = Depends(get_db)
+):
+    """
+    Get aggregated monthly balance data for all accounts that track balances.
+
+    Returns normalized end-of-month snapshots with forward-fill for missing months.
+
+    - **start_date**: Optional start date (defaults to earliest balance across all accounts)
+    - **end_date**: Optional end date (defaults to end of current month)
+    - **include_inactive_accounts**: Set to true to include inactive accounts
+
+    Returns:
+    - **months**: List of all end-of-month dates in the range
+    - **series**: Array of account balance time series, each containing:
+      - account_id, account_name, institution_name, account_type
+      - data: Array of {date, balance} points for each month
+    """
+    result = get_aggregated_monthly_data(
+        db=db,
+        start_date=start_date,
+        end_date=end_date,
+        include_inactive_accounts=include_inactive_accounts
+    )
+
+    return result
 
 
 @router.get("/latest/{account_id}", response_model=BalanceResponse)
