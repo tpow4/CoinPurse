@@ -119,11 +119,12 @@
       x="date"
       xScale={scaleUtc()}
       series={chartSeries}
+      seriesLayout="stack"
       props={{
         area: {
           curve: curveMonotoneX,
-          'fill-opacity': 0.6,
-          line: { class: 'stroke-2' },
+          'fill-opacity': 0.4,
+          line: { class: 'stroke-1' },
           motion: 'tween',
         },
         xAxis: {
@@ -139,7 +140,7 @@
         <Chart.Tooltip
           labelFormatter={(v: Date) =>
             v.toLocaleDateString(undefined, { year: 'numeric', month: 'long' })}
-          indicator="dot"
+          indicator="line"
         />
       {/snippet}
     </AreaChart>
