@@ -37,6 +37,7 @@
   let institutionFieldErrors = $state({ name: "" });
 
   let institutionsRefreshKey = $state(0);
+  let chartRefreshKey = $state(0);
 
   $effect(() => {
     loadDashboardData();
@@ -239,6 +240,7 @@
   async function handleCreateBalance(data: BalanceCreate) {
     const created = await balancesApi.create(data);
     balances = [...balances, created];
+    chartRefreshKey += 1; // Trigger chart refresh
   }
 </script>
 
@@ -261,7 +263,9 @@
   {#if !loading && accountsWithInstitutionName.length > 0}
     <div class="mb-8">
       <h2 class="text-xl font-semibold mb-4">Portfolio Overview</h2>
-      <StackedBalanceChart />
+      {#key chartRefreshKey}
+        <StackedBalanceChart />
+      {/key}
     </div>
   {/if}
 
