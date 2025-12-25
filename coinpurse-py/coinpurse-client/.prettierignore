@@ -1,0 +1,22 @@
+# Dependencies
+node_modules
+dist
+build
+
+# Build outputs
+*.min.js
+*.min.css
+.svelte-kit
+
+# Lock files
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Environment files
+.env
+.env.*
+
+# IDE
+.vscode
+.idea
