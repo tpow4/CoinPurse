@@ -7,6 +7,7 @@
   import { balancesApi } from '$lib/api/balances';
   import { ApiException } from '$lib/api';
   import type { MonthlyBalanceAggregateResponse } from '$lib/types';
+  import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 
   let loading = $state(true);
   let error = $state('');
@@ -113,36 +114,43 @@
     Add balance data to your accounts to see portfolio trends.
   </div>
 {:else}
-  <Chart.Container config={chartConfig} class="h-[400px] w-full">
-    <AreaChart
-      data={chartData}
-      x="date"
-      xScale={scaleUtc()}
-      series={chartSeries}
-      seriesLayout="stack"
-      props={{
-        area: {
-          curve: curveMonotoneX,
-          'fill-opacity': 0.4,
-          line: { class: 'stroke-1' },
-          motion: 'tween',
-        },
-        xAxis: {
-          format: (v: Date) =>
-            v.toLocaleDateString(undefined, { month: 'short', year: 'numeric' }),
-        },
-        yAxis: {
-          format: (v) => (typeof v === 'number' ? compactCurrency.format(v) : String(v)),
-        },
-      }}
-    >
-      {#snippet tooltip()}
-        <Chart.Tooltip
-          labelFormatter={(v: Date) =>
-            v.toLocaleDateString(undefined, { year: 'numeric', month: 'long' })}
-          indicator="line"
-        />
-      {/snippet}
-    </AreaChart>
-  </Chart.Container>
+  <Card class="h-full flex flex-col">
+    <CardHeader class="pb-3">
+        <CardTitle class="text-lg">{"Portfolio Overview"}</CardTitle>
+    </CardHeader>
+    <CardContent class="flex-1">
+    <Chart.Container config={chartConfig} class="h-[400px] w-full">
+        <AreaChart
+        data={chartData}
+        x="date"
+        xScale={scaleUtc()}
+        series={chartSeries}
+        seriesLayout="stack"
+        props={{
+            area: {
+            curve: curveMonotoneX,
+            'fill-opacity': 0.4,
+            line: { class: 'stroke-1' },
+            motion: 'tween',
+            },
+            xAxis: {
+            format: (v: Date) =>
+                v.toLocaleDateString(undefined, { month: 'short', year: 'numeric' }),
+            },
+            yAxis: {
+            format: (v) => (typeof v === 'number' ? compactCurrency.format(v) : String(v)),
+            },
+        }}
+        >
+        {#snippet tooltip()}
+            <Chart.Tooltip
+            labelFormatter={(v: Date) =>
+                v.toLocaleDateString(undefined, { year: 'numeric', month: 'long' })}
+            indicator="line"
+            />
+        {/snippet}
+        </AreaChart>
+    </Chart.Container>
+  </CardContent>
+</Card>
 {/if}
