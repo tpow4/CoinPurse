@@ -2,7 +2,6 @@
 API endpoints for Categories
 Handles all HTTP routes for category management
 """
-from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -16,10 +15,7 @@ router = APIRouter(prefix="/categories", tags=["categories"])
 
 
 @router.post("/", response_model=CategoryResponse, status_code=201)
-def create_category(
-    category_data: CategoryCreate,
-    db: Session = Depends(get_db)
-):
+def create_category(category_data: CategoryCreate, db: Session = Depends(get_db)):
     """
     Create a new category
 
@@ -32,7 +28,7 @@ def create_category(
     if repo.name_exists(category_data.name):
         raise HTTPException(
             status_code=400,
-            detail=f"Category with name '{category_data.name}' already exists"
+            detail=f"Category with name '{category_data.name}' already exists",
         )
 
     db_category = Category(**category_data.model_dump())
@@ -42,10 +38,10 @@ def create_category(
     return created
 
 
-@router.get("/", response_model=List[CategoryResponse])
+@router.get("/", response_model=list[CategoryResponse])
 def list_categories(
     include_inactive: bool = Query(False, description="Include inactive categories"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Get all categories
@@ -56,11 +52,11 @@ def list_categories(
     return repo.get_all(include_inactive=include_inactive)
 
 
-@router.get("/search", response_model=List[CategoryResponse])
+@router.get("/search", response_model=list[CategoryResponse])
 def search_categories(
     q: str = Query(..., min_length=1, description="Search term"),
     include_inactive: bool = Query(False, description="Include inactive categories"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Search categories by name (case-insensitive partial match)
@@ -73,10 +69,7 @@ def search_categories(
 
 
 @router.get("/{category_id}", response_model=CategoryResponse)
-def get_category(
-    category_id: int,
-    db: Session = Depends(get_db)
-):
+def get_category(category_id: int, db: Session = Depends(get_db)):
     """
     Get a specific category by ID
 
@@ -87,8 +80,7 @@ def get_category(
 
     if not category:
         raise HTTPException(
-            status_code=404,
-            detail=f"Category with ID {category_id} not found"
+            status_code=404, detail=f"Category with ID {category_id} not found"
         )
 
     return category
@@ -96,9 +88,7 @@ def get_category(
 
 @router.patch("/{category_id}", response_model=CategoryResponse)
 def update_category(
-    category_id: int,
-    category_data: CategoryUpdate,
-    db: Session = Depends(get_db)
+    category_id: int, category_data: CategoryUpdate, db: Session = Depends(get_db)
 ):
     """
     Update a category
@@ -112,8 +102,7 @@ def update_category(
 
     if not category:
         raise HTTPException(
-            status_code=404,
-            detail=f"Category with ID {category_id} not found"
+            status_code=404, detail=f"Category with ID {category_id} not found"
         )
 
     # Check if new name conflicts with existing category
@@ -121,7 +110,7 @@ def update_category(
         if repo.name_exists(category_data.name, exclude_id=category_id):
             raise HTTPException(
                 status_code=400,
-                detail=f"Category with name '{category_data.name}' already exists"
+                detail=f"Category with name '{category_data.name}' already exists",
             )
 
     # Update only provided fields
@@ -135,8 +124,10 @@ def update_category(
 @router.delete("/{category_id}", status_code=204)
 def delete_category(
     category_id: int,
-    hard_delete: bool = Query(False, description="Permanently delete (use with caution)"),
-    db: Session = Depends(get_db)
+    hard_delete: bool = Query(
+        False, description="Permanently delete (use with caution)"
+    ),
+    db: Session = Depends(get_db),
 ):
     """
     Delete a category (soft delete by default)
@@ -149,8 +140,7 @@ def delete_category(
 
     if not category:
         raise HTTPException(
-            status_code=404,
-            detail=f"Category with ID {category_id} not found"
+            status_code=404, detail=f"Category with ID {category_id} not found"
         )
 
     if hard_delete:

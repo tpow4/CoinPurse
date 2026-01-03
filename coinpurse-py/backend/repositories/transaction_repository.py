@@ -2,11 +2,11 @@
 Repository layer for Transaction model
 Handles all database operations for transactions
 """
-from typing import List, Optional
+
 from datetime import date
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
-from sqlalchemy import select, and_
 
 from models.transaction import Transaction
 
@@ -17,11 +17,11 @@ class TransactionRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_by_id(self, transaction_id: int) -> Optional[Transaction]:
+    def get_by_id(self, transaction_id: int) -> Transaction | None:
         """Get transaction by ID"""
         return self.db.get(Transaction, transaction_id)
 
-    def get_all(self, include_inactive: bool = False) -> List[Transaction]:
+    def get_all(self, include_inactive: bool = False) -> list[Transaction]:
         """
         Get all transactions ordered by transaction date descending
 
@@ -34,7 +34,9 @@ class TransactionRepository:
         stmt = stmt.order_by(Transaction.transaction_date.desc())
         return list(self.db.scalars(stmt))
 
-    def get_by_account(self, account_id: int, include_inactive: bool = False) -> List[Transaction]:
+    def get_by_account(
+        self, account_id: int, include_inactive: bool = False
+    ) -> list[Transaction]:
         """
         Get all transactions for a specific account
 
@@ -42,15 +44,15 @@ class TransactionRepository:
             account_id: The account ID to filter by
             include_inactive: If True, includes inactive transactions
         """
-        stmt = select(Transaction).where(
-            Transaction.account_id == account_id
-        )
+        stmt = select(Transaction).where(Transaction.account_id == account_id)
         if not include_inactive:
             stmt = stmt.where(Transaction.is_active)
         stmt = stmt.order_by(Transaction.transaction_date.desc())
         return list(self.db.scalars(stmt))
 
-    def get_by_category(self, category_id: int, include_inactive: bool = False) -> List[Transaction]:
+    def get_by_category(
+        self, category_id: int, include_inactive: bool = False
+    ) -> list[Transaction]:
         """
         Get all transactions for a specific category
 
@@ -58,9 +60,7 @@ class TransactionRepository:
             category_id: The category ID to filter by
             include_inactive: If True, includes inactive transactions
         """
-        stmt = select(Transaction).where(
-            Transaction.category_id == category_id
-        )
+        stmt = select(Transaction).where(Transaction.category_id == category_id)
         if not include_inactive:
             stmt = stmt.where(Transaction.is_active)
         stmt = stmt.order_by(Transaction.transaction_date.desc())
@@ -72,8 +72,8 @@ class TransactionRepository:
         end_date: date | None = None,
         account_id: int | None = None,
         category_id: int | None = None,
-        include_inactive: bool = False
-    ) -> List[Transaction]:
+        include_inactive: bool = False,
+    ) -> list[Transaction]:
         """
         Get transactions within a date range, optionally filtered by account and/or category
 
@@ -100,7 +100,9 @@ class TransactionRepository:
         stmt = stmt.order_by(Transaction.transaction_date.desc())
         return list(self.db.scalars(stmt))
 
-    def search_by_description(self, search_term: str, include_inactive: bool = False) -> List[Transaction]:
+    def search_by_description(
+        self, search_term: str, include_inactive: bool = False
+    ) -> list[Transaction]:
         """
         Search transactions by partial description match
 

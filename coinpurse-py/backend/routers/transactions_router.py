@@ -2,7 +2,7 @@
 API endpoints for Transactions
 Handles all HTTP routes for transaction management
 """
-from typing import List
+
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -10,18 +10,21 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models.transaction import Transaction
-from repositories.transaction_repository import TransactionRepository
 from repositories.account_repository import AccountRepository
 from repositories.category_repository import CategoryRepository
-from schemas.transaction import TransactionCreate, TransactionResponse, TransactionUpdate
+from repositories.transaction_repository import TransactionRepository
+from schemas.transaction import (
+    TransactionCreate,
+    TransactionResponse,
+    TransactionUpdate,
+)
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
 
 @router.post("/", response_model=TransactionResponse, status_code=201)
 def create_transaction(
-    transaction_data: TransactionCreate,
-    db: Session = Depends(get_db)
+    transaction_data: TransactionCreate, db: Session = Depends(get_db)
 ):
     """
     Create a new transaction
@@ -44,14 +47,14 @@ def create_transaction(
     if not account_repo.exists(transaction_data.account_id):
         raise HTTPException(
             status_code=400,
-            detail=f"Account with ID {transaction_data.account_id} not found"
+            detail=f"Account with ID {transaction_data.account_id} not found",
         )
 
     # Validate category exists
     if not category_repo.exists(transaction_data.category_id):
         raise HTTPException(
             status_code=400,
-            detail=f"Category with ID {transaction_data.category_id} not found"
+            detail=f"Category with ID {transaction_data.category_id} not found",
         )
 
     db_transaction = Transaction(**transaction_data.model_dump())
@@ -61,14 +64,14 @@ def create_transaction(
     return created
 
 
-@router.get("/", response_model=List[TransactionResponse])
+@router.get("/", response_model=list[TransactionResponse])
 def list_transactions(
     account_id: int | None = Query(None, description="Filter by account ID"),
     category_id: int | None = Query(None, description="Filter by category ID"),
     start_date: date | None = Query(None, description="Start date (inclusive)"),
     end_date: date | None = Query(None, description="End date (inclusive)"),
     include_inactive: bool = Query(False, description="Include inactive transactions"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Get all transactions with optional filters
@@ -82,23 +85,28 @@ def list_transactions(
     repo = TransactionRepository(db)
 
     # If any filter specified, use filtered query
-    if account_id is not None or category_id is not None or start_date is not None or end_date is not None:
+    if (
+        account_id is not None
+        or category_id is not None
+        or start_date is not None
+        or end_date is not None
+    ):
         return repo.get_by_date_range(
             start_date=start_date,
             end_date=end_date,
             account_id=account_id,
             category_id=category_id,
-            include_inactive=include_inactive
+            include_inactive=include_inactive,
         )
 
     return repo.get_all(include_inactive=include_inactive)
 
 
-@router.get("/search", response_model=List[TransactionResponse])
+@router.get("/search", response_model=list[TransactionResponse])
 def search_transactions(
     q: str = Query(..., min_length=1, description="Search term"),
     include_inactive: bool = Query(False, description="Include inactive transactions"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Search transactions by description (case-insensitive partial match)
@@ -111,10 +119,7 @@ def search_transactions(
 
 
 @router.get("/{transaction_id}", response_model=TransactionResponse)
-def get_transaction(
-    transaction_id: int,
-    db: Session = Depends(get_db)
-):
+def get_transaction(transaction_id: int, db: Session = Depends(get_db)):
     """
     Get a specific transaction by ID
 
@@ -125,8 +130,7 @@ def get_transaction(
 
     if not transaction:
         raise HTTPException(
-            status_code=404,
-            detail=f"Transaction with ID {transaction_id} not found"
+            status_code=404, detail=f"Transaction with ID {transaction_id} not found"
         )
 
     return transaction
@@ -136,7 +140,7 @@ def get_transaction(
 def update_transaction(
     transaction_id: int,
     transaction_data: TransactionUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Update a transaction
@@ -157,8 +161,7 @@ def update_transaction(
 
     if not transaction:
         raise HTTPException(
-            status_code=404,
-            detail=f"Transaction with ID {transaction_id} not found"
+            status_code=404, detail=f"Transaction with ID {transaction_id} not found"
         )
 
     # Validate account exists if being updated
@@ -167,7 +170,7 @@ def update_transaction(
         if not account_repo.exists(transaction_data.account_id):
             raise HTTPException(
                 status_code=400,
-                detail=f"Account with ID {transaction_data.account_id} not found"
+                detail=f"Account with ID {transaction_data.account_id} not found",
             )
 
     # Validate category exists if being updated
@@ -176,7 +179,7 @@ def update_transaction(
         if not category_repo.exists(transaction_data.category_id):
             raise HTTPException(
                 status_code=400,
-                detail=f"Category with ID {transaction_data.category_id} not found"
+                detail=f"Category with ID {transaction_data.category_id} not found",
             )
 
     # Update only provided fields
@@ -190,8 +193,10 @@ def update_transaction(
 @router.delete("/{transaction_id}", status_code=204)
 def delete_transaction(
     transaction_id: int,
-    hard_delete: bool = Query(False, description="Permanently delete (use with caution)"),
-    db: Session = Depends(get_db)
+    hard_delete: bool = Query(
+        False, description="Permanently delete (use with caution)"
+    ),
+    db: Session = Depends(get_db),
 ):
     """
     Delete a transaction (soft delete by default)
@@ -204,8 +209,7 @@ def delete_transaction(
 
     if not transaction:
         raise HTTPException(
-            status_code=404,
-            detail=f"Transaction with ID {transaction_id} not found"
+            status_code=404, detail=f"Transaction with ID {transaction_id} not found"
         )
 
     if hard_delete:

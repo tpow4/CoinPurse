@@ -2,10 +2,9 @@
 Repository layer for Account model
 Handles all database operations for accounts
 """
-from typing import List, Optional
 
-from sqlalchemy.orm import Session
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from models.account import Account
 
@@ -16,11 +15,11 @@ class AccountRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_by_id(self, account_id: int) -> Optional[Account]:
+    def get_by_id(self, account_id: int) -> Account | None:
         """Get account by ID"""
         return self.db.get(Account, account_id)
 
-    def get_all(self, include_inactive: bool = False) -> List[Account]:
+    def get_all(self, include_inactive: bool = False) -> list[Account]:
         """
         Get all accounts
 
@@ -33,7 +32,9 @@ class AccountRepository:
         stmt = stmt.order_by(Account.display_order, Account.account_name)
         return list(self.db.scalars(stmt))
 
-    def get_by_institution(self, institution_id: int, include_inactive: bool = False) -> List[Account]:
+    def get_by_institution(
+        self, institution_id: int, include_inactive: bool = False
+    ) -> list[Account]:
         """
         Get all accounts for a specific institution
 
@@ -47,17 +48,18 @@ class AccountRepository:
         stmt = stmt.order_by(Account.display_order, Account.account_name)
         return list(self.db.scalars(stmt))
 
-    def get_by_name(self, account_name: str) -> Optional[Account]:
+    def get_by_name(self, account_name: str) -> Account | None:
         """Get account by exact name"""
         stmt = select(Account).where(Account.account_name == account_name)
         return self.db.scalar(stmt)
 
-    def search_by_name(self, search_term: str) -> List[Account]:
+    def search_by_name(self, search_term: str) -> list[Account]:
         """Search accounts by partial name match"""
-        stmt = select(Account).where(
-            Account.account_name.ilike(f"%{search_term}%"),
-            Account.active
-        ).order_by(Account.display_order, Account.account_name)
+        stmt = (
+            select(Account)
+            .where(Account.account_name.ilike(f"%{search_term}%"), Account.active)
+            .order_by(Account.display_order, Account.account_name)
+        )
         return list(self.db.scalars(stmt))
 
     def create(self, account: Account) -> Account:
@@ -87,7 +89,7 @@ class AccountRepository:
         """Check if an account exists"""
         return self.get_by_id(account_id) is not None
 
-    def name_exists(self, account_name: str, exclude_id: Optional[int] = None) -> bool:
+    def name_exists(self, account_name: str, exclude_id: int | None = None) -> bool:
         """
         Check if an account name already exists
 

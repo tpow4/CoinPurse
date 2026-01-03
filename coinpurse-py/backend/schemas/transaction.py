@@ -2,13 +2,17 @@
 Pydantic schemas for Transaction API
 These are DTOs (Data Transfer Objects) for request/response validation
 """
-from datetime import datetime, date
+
+from datetime import date, datetime
+
 from pydantic import BaseModel, Field
+
 from models.base import TransactionType
 
 
 class TransactionBase(BaseModel):
     """Shared fields"""
+
     account_id: int
     category_id: int
     transaction_date: date
@@ -22,11 +26,13 @@ class TransactionBase(BaseModel):
 
 class TransactionCreate(TransactionBase):
     """Schema for creating a transaction (what user sends)"""
+
     pass  # No additional fields needed for creation
 
 
 class TransactionUpdate(BaseModel):
     """Schema for updating a transaction - all fields optional"""
+
     account_id: int | None = None
     category_id: int | None = None
     transaction_date: date | None = None
@@ -40,11 +46,13 @@ class TransactionUpdate(BaseModel):
 
 class TransactionResponse(TransactionBase):
     """Schema for returning a transaction (what API sends back)"""
+
     transaction_id: int
     created_at: datetime
     modified_at: datetime
 
     class Config:
         """Pydantic configuration"""
+
         # Allows Pydantic to work with SQLAlchemy models
         from_attributes = True

@@ -7,12 +7,14 @@ from datetime import date, datetime
 
 from pydantic import BaseModel, Field
 
+BALANCE_DESCRIPTION = "Balance in cents"
+
 
 class BalanceBase(BaseModel):
     """Shared fields"""
 
     account_id: int
-    balance: int = Field(..., description="Balance in cents")
+    balance: int = Field(..., description=BALANCE_DESCRIPTION)
     balance_date: date
     notes: str | None = None
     is_active: bool = True
@@ -28,7 +30,7 @@ class BalanceUpdate(BaseModel):
     """Schema for updating a balance - all fields optional"""
 
     account_id: int | None = None
-    balance: int | None = Field(None, description="Balance in cents")
+    balance: int | None = Field(None, description=BALANCE_DESCRIPTION)
     balance_date: date | None = None
     notes: str | None = None
     is_active: bool | None = None
@@ -52,7 +54,7 @@ class MonthlyBalancePoint(BaseModel):
     """Single month/balance data point"""
 
     balance_date: date = Field(..., description="End of month date")
-    balance: int = Field(..., description="Balance in cents")
+    balance: int = Field(..., description=BALANCE_DESCRIPTION)
 
 
 class AccountBalanceSeries(BaseModel):
@@ -81,7 +83,7 @@ class BalanceEntry(BaseModel):
     """Single balance entry for batch operations"""
 
     balance_date: date
-    balance: int = Field(..., description="Balance in cents")
+    balance: int = Field(..., description=BALANCE_DESCRIPTION)
 
 
 class BalanceBatchCreate(BaseModel):

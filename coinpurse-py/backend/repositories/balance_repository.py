@@ -2,11 +2,11 @@
 Repository layer for AccountBalance model
 Handles all database operations for account balances
 """
-from typing import List, Optional
+
 from datetime import date
 
+from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
-from sqlalchemy import select, and_
 
 from models.balance import AccountBalance
 
@@ -17,11 +17,11 @@ class BalanceRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_by_id(self, balance_id: int) -> Optional[AccountBalance]:
+    def get_by_id(self, balance_id: int) -> AccountBalance | None:
         """Get balance by ID"""
         return self.db.get(AccountBalance, balance_id)
 
-    def get_all(self, include_inactive: bool = False) -> List[AccountBalance]:
+    def get_all(self, include_inactive: bool = False) -> list[AccountBalance]:
         """
         Get all balances ordered by date descending
 
@@ -34,7 +34,9 @@ class BalanceRepository:
         stmt = stmt.order_by(AccountBalance.balance_date.desc())
         return list(self.db.scalars(stmt))
 
-    def get_by_account(self, account_id: int, include_inactive: bool = False) -> List[AccountBalance]:
+    def get_by_account(
+        self, account_id: int, include_inactive: bool = False
+    ) -> list[AccountBalance]:
         """
         Get all balances for a specific account
 
@@ -42,15 +44,15 @@ class BalanceRepository:
             account_id: The account ID to filter by
             include_inactive: If True, includes inactive balances
         """
-        stmt = select(AccountBalance).where(
-            AccountBalance.account_id == account_id
-        )
+        stmt = select(AccountBalance).where(AccountBalance.account_id == account_id)
         if not include_inactive:
             stmt = stmt.where(AccountBalance.is_active)
         stmt = stmt.order_by(AccountBalance.balance_date.desc())
         return list(self.db.scalars(stmt))
 
-    def get_by_account_and_date(self, account_id: int, balance_date: date) -> Optional[AccountBalance]:
+    def get_by_account_and_date(
+        self, account_id: int, balance_date: date
+    ) -> AccountBalance | None:
         """
         Get balance for a specific account on a specific date
 
@@ -61,7 +63,7 @@ class BalanceRepository:
         stmt = select(AccountBalance).where(
             and_(
                 AccountBalance.account_id == account_id,
-                AccountBalance.balance_date == balance_date
+                AccountBalance.balance_date == balance_date,
             )
         )
         return self.db.scalar(stmt)
@@ -71,8 +73,8 @@ class BalanceRepository:
         account_id: int | None = None,
         start_date: date | None = None,
         end_date: date | None = None,
-        include_inactive: bool = False
-    ) -> List[AccountBalance]:
+        include_inactive: bool = False,
+    ) -> list[AccountBalance]:
         """
         Get balances within a date range, optionally filtered by account
 
@@ -96,7 +98,9 @@ class BalanceRepository:
         stmt = stmt.order_by(AccountBalance.balance_date.desc())
         return list(self.db.scalars(stmt))
 
-    def get_latest_by_account(self, account_id: int, include_inactive: bool = False) -> Optional[AccountBalance]:
+    def get_latest_by_account(
+        self, account_id: int, include_inactive: bool = False
+    ) -> AccountBalance | None:
         """
         Get the most recent balance for a specific account
 
@@ -104,9 +108,7 @@ class BalanceRepository:
             account_id: The account ID
             include_inactive: If True, includes inactive balances
         """
-        stmt = select(AccountBalance).where(
-            AccountBalance.account_id == account_id
-        )
+        stmt = select(AccountBalance).where(AccountBalance.account_id == account_id)
         if not include_inactive:
             stmt = stmt.where(AccountBalance.is_active)
         stmt = stmt.order_by(AccountBalance.balance_date.desc()).limit(1)
@@ -139,7 +141,9 @@ class BalanceRepository:
         """Check if a balance exists"""
         return self.get_by_id(balance_id) is not None
 
-    def exists_for_account_and_date(self, account_id: int, balance_date: date, exclude_id: Optional[int] = None) -> bool:
+    def exists_for_account_and_date(
+        self, account_id: int, balance_date: date, exclude_id: int | None = None
+    ) -> bool:
         """
         Check if an active balance already exists for an account on a specific date
 
@@ -152,7 +156,7 @@ class BalanceRepository:
             and_(
                 AccountBalance.account_id == account_id,
                 AccountBalance.balance_date == balance_date,
-                AccountBalance.is_active
+                AccountBalance.is_active,
             )
         )
         if exclude_id:
@@ -160,10 +164,8 @@ class BalanceRepository:
         return self.db.scalar(stmt) is not None
 
     def upsert_batch(
-        self,
-        account_id: int,
-        entries: List[tuple[date, int]]
-    ) -> tuple[List[AccountBalance], int, int]:
+        self, account_id: int, entries: list[tuple[date, int]]
+    ) -> tuple[list[AccountBalance], int, int]:
         """
         Create or update multiple balances for an account atomically.
 
@@ -174,7 +176,7 @@ class BalanceRepository:
         Returns:
             Tuple of (list of balances, created_count, updated_count)
         """
-        results: List[AccountBalance] = []
+        results: list[AccountBalance] = []
         created_count = 0
         updated_count = 0
 
@@ -189,7 +191,7 @@ class BalanceRepository:
                 new_balance = AccountBalance(
                     account_id=account_id,
                     balance_date=balance_date,
-                    balance=balance_cents
+                    balance=balance_cents,
                 )
                 self.db.add(new_balance)
                 results.append(new_balance)
