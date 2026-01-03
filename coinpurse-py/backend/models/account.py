@@ -17,7 +17,6 @@ class Account(Base):
     )
     account_name: Mapped[str]
     account_type: Mapped[AccountType]
-    account_subtype: Mapped[str | None]
     last_4_digits: Mapped[str]
     tracks_transactions: Mapped[bool] = mapped_column(default=False)
     tracks_balances: Mapped[bool] = mapped_column(default=False)

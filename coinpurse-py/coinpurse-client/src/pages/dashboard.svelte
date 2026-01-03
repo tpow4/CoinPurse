@@ -196,7 +196,6 @@
         account_name: string;
         institution_id: number;
         account_type: AccountType;
-        account_subtype: string | null;
         last_4_digits: string;
         tracks_transactions: boolean;
         tracks_balances: boolean;
@@ -211,7 +210,6 @@
                 account_name: data.account_name,
                 institution_id: data.institution_id,
                 account_type: data.account_type,
-                account_subtype: data.account_subtype,
                 last_4_digits: data.last_4_digits,
                 tracks_transactions: data.tracks_transactions,
                 tracks_balances: data.tracks_balances,

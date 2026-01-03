@@ -10,12 +10,10 @@ class Base(DeclarativeBase):
 class AccountType(str, PyEnum):
     """Types of financial accounts"""
 
-    CHECKING = "checking"
+    BANKING = "banking"
+    TREASURY = "treasury"
     CREDIT_CARD = "credit_card"
-    SAVINGS = "savings"
     INVESTMENT = "investment"
-    RETIREMENT = "retirement"
-    BROKERAGE = "brokerage"
 
 
 class TransactionType(str, PyEnum):

@@ -6,12 +6,10 @@
 // Enums matching backend/models/base.py
 
 export enum AccountType {
-    CHECKING = 'checking',
+    BANKING = 'banking',
+    TREASURY = 'treasury',
     CREDIT_CARD = 'credit_card',
-    SAVINGS = 'savings',
     INVESTMENT = 'investment',
-    RETIREMENT = 'retirement',
-    BROKERAGE = 'brokerage',
 }
 
 export enum TransactionType {
@@ -72,7 +70,6 @@ export interface Account {
     account_name: string;
     institution_id: number;
     account_type: AccountType;
-    account_subtype: string | null;
     last_4_digits: string;
     tracks_transactions: boolean;
     tracks_balances: boolean;
@@ -86,7 +83,6 @@ export interface AccountCreate {
     account_name: string;
     institution_id: number;
     account_type: AccountType;
-    account_subtype?: string | null;
     last_4_digits: string;
     tracks_transactions?: boolean;
     tracks_balances?: boolean;
@@ -98,7 +94,6 @@ export interface AccountUpdate {
     account_name?: string;
     institution_id?: number;
     account_type?: AccountType;
-    account_subtype?: string | null;
     last_4_digits?: string;
     tracks_transactions?: boolean;
     tracks_balances?: boolean;
