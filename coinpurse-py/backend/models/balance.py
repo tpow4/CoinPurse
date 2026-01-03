@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 
+# imports types for FKs only during type checking
 if TYPE_CHECKING:
     from .account import Account
 
