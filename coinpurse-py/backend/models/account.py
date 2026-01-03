@@ -1,9 +1,16 @@
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import AccountType, Base, TaxTreatmentType
+
+# imports types for FKs only during type checking
+if TYPE_CHECKING:
+    from .balance import AccountBalance
+    from .institution import Institution
+    from .transaction import Transaction
 
 
 class Account(Base):
