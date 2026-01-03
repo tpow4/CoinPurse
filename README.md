@@ -1,1 +1,7 @@
-.NET finance app for sandbox of ASP.NET Web Api and EF Core. React front-end will be next.
+Finance app sandbox! 
+
+The main version is in Python and uses FastAPI and SQLAlchemy. There is also a frontend with Svelte and ShadCN
+
+Legacy:
+the .NET version tests ASP.NET Web Api and EF Core. There is also a frontend with React and MUI. It can be found on the legacy-dotnet/main
+
