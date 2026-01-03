@@ -8,10 +8,15 @@
   import { ApiException } from '$lib/api';
   import type { MonthlyBalanceAggregateResponse } from '$lib/types';
   import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
+  import { ButtonGroup } from '$lib/components/ui/button-group';
+  import { Button } from '$lib/components/ui/button';
+
+  type DateRange = 'ytd' | '1y' | 'max';
 
   let loading = $state(true);
   let error = $state('');
   let response = $state<MonthlyBalanceAggregateResponse | null>(null);
+  let selectedRange = $state<DateRange>('ytd');
 
   const compactCurrency = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -80,12 +85,32 @@
 
   const hasData = $derived(chartData.length >= 1 && chartSeries.length > 0);
 
-  onMount(async () => {
+  function getStartDateForRange(range: DateRange): string | undefined {
+    if (range === 'max') return undefined;
+
+    const now = new Date();
+    let startDate: Date;
+
+    if (range === 'ytd') {
+      // Start of current year
+      startDate = new Date(now.getFullYear(), 0, 1);
+    } else {
+      // 1 year ago
+      startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+    }
+
+    return startDate.toISOString().split('T')[0];
+  }
+
+  async function fetchData() {
     loading = true;
     error = '';
 
     try {
-      const data = await balancesApi.getAggregatedMonthly();
+      const startDate = getStartDateForRange(selectedRange);
+      const data = await balancesApi.getAggregatedMonthly({
+        start_date: startDate,
+      });
       response = data;
     } catch (e) {
       if (e instanceof ApiException) {
@@ -96,6 +121,15 @@
     } finally {
       loading = false;
     }
+  }
+
+  function handleRangeChange(range: DateRange) {
+    selectedRange = range;
+    fetchData();
+  }
+
+  onMount(() => {
+    fetchData();
   });
 </script>
 
@@ -115,8 +149,31 @@
   </div>
 {:else}
   <Card class="h-full flex flex-col">
-    <CardHeader class="pb-3">
-        <CardTitle class="text-lg">{"Portfolio Overview"}</CardTitle>
+    <CardHeader class="pb-3 flex flex-row items-center justify-between">
+        <CardTitle class="text-lg">Portfolio Overview</CardTitle>
+        <ButtonGroup>
+          <Button
+            variant={selectedRange === 'ytd' ? 'default' : 'outline'}
+            size="sm"
+            onclick={() => handleRangeChange('ytd')}
+          >
+            YTD
+          </Button>
+          <Button
+            variant={selectedRange === '1y' ? 'default' : 'outline'}
+            size="sm"
+            onclick={() => handleRangeChange('1y')}
+          >
+            1Y
+          </Button>
+          <Button
+            variant={selectedRange === 'max' ? 'default' : 'outline'}
+            size="sm"
+            onclick={() => handleRangeChange('max')}
+          >
+            Max
+          </Button>
+        </ButtonGroup>
     </CardHeader>
     <CardContent class="flex-1">
     <Chart.Container config={chartConfig} class="h-[400px] w-full">
