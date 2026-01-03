@@ -1,0 +1,63 @@
+"""
+Main FastAPI application entry point
+Run with: uvicorn main:app --reload --port 8000
+"""
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from scalar_fastapi import get_scalar_api_reference
+
+from routers.accounts_router import router as accounts_router
+from routers.balances_router import router as balances_router
+from routers.categories_router import router as categories_router
+from routers.institutions_router import router as institutions_router
+from routers.transactions_router import router as transactions_router
+
+# FastAPI application instance
+app = FastAPI(
+    title="CoinPurse API",
+    description="Personal finance tracking application",
+    version="0.1.0",
+)
+
+# Configure CORS for Svelte frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Svelte dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Rotuer Registrations
+app.include_router(institutions_router, prefix="/api")
+app.include_router(accounts_router, prefix="/api")
+app.include_router(balances_router, prefix="/api")
+app.include_router(categories_router, prefix="/api")
+app.include_router(transactions_router, prefix="/api")
+
+
+@app.get("/")
+def root():
+    """Health check endpoint"""
+    return {"message": "Finance Tracker API", "status": "running", "docs": "/docs"}
+
+
+@app.get("/health")
+def health_check():
+    """Health check for monitoring"""
+    return {"status": "healthy"}
+
+
+@app.get("/scalar", include_in_schema=False)
+async def scalar_html():
+    return get_scalar_api_reference(
+        openapi_url=app.openapi_url,
+        scalar_proxy_url="https://proxy.scalar.com",
+    )
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)
