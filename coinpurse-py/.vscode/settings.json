@@ -12,6 +12,7 @@
             "source.fixAll": "explicit"
         }
     },
+    "python.analysis.extraPaths": ["./backend"],
     "[javascript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
@@ -46,5 +47,9 @@
         "**/.pytest_cache/**": true,
         "**/dist/**": true,
         "**/build/**": true
+    },
+    "sonarlint.connectedMode.project": {
+        "connectionId": "https-sonarqube-local-hotdamndog-com",
+        "projectKey": "tpow4_CoinPurse_427eda53-5531-4e4a-829c-2976b92f9141"
     }
 }
