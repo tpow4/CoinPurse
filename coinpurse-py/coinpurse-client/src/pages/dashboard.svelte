@@ -8,6 +8,7 @@
         AccountType,
         BalanceCreate,
         BalanceBatchCreate,
+        TaxTreatmentType,
     } from '$lib/types';
 
     import { Button } from '$lib/components/ui/button';
@@ -37,6 +38,7 @@
         account_name: '',
         institution_id: '',
         account_type: '',
+        tax_treatment: '',
         last_4_digits: '',
     });
 
@@ -139,6 +141,7 @@
             account_name: '',
             institution_id: '',
             account_type: '',
+            tax_treatment: '',
             last_4_digits: '',
         };
         showAddAccount = true;
@@ -154,12 +157,14 @@
         account_name: string;
         institution_id: number;
         account_type: AccountType;
+        tax_treatment: TaxTreatmentType;
         last_4_digits: string;
     }): boolean {
         accountFieldErrors = {
             account_name: '',
             institution_id: '',
             account_type: '',
+            tax_treatment: '',
             last_4_digits: '',
         };
         let isValid = true;
@@ -183,6 +188,11 @@
             isValid = false;
         }
 
+        if (!data.tax_treatment) {
+            accountFieldErrors.tax_treatment = 'Tax treatment is required';
+            isValid = false;
+        }
+
         if (data.last_4_digits && data.last_4_digits.length > 4) {
             accountFieldErrors.last_4_digits =
                 'Last 4 digits must be 4 characters or less';
@@ -196,6 +206,7 @@
         account_name: string;
         institution_id: number;
         account_type: AccountType;
+        tax_treatment: TaxTreatmentType;
         last_4_digits: string;
         tracks_transactions: boolean;
         tracks_balances: boolean;
@@ -210,6 +221,7 @@
                 account_name: data.account_name,
                 institution_id: data.institution_id,
                 account_type: data.account_type,
+                tax_treatment: data.tax_treatment,
                 last_4_digits: data.last_4_digits,
                 tracks_transactions: data.tracks_transactions,
                 tracks_balances: data.tracks_balances,

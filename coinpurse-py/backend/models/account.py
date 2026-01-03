@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .base import AccountType, Base
+from .base import AccountType, Base, TaxTreatmentType
 
 
 class Account(Base):
@@ -17,6 +17,7 @@ class Account(Base):
     )
     account_name: Mapped[str]
     account_type: Mapped[AccountType]
+    tax_treatment: Mapped[TaxTreatmentType]
     last_4_digits: Mapped[str]
     tracks_transactions: Mapped[bool] = mapped_column(default=False)
     tracks_balances: Mapped[bool] = mapped_column(default=False)

@@ -2,7 +2,7 @@
 API endpoints for Account Balances
 Handles all HTTP routes for balance management
 """
-from typing import List
+
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -10,15 +10,15 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models.balance import AccountBalance
-from repositories.balance_repository import BalanceRepository
 from repositories.account_repository import AccountRepository
+from repositories.balance_repository import BalanceRepository
 from schemas.balance import (
+    BalanceBatchCreate,
+    BalanceBatchResponse,
     BalanceCreate,
     BalanceResponse,
     BalanceUpdate,
     MonthlyBalanceAggregateResponse,
-    BalanceBatchCreate,
-    BalanceBatchResponse,
 )
 from services.balance_aggregation_service import get_aggregated_monthly_data
 
@@ -26,10 +26,7 @@ router = APIRouter(prefix="/balances", tags=["balances"])
 
 
 @router.post("/", response_model=BalanceResponse, status_code=201)
-def create_balance(
-    balance_data: BalanceCreate,
-    db: Session = Depends(get_db)
-):
+def create_balance(balance_data: BalanceCreate, db: Session = Depends(get_db)):
     """
     Create a new balance record
 
@@ -46,14 +43,16 @@ def create_balance(
     if not account_repo.exists(balance_data.account_id):
         raise HTTPException(
             status_code=400,
-            detail=f"Account with ID {balance_data.account_id} not found"
+            detail=f"Account with ID {balance_data.account_id} not found",
         )
 
     # Check if balance already exists for this account and date (unique constraint)
-    if repo.exists_for_account_and_date(balance_data.account_id, balance_data.balance_date):
+    if repo.exists_for_account_and_date(
+        balance_data.account_id, balance_data.balance_date
+    ):
         raise HTTPException(
             status_code=400,
-            detail=f"Balance for account {balance_data.account_id} on date {balance_data.balance_date} already exists"
+            detail=f"Balance for account {balance_data.account_id} on date {balance_data.balance_date} already exists",
         )
 
     db_balance = AccountBalance(**balance_data.model_dump())
@@ -65,8 +64,7 @@ def create_balance(
 
 @router.post("/batch", response_model=BalanceBatchResponse, status_code=201)
 def create_or_update_balances_batch(
-    batch_data: BalanceBatchCreate,
-    db: Session = Depends(get_db)
+    batch_data: BalanceBatchCreate, db: Session = Depends(get_db)
 ):
     """
     Create or update multiple balance records atomically.
@@ -81,32 +79,28 @@ def create_or_update_balances_batch(
     # Validate account exists
     if not account_repo.exists(batch_data.account_id):
         raise HTTPException(
-            status_code=400,
-            detail=f"Account with ID {batch_data.account_id} not found"
+            status_code=400, detail=f"Account with ID {batch_data.account_id} not found"
         )
 
     # Convert to list of tuples for repository
     entries = [(entry.balance_date, entry.balance) for entry in batch_data.balances]
 
     balances, created_count, updated_count = repo.upsert_batch(
-        batch_data.account_id,
-        entries
+        batch_data.account_id, entries
     )
 
     return BalanceBatchResponse(
-        created=created_count,
-        updated=updated_count,
-        balances=balances
+        created=created_count, updated=updated_count, balances=balances
     )
 
 
-@router.get("/", response_model=List[BalanceResponse])
+@router.get("/", response_model=list[BalanceResponse])
 def list_balances(
     account_id: int | None = Query(None, description="Filter by account ID"),
     start_date: date | None = Query(None, description="Start date (inclusive)"),
     end_date: date | None = Query(None, description="End date (inclusive)"),
     include_inactive: bool = Query(False, description="Include inactive balances"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Get all balances with optional filters
@@ -124,7 +118,7 @@ def list_balances(
             account_id=account_id,
             start_date=start_date,
             end_date=end_date,
-            include_inactive=include_inactive
+            include_inactive=include_inactive,
         )
 
     return repo.get_all(include_inactive=include_inactive)
@@ -132,10 +126,16 @@ def list_balances(
 
 @router.get("/aggregated/monthly", response_model=MonthlyBalanceAggregateResponse)
 def get_aggregated_monthly_balances(
-    start_date: date | None = Query(None, description="Start date (defaults to earliest balance)"),
-    end_date: date | None = Query(None, description="End date (defaults to end of current month)"),
-    include_inactive_accounts: bool = Query(False, description="Include inactive accounts"),
-    db: Session = Depends(get_db)
+    start_date: date | None = Query(
+        None, description="Start date (defaults to earliest balance)"
+    ),
+    end_date: date | None = Query(
+        None, description="End date (defaults to end of current month)"
+    ),
+    include_inactive_accounts: bool = Query(
+        False, description="Include inactive accounts"
+    ),
+    db: Session = Depends(get_db),
 ):
     """
     Get aggregated monthly balance data for all accounts that track balances.
@@ -149,14 +149,14 @@ def get_aggregated_monthly_balances(
     Returns:
     - **months**: List of all end-of-month dates in the range
     - **series**: Array of account balance time series, each containing:
-      - account_id, account_name, institution_name, account_type
+      - account_id, account_name, institution_name, account_type, tax_treatment
       - data: Array of {date, balance} points for each month
     """
     result = get_aggregated_monthly_data(
         db=db,
         start_date=start_date,
         end_date=end_date,
-        include_inactive_accounts=include_inactive_accounts
+        include_inactive_accounts=include_inactive_accounts,
     )
 
     return result
@@ -166,7 +166,7 @@ def get_aggregated_monthly_balances(
 def get_latest_balance(
     account_id: int,
     include_inactive: bool = Query(False, description="Include inactive balances"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Get the most recent balance for a specific account
@@ -180,17 +180,14 @@ def get_latest_balance(
     if not balance:
         raise HTTPException(
             status_code=404,
-            detail=f"No balances found for account with ID {account_id}"
+            detail=f"No balances found for account with ID {account_id}",
         )
 
     return balance
 
 
 @router.get("/{balance_id}", response_model=BalanceResponse)
-def get_balance(
-    balance_id: int,
-    db: Session = Depends(get_db)
-):
+def get_balance(balance_id: int, db: Session = Depends(get_db)):
     """
     Get a specific balance by ID
 
@@ -201,8 +198,7 @@ def get_balance(
 
     if not balance:
         raise HTTPException(
-            status_code=404,
-            detail=f"Balance with ID {balance_id} not found"
+            status_code=404, detail=f"Balance with ID {balance_id} not found"
         )
 
     return balance
@@ -210,9 +206,7 @@ def get_balance(
 
 @router.patch("/{balance_id}", response_model=BalanceResponse)
 def update_balance(
-    balance_id: int,
-    balance_data: BalanceUpdate,
-    db: Session = Depends(get_db)
+    balance_id: int, balance_data: BalanceUpdate, db: Session = Depends(get_db)
 ):
     """
     Update a balance
@@ -229,8 +223,7 @@ def update_balance(
 
     if not balance:
         raise HTTPException(
-            status_code=404,
-            detail=f"Balance with ID {balance_id} not found"
+            status_code=404, detail=f"Balance with ID {balance_id} not found"
         )
 
     # Validate account exists if being updated
@@ -239,17 +232,27 @@ def update_balance(
         if not account_repo.exists(balance_data.account_id):
             raise HTTPException(
                 status_code=400,
-                detail=f"Account with ID {balance_data.account_id} not found"
+                detail=f"Account with ID {balance_data.account_id} not found",
             )
 
     # Check unique constraint if account_id or balance_date is being updated
-    check_account_id = balance_data.account_id if balance_data.account_id is not None else balance.account_id
-    check_date = balance_data.balance_date if balance_data.balance_date is not None else balance.balance_date
+    check_account_id = (
+        balance_data.account_id
+        if balance_data.account_id is not None
+        else balance.account_id
+    )
+    check_date = (
+        balance_data.balance_date
+        if balance_data.balance_date is not None
+        else balance.balance_date
+    )
 
-    if repo.exists_for_account_and_date(check_account_id, check_date, exclude_id=balance_id):
+    if repo.exists_for_account_and_date(
+        check_account_id, check_date, exclude_id=balance_id
+    ):
         raise HTTPException(
             status_code=400,
-            detail=f"Balance for account {check_account_id} on date {check_date} already exists"
+            detail=f"Balance for account {check_account_id} on date {check_date} already exists",
         )
 
     # Update only provided fields
@@ -263,8 +266,10 @@ def update_balance(
 @router.delete("/{balance_id}", status_code=204)
 def delete_balance(
     balance_id: int,
-    hard_delete: bool = Query(False, description="Permanently delete (use with caution)"),
-    db: Session = Depends(get_db)
+    hard_delete: bool = Query(
+        False, description="Permanently delete (use with caution)"
+    ),
+    db: Session = Depends(get_db),
 ):
     """
     Delete a balance (soft delete by default)
@@ -277,8 +282,7 @@ def delete_balance(
 
     if not balance:
         raise HTTPException(
-            status_code=404,
-            detail=f"Balance with ID {balance_id} not found"
+            status_code=404, detail=f"Balance with ID {balance_id} not found"
         )
 
     if hard_delete:

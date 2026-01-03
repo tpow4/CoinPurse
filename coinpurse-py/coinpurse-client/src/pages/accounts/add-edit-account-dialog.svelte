@@ -1,5 +1,10 @@
 <script lang="ts">
-    import type { Account, Institution, AccountType } from '$lib/types';
+    import {
+        type Account,
+        type Institution,
+        type AccountType,
+        TaxTreatmentType,
+    } from '$lib/types';
     import { AccountType as AccountTypeEnum } from '$lib/types';
     import * as Dialog from '$lib/components/ui/dialog';
     import * as Field from '$lib/components/ui/field';
@@ -19,6 +24,7 @@
             account_name?: string;
             institution_id?: string;
             account_type?: string;
+            tax_treatment?: string;
             last_4_digits?: string;
         };
         onOpenChange: (open: boolean) => void;
@@ -26,6 +32,7 @@
             account_name: string;
             institution_id: number;
             account_type: AccountType;
+            tax_treatment: TaxTreatmentType;
             last_4_digits: string;
             tracks_transactions: boolean;
             tracks_balances: boolean;
@@ -47,6 +54,7 @@
         account_name: string;
         institution_id: string;
         account_type: AccountType;
+        tax_treatment: TaxTreatmentType;
         last_4_digits: string;
         tracks_transactions: boolean;
         tracks_balances: boolean;
@@ -56,7 +64,8 @@
     const defaultFormData: FormData = {
         account_name: '',
         institution_id: '',
-        account_type: AccountTypeEnum.CHECKING,
+        account_type: AccountTypeEnum.BANKING,
+        tax_treatment: TaxTreatmentType.TAXABLE,
         last_4_digits: '',
         tracks_transactions: true,
         tracks_balances: true,
@@ -78,6 +87,7 @@
             account_name: account.account_name,
             institution_id: String(account.institution_id),
             account_type: account.account_type,
+            tax_treatment: account.tax_treatment,
             last_4_digits: account.last_4_digits,
             tracks_transactions: account.tracks_transactions,
             tracks_balances: account.tracks_balances,
@@ -87,12 +97,18 @@
 
     // Account type options
     const accountTypes = [
-        { value: AccountTypeEnum.CHECKING, label: 'Checking' },
+        { value: AccountTypeEnum.BANKING, label: 'Banking' },
+        { value: AccountTypeEnum.TREASURY, label: 'Treasury' },
         { value: AccountTypeEnum.CREDIT_CARD, label: 'Credit Card' },
-        { value: AccountTypeEnum.SAVINGS, label: 'Savings' },
         { value: AccountTypeEnum.INVESTMENT, label: 'Investment' },
-        { value: AccountTypeEnum.RETIREMENT, label: 'Retirement' },
-        { value: AccountTypeEnum.BROKERAGE, label: 'Brokerage' },
+    ];
+
+    const taxTreatments = [
+        { value: TaxTreatmentType.TAXABLE, label: 'Taxable' },
+        { value: TaxTreatmentType.TAX_DEFERRED, label: 'Tax-Deferred' },
+        { value: TaxTreatmentType.TAX_FREE, label: 'Tax-Free' },
+        { value: TaxTreatmentType.TRIPLE_TAX_FREE, label: 'Triple Tax-Free' },
+        { value: TaxTreatmentType.NOT_APPLICABLE, label: 'Not Applicable' },
     ];
 
     // Lazy-load institutions when dialog opens
@@ -140,6 +156,7 @@
             account_name: formData.account_name,
             institution_id: Number(formData.institution_id),
             account_type: formData.account_type,
+            tax_treatment: formData.tax_treatment,
             last_4_digits: formData.last_4_digits,
             tracks_transactions: formData.tracks_transactions,
             tracks_balances: formData.tracks_balances,
@@ -221,6 +238,21 @@
                     />
                     {#if fieldErrors.account_type}
                         <Field.Error>{fieldErrors.account_type}</Field.Error>
+                    {/if}
+                </Field.Field>
+
+                <!-- Tax Treatment -->
+                <Field.Field>
+                    <Field.Label for="tax_treatment">Tax Treatment</Field.Label>
+                    <Combobox
+                        id="tax_treatment"
+                        items={taxTreatments}
+                        bind:value={formData.tax_treatment}
+                        placeholder="Select tax treatment"
+                        searchPlaceholder="Search tax treatments..."
+                    />
+                    {#if fieldErrors.tax_treatment}
+                        <Field.Error>{fieldErrors.tax_treatment}</Field.Error>
                     {/if}
                 </Field.Field>
 

@@ -12,6 +12,14 @@ export enum AccountType {
     INVESTMENT = 'investment',
 }
 
+export enum TaxTreatmentType {
+    TAXABLE = 'taxable',
+    TAX_DEFERRED = 'tax_deferred',
+    TAX_FREE = 'tax_free',
+    TRIPLE_TAX_FREE = 'triple_tax_free',
+    NOT_APPLICABLE = 'not_applicable',
+}
+
 export enum TransactionType {
     PURCHASE = 'purchase',
     PAYMENT = 'payment',
@@ -70,6 +78,7 @@ export interface Account {
     account_name: string;
     institution_id: number;
     account_type: AccountType;
+    tax_treatment: TaxTreatmentType;
     last_4_digits: string;
     tracks_transactions: boolean;
     tracks_balances: boolean;
@@ -83,6 +92,7 @@ export interface AccountCreate {
     account_name: string;
     institution_id: number;
     account_type: AccountType;
+    tax_treatment: TaxTreatmentType;
     last_4_digits: string;
     tracks_transactions?: boolean;
     tracks_balances?: boolean;
@@ -94,6 +104,7 @@ export interface AccountUpdate {
     account_name?: string;
     institution_id?: number;
     account_type?: AccountType;
+    tax_treatment?: TaxTreatmentType;
     last_4_digits?: string;
     tracks_transactions?: boolean;
     tracks_balances?: boolean;
@@ -181,6 +192,7 @@ export interface AccountBalanceSeries {
     account_name: string;
     institution_name: string;
     account_type: string;
+    tax_treatment: string;
     data: MonthlyBalancePoint[];
 }
 

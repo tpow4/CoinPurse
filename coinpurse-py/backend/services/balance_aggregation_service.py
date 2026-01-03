@@ -2,11 +2,12 @@
 Balance Aggregation Service
 Handles normalization of balance data into monthly snapshots with forward-fill
 """
-from datetime import date, datetime, timezone
+
 from calendar import monthrange
-from typing import List, Dict, Optional
-from sqlalchemy.orm import Session, joinedload
+from datetime import UTC, date, datetime
+
 from sqlalchemy import select
+from sqlalchemy.orm import Session, joinedload
 
 from models.account import Account
 from models.balance import AccountBalance
@@ -19,7 +20,7 @@ def get_last_day_of_month(d: date) -> date:
     return date(d.year, d.month, last_day)
 
 
-def generate_month_end_dates(start_date: date, end_date: date) -> List[date]:
+def generate_month_end_dates(start_date: date, end_date: date) -> list[date]:
     """
     Generate a list of end-of-month dates between start_date and end_date (inclusive).
 
@@ -52,9 +53,8 @@ def generate_month_end_dates(start_date: date, end_date: date) -> List[date]:
 
 
 def forward_fill_monthly_balances(
-    balances: List[AccountBalance],
-    month_dates: List[date]
-) -> List[Dict]:
+    balances: list[AccountBalance], month_dates: list[date]
+) -> list[dict]:
     """
     Apply forward-fill algorithm to create monthly balance snapshots.
 
@@ -82,26 +82,26 @@ def forward_fill_monthly_balances(
 
     for month_end in month_dates:
         # Advance through balances until we've seen all balances up to and including this month
-        while balance_idx < len(sorted_balances) and sorted_balances[balance_idx].balance_date <= month_end:
+        while (
+            balance_idx < len(sorted_balances)
+            and sorted_balances[balance_idx].balance_date <= month_end
+        ):
             last_known_balance = sorted_balances[balance_idx].balance
             balance_idx += 1
 
         # If we have a known balance at this point, use it (forward-filled if necessary)
         if last_known_balance is not None:
-            result.append({
-                'balance_date': month_end,
-                'balance': last_known_balance
-            })
+            result.append({"balance_date": month_end, "balance": last_known_balance})
 
     return result
 
 
 def get_aggregated_monthly_data(
     db: Session,
-    start_date: Optional[date] = None,
-    end_date: Optional[date] = None,
-    include_inactive_accounts: bool = False
-) -> Dict:
+    start_date: date | None = None,
+    end_date: date | None = None,
+    include_inactive_accounts: bool = False,
+) -> dict:
     """
     Get aggregated monthly balance data for all accounts.
 
@@ -114,6 +114,7 @@ def get_aggregated_monthly_data(
                 'account_name': str,
                 'institution_name': str,
                 'account_type': str,
+                'tax_treatment': str,
                 'data': [{'balance_date': date, 'balance': int}, ...]
             },
             ...
@@ -142,7 +143,7 @@ def get_aggregated_monthly_data(
     accounts = list(db.scalars(accounts_query))
 
     if not accounts:
-        return {'month_end_dates': [], 'series': []}
+        return {"month_end_dates": [], "series": []}
 
     # Get all balances for these accounts
     account_ids = [acc.account_id for acc in accounts]
@@ -153,23 +154,23 @@ def get_aggregated_monthly_data(
 
     # Determine date range
     if not account_balances:
-        return {'month_end_dates': [], 'series': []}
+        return {"month_end_dates": [], "series": []}
 
     if start_date is None:
         start_date = min(b.balance_date for b in account_balances)
 
     if end_date is None:
-        today = datetime.now(timezone.utc).date()
+        today = datetime.now(UTC).date()
         end_date = get_last_day_of_month(today)
 
     # Generate month-end dates
     month_dates = generate_month_end_dates(start_date, end_date)
 
     if not month_dates:
-        return {'month_end_dates': [], 'series': []}
+        return {"month_end_dates": [], "series": []}
 
     # Group balances by account
-    balances_by_account: Dict[int, List[AccountBalance]] = {}
+    balances_by_account: dict[int, list[AccountBalance]] = {}
     for balance in account_balances:
         balances_by_account.setdefault(balance.account_id, []).append(balance)
 
@@ -183,15 +184,17 @@ def get_aggregated_monthly_data(
 
         # Only include accounts that have at least one data point
         if monthly_data:
-            series.append({
-                'account_id': account.account_id,
-                'account_name': account.account_name,
-                'institution_name': account.institution.name if account.institution else 'Unknown',
-                'account_type': account.account_type.value,
-                'data': monthly_data
-            })
+            series.append(
+                {
+                    "account_id": account.account_id,
+                    "account_name": account.account_name,
+                    "institution_name": account.institution.name
+                    if account.institution
+                    else "Unknown",
+                    "account_type": account.account_type.value,
+                    "tax_treatment": account.tax_treatment.value,
+                    "data": monthly_data,
+                }
+            )
 
-    return {
-        'month_end_dates': month_dates,
-        'series': series
-    }
+    return {"month_end_dates": month_dates, "series": series}

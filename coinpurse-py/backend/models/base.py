@@ -16,6 +16,16 @@ class AccountType(str, PyEnum):
     INVESTMENT = "investment"
 
 
+class TaxTreatmentType(str, PyEnum):
+    """Types of tax treatments for investment accounts"""
+
+    TAXABLE = "taxable"
+    TAX_DEFERRED = "tax_deferred"
+    TAX_FREE = "tax_free"
+    TRIPLE_TAX_FREE = "triple_tax_free"
+    NOT_APPLICABLE = "not_applicable"
+
+
 class TransactionType(str, PyEnum):
     """Types of transactions"""
 

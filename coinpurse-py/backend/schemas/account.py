@@ -7,7 +7,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-from models.base import AccountType
+from models.base import AccountType, TaxTreatmentType
 
 
 class AccountBase(BaseModel):
@@ -16,6 +16,7 @@ class AccountBase(BaseModel):
     account_name: str = Field(..., min_length=1, max_length=100)
     institution_id: int
     account_type: AccountType
+    tax_treatment: TaxTreatmentType
     last_4_digits: str = Field(..., min_length=4, max_length=4, pattern=r"^\d{4}$")
     tracks_transactions: bool = False
     tracks_balances: bool = False
@@ -35,6 +36,7 @@ class AccountUpdate(BaseModel):
     account_name: str | None = Field(None, min_length=1, max_length=100)
     institution_id: int | None = None
     account_type: AccountType | None = None
+    tax_treatment: TaxTreatmentType | None = None
     last_4_digits: str | None = Field(
         None, min_length=4, max_length=4, pattern=r"^\d{4}$"
     )

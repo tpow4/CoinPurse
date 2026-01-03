@@ -42,6 +42,14 @@ export function createColumns(
             },
         },
         {
+            accessorKey: 'tax_treatment',
+            header: 'Tax Treatment',
+            cell: ({ row }) => {
+                const treatment = row.getValue('tax_treatment') as string;
+                return formatAccountType(treatment);
+            },
+        },
+        {
             accessorKey: 'last_4_digits',
             header: 'Last 4',
             cell: ({ row }) => {
