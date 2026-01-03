@@ -158,3 +158,45 @@ class BalanceRepository:
         if exclude_id:
             stmt = stmt.where(AccountBalance.balance_id != exclude_id)
         return self.db.scalar(stmt) is not None
+
+    def upsert_batch(
+        self,
+        account_id: int,
+        entries: List[tuple[date, int]]
+    ) -> tuple[List[AccountBalance], int, int]:
+        """
+        Create or update multiple balances for an account atomically.
+
+        Args:
+            account_id: The account ID
+            entries: List of (balance_date, balance_cents) tuples
+
+        Returns:
+            Tuple of (list of balances, created_count, updated_count)
+        """
+        results: List[AccountBalance] = []
+        created_count = 0
+        updated_count = 0
+
+        for balance_date, balance_cents in entries:
+            existing = self.get_by_account_and_date(account_id, balance_date)
+            if existing:
+                existing.balance = balance_cents
+                existing.is_active = True
+                results.append(existing)
+                updated_count += 1
+            else:
+                new_balance = AccountBalance(
+                    account_id=account_id,
+                    balance_date=balance_date,
+                    balance=balance_cents
+                )
+                self.db.add(new_balance)
+                results.append(new_balance)
+                created_count += 1
+
+        self.db.commit()
+        for balance in results:
+            self.db.refresh(balance)
+
+        return results, created_count, updated_count

@@ -12,7 +12,14 @@ from database import get_db
 from models.balance import AccountBalance
 from repositories.balance_repository import BalanceRepository
 from repositories.account_repository import AccountRepository
-from schemas.balance import BalanceCreate, BalanceResponse, BalanceUpdate, MonthlyBalanceAggregateResponse
+from schemas.balance import (
+    BalanceCreate,
+    BalanceResponse,
+    BalanceUpdate,
+    MonthlyBalanceAggregateResponse,
+    BalanceBatchCreate,
+    BalanceBatchResponse,
+)
 from services.balance_aggregation_service import get_aggregated_monthly_data
 
 router = APIRouter(prefix="/balances", tags=["balances"])
@@ -54,6 +61,43 @@ def create_balance(
     created = repo.create(db_balance)
 
     return created
+
+
+@router.post("/batch", response_model=BalanceBatchResponse, status_code=201)
+def create_or_update_balances_batch(
+    batch_data: BalanceBatchCreate,
+    db: Session = Depends(get_db)
+):
+    """
+    Create or update multiple balance records atomically.
+    If a balance already exists for an account+date, it will be updated.
+
+    - **account_id**: The account these balances belong to
+    - **balances**: List of {balance_date, balance} entries
+    """
+    repo = BalanceRepository(db)
+    account_repo = AccountRepository(db)
+
+    # Validate account exists
+    if not account_repo.exists(batch_data.account_id):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Account with ID {batch_data.account_id} not found"
+        )
+
+    # Convert to list of tuples for repository
+    entries = [(entry.balance_date, entry.balance) for entry in batch_data.balances]
+
+    balances, created_count, updated_count = repo.upsert_batch(
+        batch_data.account_id,
+        entries
+    )
+
+    return BalanceBatchResponse(
+        created=created_count,
+        updated=updated_count,
+        balances=balances
+    )
 
 
 @router.get("/", response_model=List[BalanceResponse])

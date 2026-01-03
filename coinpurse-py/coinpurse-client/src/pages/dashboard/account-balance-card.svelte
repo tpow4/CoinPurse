@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Account, AccountBalance, BalanceCreate } from "$lib/types";
+  import type { Account, AccountBalance, BalanceCreate, BalanceBatchCreate } from "$lib/types";
   import { AccountType } from "$lib/types";
   import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
@@ -11,9 +11,10 @@
     latestBalance: AccountBalance | null;
     balances: AccountBalance[];
     onCreateBalance: (data: BalanceCreate) => Promise<void>;
+    onCreateBalanceBatch: (data: BalanceBatchCreate) => Promise<void>;
   }
 
-  let { account, latestBalance, balances, onCreateBalance }: Props = $props();
+  let { account, latestBalance, balances, onCreateBalance, onCreateBalanceBatch }: Props = $props();
 
   const currency = new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" });
   const dateFmt = new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric" });
@@ -77,6 +78,19 @@
       addBalanceLoading = false;
     }
   }
+
+  async function handleCreateBalanceBatch(data: BalanceBatchCreate) {
+    addBalanceError = "";
+    addBalanceLoading = true;
+    try {
+      await onCreateBalanceBatch(data);
+      addBalanceOpen = false;
+    } catch (e) {
+      addBalanceError = e instanceof Error ? e.message : "Failed to add balances";
+    } finally {
+      addBalanceLoading = false;
+    }
+  }
 </script>
 
 <Card class="h-full flex flex-col">
@@ -116,8 +130,10 @@
   loading={addBalanceLoading}
   error={addBalanceError}
   fieldErrors={addBalanceFieldErrors}
+  existingBalances={balances}
   onOpenChange={(open) => {
     addBalanceOpen = open;
   }}
   onSubmit={handleCreateBalance}
+  onSubmitBatch={handleCreateBalanceBatch}
 />

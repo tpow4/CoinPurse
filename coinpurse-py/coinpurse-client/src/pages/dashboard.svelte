@@ -7,6 +7,7 @@
         Institution,
         AccountType,
         BalanceCreate,
+        BalanceBatchCreate,
     } from '$lib/types';
 
     import { Button } from '$lib/components/ui/button';
@@ -271,6 +272,17 @@
         balances = [...balances, created];
         chartRefreshKey += 1; // Trigger chart refresh
     }
+
+    async function handleCreateBalanceBatch(data: BalanceBatchCreate) {
+        const result = await balancesApi.createBatch(data);
+        // Merge new/updated balances into state
+        const updatedIds = new Set(result.balances.map((b) => b.balance_id));
+        balances = [
+            ...balances.filter((b) => !updatedIds.has(b.balance_id)),
+            ...result.balances,
+        ];
+        chartRefreshKey += 1; // Trigger chart refresh
+    }
 </script>
 
 <div class="p-8 max-w-[1400px] mx-auto">
@@ -319,6 +331,7 @@
                     ] ?? null}
                     balances={balancesByAccountId[account.account_id] ?? []}
                     onCreateBalance={handleCreateBalance}
+                    onCreateBalanceBatch={handleCreateBalanceBatch}
                 />
             {/each}
         </div>

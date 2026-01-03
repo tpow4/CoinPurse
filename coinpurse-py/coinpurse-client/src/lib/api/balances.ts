@@ -1,5 +1,12 @@
 import { apiFetch, buildQueryString } from '../api';
-import type { AccountBalance, BalanceCreate, MonthlyBalanceAggregateResponse, AggregatedMonthlyParams } from '../types';
+import type {
+  AccountBalance,
+  BalanceCreate,
+  BalanceBatchCreate,
+  BalanceBatchResponse,
+  MonthlyBalanceAggregateResponse,
+  AggregatedMonthlyParams,
+} from '../types';
 
 export const balancesApi = {
   /**
@@ -35,5 +42,15 @@ export const balancesApi = {
   getAggregatedMonthly(params?: AggregatedMonthlyParams): Promise<MonthlyBalanceAggregateResponse> {
     const query = buildQueryString(params ?? {});
     return apiFetch<MonthlyBalanceAggregateResponse>(`/balances/aggregated/monthly${query}`);
+  },
+
+  /**
+   * Create or update multiple balance records atomically
+   */
+  createBatch(data: BalanceBatchCreate): Promise<BalanceBatchResponse> {
+    return apiFetch<BalanceBatchResponse>('/balances/batch', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   },
 };

@@ -60,3 +60,22 @@ class MonthlyBalanceAggregateResponse(BaseModel):
     """Aggregated monthly balance data for all accounts"""
     month_end_dates: list[date] = Field(..., description="All end-of-month dates in the range")
     series: list[AccountBalanceSeries] = Field(..., description="Balance time series for each account")
+
+
+class BalanceEntry(BaseModel):
+    """Single balance entry for batch operations"""
+    balance_date: date
+    balance: int = Field(..., description="Balance in cents")
+
+
+class BalanceBatchCreate(BaseModel):
+    """Schema for batch creating/updating balances"""
+    account_id: int
+    balances: list[BalanceEntry]
+
+
+class BalanceBatchResponse(BaseModel):
+    """Response from batch balance operation"""
+    created: int
+    updated: int
+    balances: list[BalanceResponse]
