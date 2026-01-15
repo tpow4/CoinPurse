@@ -5,11 +5,11 @@
         AccountBalance,
         AccountCreate,
         Institution,
-        AccountType,
         BalanceCreate,
         BalanceBatchCreate,
         TaxTreatmentType,
     } from '$lib/types';
+    import { AccountType } from '$lib/types';
 
     import { Button } from '$lib/components/ui/button';
     import AddEditAccountDialog from '../pages/accounts/add-edit-account-dialog.svelte';
@@ -75,6 +75,9 @@
             {} as Record<number, AccountBalance[]>
         )
     );
+    const previousBalanceByAccountId = $derived(
+        getPreviousBalanceByAccountId(balancesByAccountId)
+    );
 
     const accountsWithInstitutionName = $derived(
         accounts
@@ -92,6 +95,64 @@
                     (a.display_order ?? 0) - (b.display_order ?? 0) ||
                     a.account_name.localeCompare(b.account_name)
             )
+    );
+
+    const accountById = $derived(
+        accounts.reduce(
+            (map, account) => {
+                map[account.account_id] = account;
+                return map;
+            },
+            {} as Record<number, Account>
+        )
+    );
+
+    const netWorthTotal = $derived(
+        Object.values(latestBalanceByAccountId).reduce(
+            (sum, balance) => sum + balance.balance,
+            0
+        )
+    );
+
+    const liquidTotal = $derived(
+        Object.values(latestBalanceByAccountId).reduce((sum, balance) => {
+            const account = accountById[balance.account_id];
+            if (!account || !account.tracks_balances) return sum;
+            if (
+                account.account_type === AccountType.BANKING ||
+                account.account_type === AccountType.TREASURY
+            ) {
+                return sum + balance.balance;
+            }
+            return sum;
+        }, 0)
+    );
+
+    const netWorthPreviousTotal = $derived(
+        Object.values(latestBalanceByAccountId).reduce((sum, latest) => {
+            const previous = previousBalanceByAccountId[latest.account_id];
+            return sum + (previous ? previous.balance : latest.balance);
+        }, 0)
+    );
+
+    const netWorthChange = $derived(netWorthTotal - netWorthPreviousTotal);
+    const netWorthChangePercent = $derived(
+        netWorthPreviousTotal !== 0 ? netWorthChange / netWorthPreviousTotal : 0
+    );
+    const hasPreviousBalances = $derived(
+        Object.keys(previousBalanceByAccountId).length > 0
+    );
+
+    const latestBalanceOverall = $derived(
+        Object.values(latestBalanceByAccountId).reduce(
+            (latest, balance) => {
+                if (!latest) return balance;
+                return balanceKey(balance) > balanceKey(latest)
+                    ? balance
+                    : latest;
+            },
+            null as AccountBalance | null
+        )
     );
 
     async function loadDashboardData() {
@@ -133,6 +194,24 @@
             },
             {} as Record<number, AccountBalance>
         );
+    }
+
+    function getPreviousBalanceByAccountId(
+        groupedBalances: Record<number, AccountBalance[]>
+    ) {
+        const previousById: Record<number, AccountBalance> = {};
+        Object.entries(groupedBalances).forEach(([accountId, list]) => {
+            if (list.length < 2) return;
+            const sorted = list
+                .slice()
+                .sort((a, b) => balanceKey(a).localeCompare(balanceKey(b)));
+            previousById[Number(accountId)] = sorted[sorted.length - 2];
+        });
+        return previousById;
+    }
+
+    function balanceKey(balance: AccountBalance) {
+        return `${balance.balance_date}|${balance.created_at}`;
     }
 
     function openAddAccount() {
@@ -318,7 +397,14 @@
     {#if !loading && accountsWithInstitutionName.length > 0}
         <div class="mb-8">
             {#key chartRefreshKey}
-                <StackedBalanceChart />
+                <StackedBalanceChart
+                    {netWorthTotal}
+                    {netWorthChange}
+                    {netWorthChangePercent}
+                    {liquidTotal}
+                    {hasPreviousBalances}
+                    lastUpdatedDate={latestBalanceOverall?.balance_date ?? null}
+                />
             {/key}
         </div>
     {/if}
