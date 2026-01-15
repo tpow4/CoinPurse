@@ -12,10 +12,10 @@
     } from '$lib/types';
 
     import { Button } from '$lib/components/ui/button';
-    import AddEditAccountDialog from './accounts/add-edit-account-dialog.svelte';
-    import AddEditInstitutionDialog from './institutions/add-edit-institution-dialog.svelte';
-    import AccountBalanceCard from './dashboard/account-balance-card.svelte';
-    import StackedBalanceChart from './dashboard/stacked-balance-chart.svelte';
+    import AddEditAccountDialog from '../pages/accounts/add-edit-account-dialog.svelte';
+    import AddEditInstitutionDialog from '../pages/institutions/add-edit-institution-dialog.svelte';
+    import AccountBalanceCard from '../pages/dashboard/account-balance-card.svelte';
+    import StackedBalanceChart from '../pages/dashboard/stacked-balance-chart.svelte';
     import { accountsApi } from '$lib/api/accounts';
     import { institutionsApi } from '$lib/api/institutions';
     import { balancesApi } from '$lib/api/balances';
