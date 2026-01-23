@@ -3,7 +3,7 @@ This file makes 'models' a package and exposes all models for easy import.
 """
 
 # first import base (no dependencies)
-from .base import AccountType, Base, FileFormat, ImportStatus, TransactionType
+from .base import AccountType, Base, FileFormat, ImportStatus, TaxTreatmentType, TransactionType
 
 # import models with no foreign keys first
 from .category import Category
@@ -25,6 +25,7 @@ from .import_batch import ImportBatch
 __all__ = [
     "Base",
     "AccountType",
+    "TaxTreatmentType",
     "TransactionType",
     "FileFormat",
     "ImportStatus",
