@@ -1,3 +1,8 @@
+"""
+Database initialization and seeding for application.
+"""
+
+import os
 from pathlib import Path
 
 from sqlalchemy import create_engine, select
@@ -9,10 +14,14 @@ BASE_DIR = Path(__file__).resolve().parent
 DATABASE_PATH = BASE_DIR / "coinpurse.db"
 DATABASE_URL = f"sqlite:///{DATABASE_PATH}"
 
+IS_PRODUCTION = os.getenv("ENV", "development").lower() == "production"
+
+TRANSACTION_DATE_FORMAT = "%m/%d/%Y"
+
 engine = create_engine(
     DATABASE_URL,
     connect_args={"check_same_thread": False},  # Sqlite specific option
-    echo=True,  # log all SQL statements - TODO turn off in production
+    echo=IS_PRODUCTION is False,  # Log SQL queries in non-production environments
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -73,7 +82,9 @@ def _seed_import_templates(db):
     # Get institution IDs
     chase = db.scalar(select(Institution).where(Institution.name == "Chase"))
     discover = db.scalar(select(Institution).where(Institution.name == "Discover"))
-    capital_one = db.scalar(select(Institution).where(Institution.name == "Capital One"))
+    capital_one = db.scalar(
+        select(Institution).where(Institution.name == "Capital One")
+    )
 
     if not all([chase, discover, capital_one]):
         print("Warning: Not all institutions found. Skipping template seeding.")
@@ -96,7 +107,7 @@ def _seed_import_templates(db):
                 "sign_convention": "bank_standard",
                 "decimal_places": 2,
             },
-            "date_format": "%m/%d/%Y",
+            "date_format": TRANSACTION_DATE_FORMAT,
             "header_row": 1,
             "skip_rows": 0,
         },
@@ -116,7 +127,7 @@ def _seed_import_templates(db):
                 "sign_convention": "inverted",
                 "decimal_places": 2,
             },
-            "date_format": "%m/%d/%Y",
+            "date_format": TRANSACTION_DATE_FORMAT,
             "header_row": 1,
             "skip_rows": 0,
         },
@@ -139,7 +150,7 @@ def _seed_import_templates(db):
                 "credit_column": "Credit",
                 "decimal_places": 2,
             },
-            "date_format": "%m/%d/%Y",
+            "date_format": TRANSACTION_DATE_FORMAT,
             "header_row": 1,
             "skip_rows": 0,
         },
