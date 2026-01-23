@@ -36,5 +36,5 @@ class InstitutionResponse(InstitutionBase):
     institution_id: int
     is_active: bool
     created_at: datetime
-    updated_at: datetime
+    modified_at: datetime
 

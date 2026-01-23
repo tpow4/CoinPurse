@@ -39,7 +39,7 @@ export interface Institution {
     name: string;
     is_active: boolean;
     created_at: string;
-    updated_at: string;
+    modified_at: string;
 }
 
 export interface InstitutionCreate {
@@ -58,7 +58,7 @@ export interface Category {
     name: string;
     is_active: boolean;
     created_at: string;
-    updated_at: string;
+    modified_at: string;
 }
 
 export interface CategoryCreate {

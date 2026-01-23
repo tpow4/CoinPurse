@@ -23,7 +23,7 @@ class Institution(Base):
     is_active: Mapped[bool] = mapped_column(default=True)
     display_order: Mapped[int] = mapped_column(default=0)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(UTC))
-    updated_at: Mapped[datetime] = mapped_column(
+    modified_at: Mapped[datetime] = mapped_column(
         default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC)
     )
 
