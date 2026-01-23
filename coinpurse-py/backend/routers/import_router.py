@@ -53,7 +53,7 @@ async def upload_and_preview(
     - **template_id**: The import template that defines how to parse the file
 
     Returns a preview with:
-    - batch_id: Use this to confirm the import
+    - import_batch_id: Use this to confirm the import
     - summary: Counts of total, valid, duplicate, and error rows
     - transactions: List of parsed transactions with validation status
     """
@@ -88,7 +88,7 @@ def confirm_import(
     """
     Confirm and execute an import for selected rows.
 
-    - **batch_id**: The batch ID from the preview response
+    - **import_batch_id**: The batch ID from the preview response
     - **selected_rows**: List of row numbers to import (from preview)
 
     Only rows that are valid and not duplicates will be imported.
@@ -97,7 +97,7 @@ def confirm_import(
 
     try:
         result = service.confirm_import(
-            batch_id=request.batch_id,
+            import_batch_id=request.import_batch_id,
             selected_rows=request.selected_rows,
         )
         return result
@@ -132,22 +132,22 @@ def list_batches(
     return repo.get_all(limit=limit)
 
 
-@router.get("/batches/{batch_id}", response_model=ImportBatchDetailResponse)
-def get_batch(batch_id: int, db: Session = Depends(get_db)):
+@router.get("/batches/{import_batch_id}", response_model=ImportBatchDetailResponse)
+def get_batch(import_batch_id: int, db: Session = Depends(get_db)):
     """
     Get details for a specific import batch.
 
-    - **batch_id**: The batch ID to retrieve
+    - **import_batch_id**: The batch ID to retrieve
     """
     repo = ImportBatchRepository(db)
-    batch = repo.get_by_id(batch_id)
+    batch = repo.get_by_id(import_batch_id)
 
     if not batch:
-        raise HTTPException(status_code=404, detail=f"Batch {batch_id} not found")
+        raise HTTPException(status_code=404, detail=f"Batch {import_batch_id} not found")
 
     # Build response with related names
     response = ImportBatchDetailResponse(
-        batch_id=batch.batch_id,
+        import_batch_id=batch.import_batch_id,
         account_id=batch.account_id,
         template_id=batch.template_id,
         file_name=batch.file_name,

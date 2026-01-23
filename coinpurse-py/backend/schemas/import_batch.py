@@ -40,7 +40,7 @@ class ImportPreviewResponse(BaseModel):
     # Allow pydantic to work with SQLAlchemy models
     model_config = ConfigDict(from_attributes=True)
 
-    batch_id: int
+    import_batch_id: int
     summary: ImportPreviewSummary
     transactions: list[ParsedTransaction]
 
@@ -48,7 +48,7 @@ class ImportPreviewResponse(BaseModel):
 class ImportConfirmRequest(BaseModel):
     """Request to confirm an import"""
 
-    batch_id: int
+    import_batch_id: int
     selected_rows: list[int] = Field(..., description="Row numbers to import")
 
 
@@ -58,7 +58,7 @@ class ImportConfirmResponse(BaseModel):
     # Allow pydantic to work with SQLAlchemy models
     model_config = ConfigDict(from_attributes=True)
 
-    batch_id: int
+    import_batch_id: int
     imported_count: int
     skipped_count: int
     duplicate_count: int
@@ -80,7 +80,7 @@ class ImportBatchResponse(ImportBatchBase):
     # Allow pydantic to work with SQLAlchemy models
     model_config = ConfigDict(from_attributes=True)
 
-    batch_id: int
+    import_batch_id: int
     total_rows: int
     imported_count: int
     skipped_count: int

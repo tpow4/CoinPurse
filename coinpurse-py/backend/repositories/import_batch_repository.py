@@ -18,9 +18,9 @@ class ImportBatchRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_by_id(self, batch_id: int) -> ImportBatch | None:
+    def get_by_id(self, import_batch_id: int) -> ImportBatch | None:
         """Get import batch by ID"""
-        return self.db.get(ImportBatch, batch_id)
+        return self.db.get(ImportBatch, import_batch_id)
 
     def get_all(self, limit: int = 100) -> list[ImportBatch]:
         """
@@ -112,9 +112,9 @@ class ImportBatchRepository:
         self.db.delete(batch)
         self.db.commit()
 
-    def exists(self, batch_id: int) -> bool:
+    def exists(self, import_batch_id: int) -> bool:
         """Check if a batch exists"""
-        return self.get_by_id(batch_id) is not None
+        return self.get_by_id(import_batch_id) is not None
 
     def cleanup_old_previews(self, hours: int = 24) -> int:
         """

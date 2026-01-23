@@ -58,7 +58,7 @@ class ImportService:
             template_id: Import template ID to use
 
         Returns:
-            ImportPreviewResponse with batch_id, summary, and transactions
+            ImportPreviewResponse with import_batch_id, summary, and transactions
         """
         # Load template
         template = self.template_repo.get_by_id(template_id)
@@ -128,36 +128,36 @@ class ImportService:
         ]
 
         return ImportPreviewResponse(
-            batch_id=batch.batch_id,
+            import_batch_id=batch.import_batch_id,
             summary=summary,
             transactions=parsed_txns,
         )
 
     def confirm_import(
         self,
-        batch_id: int,
+        import_batch_id: int,
         selected_rows: list[int],
     ) -> ImportConfirmResponse:
         """
         Confirm and execute an import for selected rows.
 
         Args:
-            batch_id: The batch ID from preview
+            import_batch_id: The batch ID from preview
             selected_rows: List of row numbers to import
 
         Returns:
             ImportConfirmResponse with final counts
         """
         # Load batch
-        batch = self.batch_repo.get_by_id(batch_id)
+        batch = self.batch_repo.get_by_id(import_batch_id)
         if batch is None:
-            raise ValueError(f"Batch {batch_id} not found")
+            raise ValueError(f"Batch {import_batch_id} not found")
 
         if batch.status != ImportStatus.PREVIEW:
-            raise ValueError(f"Batch {batch_id} is not in PREVIEW status")
+            raise ValueError(f"Batch {import_batch_id} is not in PREVIEW status")
 
         if batch.parsed_transactions is None:
-            raise ValueError(f"Batch {batch_id} has no parsed transactions")
+            raise ValueError(f"Batch {import_batch_id} has no parsed transactions")
 
         # Filter to selected rows
         selected_set = set(selected_rows)
@@ -215,7 +215,7 @@ class ImportService:
         )
 
         return ImportConfirmResponse(
-            batch_id=batch.batch_id,
+            import_batch_id=batch.import_batch_id,
             imported_count=imported_count,
             skipped_count=skipped_count,
             duplicate_count=duplicate_count,

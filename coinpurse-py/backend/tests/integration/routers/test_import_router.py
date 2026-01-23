@@ -323,7 +323,7 @@ class TestImportUploadEndpoint:
 
         assert response.status_code == 200
         result = response.json()
-        assert "batch_id" in result
+        assert "import_batch_id" in result
         assert result["summary"]["total_rows"] == 2
         assert result["summary"]["valid_rows"] == 2
         assert len(result["transactions"]) == 2
@@ -406,7 +406,7 @@ class TestImportConfirmEndpoint:
         return {
             "account": account,
             "template": template,
-            "batch_id": preview["batch_id"],
+            "import_batch_id": preview["import_batch_id"],
             "transactions": preview["transactions"],
         }
 
@@ -415,7 +415,7 @@ class TestImportConfirmEndpoint:
         response = client.post(
             "/api/import/confirm",
             json={
-                "batch_id": setup_with_preview["batch_id"],
+                "import_batch_id": setup_with_preview["import_batch_id"],
                 "selected_rows": [2, 3],  # Import first two data rows
             },
         )
@@ -430,7 +430,7 @@ class TestImportConfirmEndpoint:
         """Should return error for invalid batch"""
         response = client.post(
             "/api/import/confirm",
-            json={"batch_id": 99999, "selected_rows": [1]},
+            json={"import_batch_id": 99999, "selected_rows": [1]},
         )
 
         assert response.status_code == 400
@@ -492,10 +492,10 @@ class TestImportBatchEndpoints:
         preview = client.post("/api/import/upload", files=files, data=data).json()
         client.post(
             "/api/import/confirm",
-            json={"batch_id": preview["batch_id"], "selected_rows": [2]},
+            json={"import_batch_id": preview["import_batch_id"], "selected_rows": [2]},
         )
 
-        return {"account": account, "batch_id": preview["batch_id"]}
+        return {"account": account, "import_batch_id": preview["import_batch_id"]}
 
     def test_list_batches(self, client, setup_with_batches):
         """Should list import batches"""
@@ -517,10 +517,10 @@ class TestImportBatchEndpoints:
 
     def test_get_batch_detail(self, client, setup_with_batches):
         """Should get batch details"""
-        response = client.get(f"/api/import/batches/{setup_with_batches['batch_id']}")
+        response = client.get(f"/api/import/batches/{setup_with_batches['import_batch_id']}")
 
         assert response.status_code == 200
         data = response.json()
-        assert data["batch_id"] == setup_with_batches["batch_id"]
+        assert data["import_batch_id"] == setup_with_batches["import_batch_id"]
         assert data["status"] == "completed"
         assert "account_name" in data

@@ -17,7 +17,7 @@ class ImportBatch(Base):
 
     __tablename__ = "import_batches"
 
-    batch_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    import_batch_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     account_id: Mapped[int] = mapped_column(ForeignKey("accounts.account_id"))
     template_id: Mapped[int | None] = mapped_column(
         ForeignKey("import_templates.template_id"), nullable=True
@@ -41,4 +41,4 @@ class ImportBatch(Base):
     template: Mapped["ImportTemplate | None"] = relationship(back_populates="import_batches")
 
     def __repr__(self):
-        return f"<ImportBatch(id={self.batch_id}, file='{self.file_name}', status={self.status.value})>"
+        return f"<ImportBatch(id={self.import_batch_id}, file='{self.file_name}', status={self.status.value})>"
