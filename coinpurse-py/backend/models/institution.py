@@ -9,6 +9,8 @@ from .base import Base
 # imports types for FKs only during type checking
 if TYPE_CHECKING:
     from .account import Account
+    from .category_mapping import CategoryMapping
+    from .import_template import ImportTemplate
 
 
 class Institution(Base):
@@ -21,12 +23,18 @@ class Institution(Base):
     is_active: Mapped[bool] = mapped_column(default=True)
     display_order: Mapped[int] = mapped_column(default=0)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(UTC))
-    updated_at: Mapped[datetime] = mapped_column(
+    modified_at: Mapped[datetime] = mapped_column(
         default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC)
     )
 
     # Relationship: many accounts can belong to one institution
     accounts: Mapped[list["Account"]] = relationship(back_populates="institution")
+
+    # Relationship: many import templates can belong to one institution
+    import_templates: Mapped[list["ImportTemplate"]] = relationship(back_populates="institution")
+
+    # Relationship: many category mappings can belong to one institution
+    category_mappings: Mapped[list["CategoryMapping"]] = relationship(back_populates="institution")
 
     def __repr__(self):
         return f"<Institution(id={self.institution_id}, name='{self.name}')>"

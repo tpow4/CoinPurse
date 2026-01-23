@@ -26,6 +26,7 @@ class Transaction(Base):
     description: Mapped[str]
     transaction_type: Mapped[TransactionType]
     notes: Mapped[str]
+    imported_date: Mapped[datetime | None] = mapped_column(nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(UTC))
     modified_at: Mapped[datetime] = mapped_column(
