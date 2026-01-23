@@ -38,3 +38,18 @@ class TransactionType(str, PyEnum):
     ADJUSTMENT = "adjustment"
     WITHDRAWAL = "withdrawal"
     DEPOSIT = "deposit"
+
+
+class FileFormat(str, PyEnum):
+    """Supported file formats for import"""
+
+    CSV = "csv"
+    EXCEL = "excel"
+
+
+class ImportStatus(str, PyEnum):
+    """Status of an import batch"""
+
+    PREVIEW = "preview"
+    COMPLETED = "completed"
+    FAILED = "failed"
