@@ -3,9 +3,12 @@ Shared pytest fixtures for all tests
 """
 
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
+from database import get_db
+from main import app
 from models import Base, Category, Institution
 
 
@@ -42,6 +45,22 @@ def db_session(engine):
 def session_factory(engine):
     """Session factory for creating new sessions"""
     return sessionmaker(bind=engine)
+
+
+@pytest.fixture(scope="function")
+def client(db_session):
+    """
+    Create a test client with database session override.
+    Uses the same session as db_session fixture for consistency.
+    """
+
+    def override_get_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_get_db
+    with TestClient(app) as test_client:
+        yield test_client
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture

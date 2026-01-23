@@ -3,7 +3,7 @@ Import orchestration service
 Coordinates file parsing, duplicate detection, category mapping, and transaction creation
 """
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Any, BinaryIO
 
 from sqlalchemy.orm import Session
@@ -188,11 +188,15 @@ class ImportService:
             # Determine transaction type enum
             txn_type = self._map_transaction_type(t.get("transaction_type", "DEBIT"))
 
+            # Parse dates from JSON (stored as ISO strings)
+            txn_date = self._parse_date_from_json(t["transaction_date"])
+            post_date = self._parse_date_from_json(t.get("posted_date")) or txn_date
+
             transaction = Transaction(
                 account_id=batch.account_id,
                 category_id=t["coinpurse_category_id"],
-                transaction_date=t["transaction_date"],
-                posted_date=t.get("posted_date") or t["transaction_date"],
+                transaction_date=txn_date,
+                posted_date=post_date,
                 amount=t["amount"],
                 description=t["description"],
                 transaction_type=txn_type,
@@ -265,3 +269,13 @@ class ImportService:
             return TransactionType.PAYMENT
         else:
             return TransactionType.PURCHASE
+
+    def _parse_date_from_json(self, date_value: str | date | None) -> date | None:
+        """Parse a date that may be an ISO string or already a date object"""
+        if date_value is None:
+            return None
+        if isinstance(date_value, date):
+            return date_value
+        if isinstance(date_value, str):
+            return date.fromisoformat(date_value)
+        return None
