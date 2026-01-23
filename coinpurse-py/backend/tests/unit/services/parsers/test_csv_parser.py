@@ -227,7 +227,7 @@ class TestCsvParserValidation:
         assert "Description is required" in rows[0].validation_errors
 
     def test_missing_both_dates_error(self, chase_template_config):
-        """Missing both dates should add validation error"""
+        """Missing date mappings should add validation errors"""
         # Create config with no date mappings
         config = chase_template_config.copy()
         config["column_mappings"] = {
@@ -247,7 +247,8 @@ class TestCsvParserValidation:
         rows = parser.parse(io.BytesIO(csv_data.encode("utf-8")))
 
         assert not rows[0].is_valid
-        assert "At least one date" in rows[0].validation_errors[0]
+        assert "Transaction date is required" in rows[0].validation_errors
+        assert "Posted date is required" in rows[0].validation_errors
 
     def test_invalid_date_format_error(self, chase_template_config):
         """Invalid date format should add validation error"""
@@ -264,7 +265,7 @@ not-a-date,1/21/2026,Test Transaction,,Sale,-10.00,"""
 
         assert rows[0].transaction_date is None
         assert "Invalid date format" in rows[0].validation_errors[0]
-        # Should still be valid if posted_date is present
+        assert "Transaction date is required" in rows[0].validation_errors
         assert rows[0].posted_date == date(2026, 1, 21)
 
     def test_row_numbers_correct(self, chase_template_config):

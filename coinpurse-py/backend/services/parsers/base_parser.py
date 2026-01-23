@@ -111,9 +111,11 @@ class BaseParser(ABC):
         )
         posted_date = self._parse_date(row, self.column_mappings.get("posted_date"), errors)
 
-        # At least one date is required
-        if transaction_date is None and posted_date is None:
-            errors.append("At least one date (transaction or posted) is required")
+        # Both dates are required
+        if transaction_date is None:
+            errors.append("Transaction date is required")
+        if posted_date is None:
+            errors.append("Posted date is required")
 
         # Parse description
         description = self._get_string_value(row, self.column_mappings.get("description"), "")

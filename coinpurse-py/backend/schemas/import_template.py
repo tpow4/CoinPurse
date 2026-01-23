@@ -6,7 +6,7 @@ These are DTOs (Data Transfer Objects) for request/response validation
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from models.base import FileFormat
 
@@ -54,6 +54,17 @@ class ImportTemplateBase(BaseModel):
     date_format: str = Field("%m/%d/%Y", max_length=50)
     is_active: bool = True
 
+    @model_validator(mode="after")
+    def validate_required_date_mappings(self):
+        missing = [
+            key
+            for key in ("transaction_date", "posted_date")
+            if not self.column_mappings.get(key)
+        ]
+        if missing:
+            raise ValueError("column_mappings must include transaction_date and posted_date")
+        return self
+
 
 class ImportTemplateCreate(ImportTemplateBase):
     """Schema for creating an import template"""
@@ -74,6 +85,19 @@ class ImportTemplateUpdate(BaseModel):
     date_format: str | None = Field(None, max_length=50)
     is_active: bool | None = None
 
+    @model_validator(mode="after")
+    def validate_required_date_mappings(self):
+        if self.column_mappings is None:
+            return self
+        missing = [
+            key
+            for key in ("transaction_date", "posted_date")
+            if not self.column_mappings.get(key)
+        ]
+        if missing:
+            raise ValueError("column_mappings must include transaction_date and posted_date")
+        return self
+
 
 class ImportTemplateResponse(ImportTemplateBase):
     """Schema for returning an import template"""
@@ -84,4 +108,3 @@ class ImportTemplateResponse(ImportTemplateBase):
     template_id: int
     created_at: datetime
     modified_at: datetime
-

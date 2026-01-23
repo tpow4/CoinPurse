@@ -40,6 +40,7 @@ class TestImportTemplateEndpoints:
                 "file_format": "csv",
                 "column_mappings": {
                     "transaction_date": "Date",
+                    "posted_date": "Post Date",
                     "description": "Description",
                     "amount": "Amount",
                 },
@@ -66,7 +67,11 @@ class TestImportTemplateEndpoints:
                 "template_name": "Duplicate Name",
                 "institution_id": setup_institution.institution_id,
                 "file_format": "csv",
-                "column_mappings": {"amount": "Amount"},
+                "column_mappings": {
+                    "transaction_date": "Transaction Date",
+                    "posted_date": "Post Date",
+                    "amount": "Amount",
+                },
                 "amount_config": {"sign_convention": "bank_standard"},
             },
         )
@@ -78,7 +83,11 @@ class TestImportTemplateEndpoints:
                 "template_name": "Duplicate Name",
                 "institution_id": setup_institution.institution_id,
                 "file_format": "csv",
-                "column_mappings": {"amount": "Amount"},
+                "column_mappings": {
+                    "transaction_date": "Transaction Date",
+                    "posted_date": "Post Date",
+                    "amount": "Amount",
+                },
                 "amount_config": {"sign_convention": "bank_standard"},
             },
         )
@@ -94,7 +103,11 @@ class TestImportTemplateEndpoints:
                 template_name=f"Template {i}",
                 institution_id=setup_institution.institution_id,
                 file_format=FileFormat.CSV,
-                column_mappings={"amount": "Amount"},
+                column_mappings={
+                    "transaction_date": "Transaction Date",
+                    "posted_date": "Post Date",
+                    "amount": "Amount",
+                },
                 amount_config={"sign_convention": "bank_standard"},
             )
             db_session.add(template)
@@ -112,7 +125,11 @@ class TestImportTemplateEndpoints:
             template_name="Get Me",
             institution_id=setup_institution.institution_id,
             file_format=FileFormat.CSV,
-            column_mappings={"amount": "Amount"},
+            column_mappings={
+                "transaction_date": "Transaction Date",
+                "posted_date": "Post Date",
+                "amount": "Amount",
+            },
             amount_config={"sign_convention": "bank_standard"},
         )
         db_session.add(template)
@@ -135,7 +152,11 @@ class TestImportTemplateEndpoints:
             template_name="Original Name",
             institution_id=setup_institution.institution_id,
             file_format=FileFormat.CSV,
-            column_mappings={"amount": "Amount"},
+            column_mappings={
+                "transaction_date": "Transaction Date",
+                "posted_date": "Post Date",
+                "amount": "Amount",
+            },
             amount_config={"sign_convention": "bank_standard"},
         )
         db_session.add(template)
@@ -156,7 +177,11 @@ class TestImportTemplateEndpoints:
             template_name="Delete Me",
             institution_id=setup_institution.institution_id,
             file_format=FileFormat.CSV,
-            column_mappings={"amount": "Amount"},
+            column_mappings={
+                "transaction_date": "Transaction Date",
+                "posted_date": "Post Date",
+                "amount": "Amount",
+            },
             amount_config={"sign_convention": "bank_standard"},
         )
         db_session.add(template)
@@ -379,6 +404,7 @@ class TestImportConfirmEndpoint:
             file_format=FileFormat.CSV,
             column_mappings={
                 "transaction_date": "Date",
+                "posted_date": "Posted Date",
                 "description": "Desc",
                 "amount": "Amt",
             },
@@ -392,10 +418,10 @@ class TestImportConfirmEndpoint:
         db_session.refresh(template)
 
         # Upload to create preview
-        csv_content = """Date,Desc,Amt
-1/15/2026,Payment,100.00
-1/16/2026,Purchase,-50.00
-1/17/2026,Another,-25.00"""
+        csv_content = """Date,Posted Date,Desc,Amt
+1/15/2026,1/15/2026,Payment,100.00
+1/16/2026,1/16/2026,Purchase,-50.00
+1/17/2026,1/17/2026,Another,-25.00"""
 
         files = {"file": ("test.csv", io.BytesIO(csv_content.encode()), "text/csv")}
         data = {"account_id": account.account_id, "template_id": template.template_id}
@@ -472,6 +498,7 @@ class TestImportBatchEndpoints:
             file_format=FileFormat.CSV,
             column_mappings={
                 "transaction_date": "Date",
+                "posted_date": "Posted Date",
                 "description": "Desc",
                 "amount": "Amt",
             },
@@ -485,7 +512,7 @@ class TestImportBatchEndpoints:
         db_session.refresh(template)
 
         # Create and confirm a batch
-        csv_content = "Date,Desc,Amt\n1/15/2026,Test,100.00"
+        csv_content = "Date,Posted Date,Desc,Amt\n1/15/2026,1/15/2026,Test,100.00"
         files = {"file": ("test.csv", io.BytesIO(csv_content.encode()), "text/csv")}
         data = {"account_id": account.account_id, "template_id": template.template_id}
 
