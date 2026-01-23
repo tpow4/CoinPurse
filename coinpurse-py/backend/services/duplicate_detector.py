@@ -3,7 +3,7 @@ Duplicate detection service for transaction imports
 """
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -143,13 +143,14 @@ class DuplicateDetector:
 
         for txn in parsed_transactions:
             # Skip if no valid transaction date
-            if txn.get("transaction_date") is None:
+            txn_date = self._normalize_date(txn.get("transaction_date"))
+            if txn_date is None:
                 txn["is_duplicate"] = False
                 continue
 
             txn_hash = TransactionHash.from_parsed_row(
                 account_id=account_id,
-                transaction_date=txn["transaction_date"],
+                transaction_date=txn_date,
                 description=txn.get("description", ""),
                 transaction_type=txn.get("transaction_type", "DEBIT"),
                 amount=txn.get("amount", 0),
@@ -157,6 +158,22 @@ class DuplicateDetector:
             txn["is_duplicate"] = txn_hash in hash_set
 
         return parsed_transactions
+
+    @staticmethod
+    def _normalize_date(value: date | datetime | str | None) -> date | None:
+        """Normalize parsed dates from JSON-friendly values."""
+        if value is None:
+            return None
+        if isinstance(value, datetime):
+            return value.date()
+        if isinstance(value, date):
+            return value
+        if isinstance(value, str):
+            try:
+                return date.fromisoformat(value)
+            except ValueError:
+                return None
+        return None
 
     def clear_cache(self):
         """Clear the hash cache"""

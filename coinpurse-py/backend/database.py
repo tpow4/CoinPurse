@@ -41,11 +41,14 @@ def _seed_uncategorized_category(db):
     """Seed the Uncategorized category"""
     stmt = select(Category).where(Category.name == "Uncategorized")
     existing = db.scalar(stmt)
-    if not existing:
-        uncategorized = Category(name="Uncategorized")
-        db.add(uncategorized)
+    if existing is None:
+        db.add(Category(name="Uncategorized"))
         db.commit()
         print("Seeded 'Uncategorized' category.")
+    elif not existing.is_active:
+        existing.is_active = True
+        db.commit()
+        print("Re-activated 'Uncategorized' category.")
     else:
         print("'Uncategorized' category already exists.")
 

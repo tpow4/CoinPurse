@@ -3,7 +3,7 @@ Repository layer for ImportBatch model
 Handles all database operations for import batches
 """
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -126,9 +126,7 @@ class ImportBatchRepository:
         Returns:
             Number of batches deleted
         """
-        cutoff = datetime.now(UTC).replace(
-            hour=datetime.now(UTC).hour - hours if datetime.now(UTC).hour >= hours else 0
-        )
+        cutoff = datetime.now(UTC) - timedelta(hours=hours)
         stmt = select(ImportBatch).where(
             ImportBatch.status == ImportStatus.PREVIEW, ImportBatch.created_at < cutoff
         )

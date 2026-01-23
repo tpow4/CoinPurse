@@ -81,6 +81,11 @@ class BaseParser(ABC):
         """
         rows = []
         for idx, row in df.iterrows():
+            if self.header_row < 1:
+                raise ValueError("header_row must be >= 1")
+            if self.skip_rows < 0:
+                raise ValueError("skip_rows must be >= 0")
+
             # Row number is 1-indexed, accounting for header and skip rows
             row_number = int(idx) + self.header_row + self.skip_rows + 1
             parsed = self._parse_row(row, row_number)
@@ -150,7 +155,7 @@ class BaseParser(ABC):
                 return value
             # Parse string date
             return datetime.strptime(str(value).strip(), self.date_format).date()
-        except ValueError as e:
+        except ValueError:
             errors.append(f"Invalid date format in {column_name}: {value}")
             return None
 

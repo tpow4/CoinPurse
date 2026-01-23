@@ -192,6 +192,12 @@ class ImportService:
             txn_date = self._parse_date_from_json(t["transaction_date"])
             post_date = self._parse_date_from_json(t.get("posted_date")) or txn_date
 
+            # Skip if no category mapped
+            category_id = t.get("coinpurse_category_id")
+            if category_id is None:
+                skipped_count += 1
+                continue
+
             transaction = Transaction(
                 account_id=batch.account_id,
                 category_id=t["coinpurse_category_id"],
