@@ -5,7 +5,7 @@ These are DTOs (Data Transfer Objects) for request/response validation
 
 from datetime import date, datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from models.base import FileFormat, ImportStatus
 
@@ -37,6 +37,9 @@ class ImportPreviewSummary(BaseModel):
 class ImportPreviewResponse(BaseModel):
     """Response from upload/preview endpoint"""
 
+    # Allow pydantic to work with SQLAlchemy models
+    model_config = ConfigDict(from_attributes=True)
+
     batch_id: int
     summary: ImportPreviewSummary
     transactions: list[ParsedTransaction]
@@ -51,6 +54,9 @@ class ImportConfirmRequest(BaseModel):
 
 class ImportConfirmResponse(BaseModel):
     """Response from confirm endpoint"""
+
+    # Allow pydantic to work with SQLAlchemy models
+    model_config = ConfigDict(from_attributes=True)
 
     batch_id: int
     imported_count: int
@@ -71,6 +77,9 @@ class ImportBatchBase(BaseModel):
 class ImportBatchResponse(ImportBatchBase):
     """Schema for returning an import batch"""
 
+    # Allow pydantic to work with SQLAlchemy models
+    model_config = ConfigDict(from_attributes=True)
+
     batch_id: int
     total_rows: int
     imported_count: int
@@ -80,9 +89,6 @@ class ImportBatchResponse(ImportBatchBase):
     imported_at: datetime | None = None
     created_at: datetime
     modified_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class ImportBatchDetailResponse(ImportBatchResponse):

@@ -5,7 +5,7 @@ These are DTOs (Data Transfer Objects) for request/response validation
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class InstitutionBase(BaseModel):
@@ -30,13 +30,11 @@ class InstitutionUpdate(BaseModel):
 class InstitutionResponse(InstitutionBase):
     """Schema for returning an institution (what API sends back)"""
 
+    # Allow pydantic to work with SQLAlchemy models
+    model_config = ConfigDict(from_attributes=True)
+
     institution_id: int
     is_active: bool
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        """Pydantic configuration"""
-
-        # Allows Pydantic to work with SQLAlchemy models
-        from_attributes = True

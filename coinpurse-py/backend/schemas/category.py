@@ -5,7 +5,7 @@ These are DTOs (Data Transfer Objects) for request/response validation
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class CategoryBase(BaseModel):
@@ -31,11 +31,9 @@ class CategoryUpdate(BaseModel):
 class CategoryResponse(CategoryBase):
     """Schema for returning a category (what API sends back)"""
 
+    # Allow pydantic to work with SQLAlchemy models
+    model_config = ConfigDict(from_attributes=True)
+
     category_id: int
     created_at: datetime
 
-    class Config:
-        """Pydantic configuration"""
-
-        # Allows Pydantic to work with SQLAlchemy models
-        from_attributes = True

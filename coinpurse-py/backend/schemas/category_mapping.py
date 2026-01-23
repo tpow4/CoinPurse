@@ -5,7 +5,7 @@ These are DTOs (Data Transfer Objects) for request/response validation
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class CategoryMappingBase(BaseModel):
@@ -37,12 +37,12 @@ class CategoryMappingUpdate(BaseModel):
 class CategoryMappingResponse(CategoryMappingBase):
     """Schema for returning a category mapping"""
 
+    # Allow pydantic to work with SQLAlchemy models
+    model_config = ConfigDict(from_attributes=True)
+
     mapping_id: int
     created_at: datetime
     modified_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class CategoryMappingWithNames(CategoryMappingResponse):
