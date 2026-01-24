@@ -72,10 +72,10 @@
 		onClearFilters,
 	}: Props = $props();
 
-	// Local state for bound values
-	let localAccountId = $state(selectedAccountId);
-	let localCategoryId = $state(selectedCategoryId);
-	let localDatePreset = $state(datePreset);
+	// Local state for bound values (initialized by $effect below)
+	let localAccountId = $state('');
+	let localCategoryId = $state('');
+	let localDatePreset = $state<DatePreset>('last30');
 
 	// Sync local state with props
 	$effect(() => {
