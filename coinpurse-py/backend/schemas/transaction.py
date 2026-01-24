@@ -54,3 +54,10 @@ class TransactionResponse(TransactionBase):
     created_at: datetime
     modified_at: datetime
 
+
+class TransactionWithNamesResponse(TransactionResponse):
+    """Schema for returning a transaction with joined account and category names"""
+
+    account_name: str
+    category_name: str
+

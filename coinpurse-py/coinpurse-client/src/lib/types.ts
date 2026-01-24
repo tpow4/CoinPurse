@@ -153,6 +153,11 @@ export interface TransactionUpdate {
     is_active?: boolean;
 }
 
+export interface TransactionWithNames extends Transaction {
+    account_name: string;
+    category_name: string;
+}
+
 // Balance types
 
 export interface AccountBalance {

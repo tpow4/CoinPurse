@@ -6,7 +6,7 @@ Handles all database operations for transactions
 from datetime import date
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from models.transaction import Transaction
 
@@ -21,18 +21,26 @@ class TransactionRepository:
         """Get transaction by ID"""
         return self.db.get(Transaction, transaction_id)
 
-    def get_all(self, include_inactive: bool = False) -> list[Transaction]:
+    def get_all(
+        self, include_inactive: bool = False, with_relationships: bool = False
+    ) -> list[Transaction]:
         """
         Get all transactions ordered by transaction date descending
 
         Args:
             include_inactive: If True, includes inactive transactions
+            with_relationships: If True, eager-loads account and category relationships
         """
         stmt = select(Transaction)
+        if with_relationships:
+            stmt = stmt.options(
+                joinedload(Transaction.account),
+                joinedload(Transaction.category),
+            )
         if not include_inactive:
             stmt = stmt.where(Transaction.is_active)
         stmt = stmt.order_by(Transaction.transaction_date.desc())
-        return list(self.db.scalars(stmt))
+        return list(self.db.scalars(stmt).unique())
 
     def get_by_account(
         self, account_id: int, include_inactive: bool = False
@@ -73,6 +81,7 @@ class TransactionRepository:
         account_id: int | None = None,
         category_id: int | None = None,
         include_inactive: bool = False,
+        with_relationships: bool = False,
     ) -> list[Transaction]:
         """
         Get transactions within a date range, optionally filtered by account and/or category
@@ -83,8 +92,15 @@ class TransactionRepository:
             account_id: Optional account ID to filter by
             category_id: Optional category ID to filter by
             include_inactive: If True, includes inactive transactions
+            with_relationships: If True, eager-loads account and category relationships
         """
         stmt = select(Transaction)
+
+        if with_relationships:
+            stmt = stmt.options(
+                joinedload(Transaction.account),
+                joinedload(Transaction.category),
+            )
 
         if not include_inactive:
             stmt = stmt.where(Transaction.is_active)
@@ -98,7 +114,7 @@ class TransactionRepository:
             stmt = stmt.where(Transaction.category_id == category_id)
 
         stmt = stmt.order_by(Transaction.transaction_date.desc())
-        return list(self.db.scalars(stmt))
+        return list(self.db.scalars(stmt).unique())
 
     def search_by_description(
         self, search_term: str, include_inactive: bool = False
