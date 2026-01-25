@@ -48,6 +48,22 @@ class AccountRepository:
         stmt = stmt.order_by(Account.display_order, Account.account_name)
         return list(self.db.scalars(stmt))
 
+    def get_by_template(
+        self, template_id: int, include_inactive: bool = False
+    ) -> list[Account]:
+        """
+        Get all accounts using a specific import template
+
+        Args:
+            template_id: The template ID to filter by
+            include_inactive: If True, includes inactive accounts
+        """
+        stmt = select(Account).where(Account.template_id == template_id)
+        if not include_inactive:
+            stmt = stmt.where(Account.active)
+        stmt = stmt.order_by(Account.display_order, Account.account_name)
+        return list(self.db.scalars(stmt))
+
     def get_by_name(self, account_name: str) -> Account | None:
         """Get account by exact name"""
         stmt = select(Account).where(Account.account_name == account_name)

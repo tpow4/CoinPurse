@@ -149,7 +149,7 @@ def list_transactions_with_names(
         TransactionWithNamesResponse(
             **{
                 **TransactionResponse.model_validate(t).model_dump(),
-                "account_name": t.account.name,
+                "account_name": t.account.account_name,
                 "category_name": t.category.name,
             }
         )

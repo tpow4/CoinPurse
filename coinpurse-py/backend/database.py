@@ -69,21 +69,11 @@ def _seed_institutions(db):
 
 
 def _seed_import_templates(db):
-    """Seed the default import templates for each institution"""
-    # Get institution IDs
-    chase = db.scalar(select(Institution).where(Institution.name == "Chase"))
-    discover = db.scalar(select(Institution).where(Institution.name == "Discover"))
-    capital_one = db.scalar(select(Institution).where(Institution.name == "Capital One"))
-
-    if not all([chase, discover, capital_one]):
-        print("Warning: Not all institutions found. Skipping template seeding.")
-        return
-
+    """Seed the default import templates"""
     templates = [
         # Chase Credit Card - bank_standard (signs already correct)
         {
             "template_name": "Chase Credit Card",
-            "institution_id": chase.institution_id,
             "file_format": FileFormat.CSV,
             "column_mappings": {
                 "transaction_date": "Transaction Date",
@@ -103,7 +93,6 @@ def _seed_import_templates(db):
         # Discover Credit Card - inverted (multiply by -1)
         {
             "template_name": "Discover Credit Card",
-            "institution_id": discover.institution_id,
             "file_format": FileFormat.CSV,
             "column_mappings": {
                 "transaction_date": "Trans. Date",
@@ -123,7 +112,6 @@ def _seed_import_templates(db):
         # Capital One Credit Card - split_columns (Debit/Credit columns)
         {
             "template_name": "Capital One Credit Card",
-            "institution_id": capital_one.institution_id,
             "file_format": FileFormat.CSV,
             "column_mappings": {
                 "transaction_date": "Transaction Date",

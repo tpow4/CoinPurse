@@ -55,7 +55,6 @@ class ImportService:
             file: Binary file object
             file_name: Original filename
             account_id: Target account ID
-            template_id: Import template ID to use
 
         Returns:
             ImportPreviewResponse with import_batch_id, summary, and transactions
@@ -76,9 +75,9 @@ class ImportService:
         # Convert to transaction dicts for processing
         transactions = self._rows_to_dicts(parsed_rows)
 
-        # Map categories
+        # Map categories using the account's institution
         transactions = self.category_mapper.map_categories(
-            template.institution_id, transactions
+            account.institution_id, transactions
         )
 
         # Detect duplicates

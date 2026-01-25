@@ -30,7 +30,9 @@
 		get data() {
 			return data;
 		},
-		columns,
+		get columns() {
+			return columns;
+		},
 		state: {
 			get sorting() {
 				return sorting;

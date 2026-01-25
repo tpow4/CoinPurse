@@ -15,6 +15,7 @@ class AccountBase(BaseModel):
 
     account_name: str = Field(..., min_length=1, max_length=100)
     institution_id: int
+    template_id: int | None = None
     account_type: AccountType
     tax_treatment: TaxTreatmentType
     last_4_digits: str = Field(..., min_length=4, max_length=4, pattern=r"^\d{4}$")
@@ -35,6 +36,7 @@ class AccountUpdate(BaseModel):
 
     account_name: str | None = Field(None, min_length=1, max_length=100)
     institution_id: int | None = None
+    template_id: int | None = None
     account_type: AccountType | None = None
     tax_treatment: TaxTreatmentType | None = None
     last_4_digits: str | None = Field(

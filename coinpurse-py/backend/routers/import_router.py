@@ -173,20 +173,15 @@ def get_batch(import_batch_id: int, db: Session = Depends(get_db)):
 
 @router.get("/templates", response_model=list[ImportTemplateResponse])
 def list_templates(
-    institution_id: int | None = Query(None, description="Filter by institution ID"),
     include_inactive: bool = Query(False, description="Include inactive templates"),
     db: Session = Depends(get_db),
 ):
     """
     Get all import templates.
 
-    - **institution_id**: Optional filter by institution
     - **include_inactive**: Include inactive templates
     """
     repo = ImportTemplateRepository(db)
-
-    if institution_id:
-        return repo.get_by_institution(institution_id, include_inactive=include_inactive)
     return repo.get_all(include_inactive=include_inactive)
 
 
@@ -215,7 +210,6 @@ def create_template(
     Create a new import template.
 
     - **template_name**: Name for the template
-    - **institution_id**: Associated institution ID
     - **file_format**: CSV or EXCEL
     - **column_mappings**: JSON mapping internal fields to file columns
     - **amount_config**: JSON config for amount parsing
