@@ -24,7 +24,9 @@ export function createColumns(): ColumnDef<TransactionWithNames>[] {
             accessorKey: 'transaction_date',
             header: 'Date',
             cell: ({ row }) => {
-                const date = new Date(row.getValue('transaction_date') as string);
+                const date = new Date(
+                    row.getValue('transaction_date') as string
+                );
                 return date.toLocaleDateString();
             },
         },

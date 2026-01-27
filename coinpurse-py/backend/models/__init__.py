@@ -7,13 +7,13 @@ from .base import AccountType, Base, FileFormat, ImportStatus, TaxTreatmentType,
 
 # import models with no foreign keys first
 from .category import Category
+from .import_template import ImportTemplate
 from .institution import Institution
 
 # import models that depend on Institution
-from .import_template import ImportTemplate
 from .category_mapping import CategoryMapping
 
-# import models that depend on Account
+# import models that depend on Institution and ImportTemplate
 from .account import Account
 from .balance import AccountBalance
 from .transaction import Transaction

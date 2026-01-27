@@ -21,22 +21,12 @@ from models import (
 class TestImportTemplateEndpoints:
     """Tests for import template CRUD endpoints"""
 
-    @pytest.fixture
-    def setup_institution(self, db_session):
-        """Create a test institution"""
-        institution = Institution(name="Test Bank")
-        db_session.add(institution)
-        db_session.commit()
-        db_session.refresh(institution)
-        return institution
-
-    def test_create_template(self, client, setup_institution):
+    def test_create_template(self, client):
         """Should create an import template"""
         response = client.post(
             "/api/import/templates",
             json={
                 "template_name": "Test Template",
-                "institution_id": setup_institution.institution_id,
                 "file_format": "csv",
                 "column_mappings": {
                     "transaction_date": "Date",
@@ -55,17 +45,15 @@ class TestImportTemplateEndpoints:
         assert response.status_code == 201
         data = response.json()
         assert data["template_name"] == "Test Template"
-        assert data["institution_id"] == setup_institution.institution_id
         assert data["file_format"] == "csv"
 
-    def test_create_template_duplicate_name(self, client, setup_institution):
+    def test_create_template_duplicate_name(self, client):
         """Should reject duplicate template names"""
         # Create first template
         client.post(
             "/api/import/templates",
             json={
                 "template_name": "Duplicate Name",
-                "institution_id": setup_institution.institution_id,
                 "file_format": "csv",
                 "column_mappings": {
                     "transaction_date": "Transaction Date",
@@ -81,7 +69,6 @@ class TestImportTemplateEndpoints:
             "/api/import/templates",
             json={
                 "template_name": "Duplicate Name",
-                "institution_id": setup_institution.institution_id,
                 "file_format": "csv",
                 "column_mappings": {
                     "transaction_date": "Transaction Date",
@@ -95,13 +82,12 @@ class TestImportTemplateEndpoints:
         assert response.status_code == 400
         assert "already exists" in response.json()["detail"]
 
-    def test_list_templates(self, client, db_session, setup_institution):
+    def test_list_templates(self, client, db_session):
         """Should list all templates"""
         # Create templates
         for i in range(3):
             template = ImportTemplate(
                 template_name=f"Template {i}",
-                institution_id=setup_institution.institution_id,
                 file_format=FileFormat.CSV,
                 column_mappings={
                     "transaction_date": "Transaction Date",
@@ -119,11 +105,10 @@ class TestImportTemplateEndpoints:
         data = response.json()
         assert len(data) == 3
 
-    def test_get_template(self, client, db_session, setup_institution):
+    def test_get_template(self, client, db_session):
         """Should get a specific template"""
         template = ImportTemplate(
             template_name="Get Me",
-            institution_id=setup_institution.institution_id,
             file_format=FileFormat.CSV,
             column_mappings={
                 "transaction_date": "Transaction Date",
@@ -146,11 +131,10 @@ class TestImportTemplateEndpoints:
         response = client.get("/api/import/templates/99999")
         assert response.status_code == 404
 
-    def test_update_template(self, client, db_session, setup_institution):
+    def test_update_template(self, client, db_session):
         """Should update a template"""
         template = ImportTemplate(
             template_name="Original Name",
-            institution_id=setup_institution.institution_id,
             file_format=FileFormat.CSV,
             column_mappings={
                 "transaction_date": "Transaction Date",
@@ -171,11 +155,10 @@ class TestImportTemplateEndpoints:
         assert response.status_code == 200
         assert response.json()["template_name"] == "Updated Name"
 
-    def test_delete_template_soft(self, client, db_session, setup_institution):
+    def test_delete_template_soft(self, client, db_session):
         """Should soft delete a template"""
         template = ImportTemplate(
             template_name="Delete Me",
-            institution_id=setup_institution.institution_id,
             file_format=FileFormat.CSV,
             column_mappings={
                 "transaction_date": "Transaction Date",
@@ -287,22 +270,9 @@ class TestImportUploadEndpoint:
         db_session.add(uncategorized)
         db_session.commit()
 
-        # Create account
-        account = Account(
-            institution_id=institution.institution_id,
-            account_name="Import Account",
-            account_type=AccountType.CREDIT_CARD,
-            tax_treatment=TaxTreatmentType.NOT_APPLICABLE,
-            last_4_digits="9999",
-            tracks_transactions=True,
-        )
-        db_session.add(account)
-        db_session.commit()
-
         # Create template (Chase-like)
         template = ImportTemplate(
             template_name="Test Import Template",
-            institution_id=institution.institution_id,
             file_format=FileFormat.CSV,
             column_mappings={
                 "transaction_date": "Transaction Date",
@@ -318,6 +288,19 @@ class TestImportUploadEndpoint:
             date_format="%m/%d/%Y",
         )
         db_session.add(template)
+        db_session.commit()
+
+        # Create account with template
+        account = Account(
+            institution_id=institution.institution_id,
+            template_id=template.template_id,
+            account_name="Import Account",
+            account_type=AccountType.CREDIT_CARD,
+            tax_treatment=TaxTreatmentType.NOT_APPLICABLE,
+            last_4_digits="9999",
+            tracks_transactions=True,
+        )
+        db_session.add(account)
         db_session.commit()
 
         db_session.refresh(institution)
@@ -385,22 +368,9 @@ class TestImportConfirmEndpoint:
         db_session.add(uncategorized)
         db_session.commit()
 
-        # Create account
-        account = Account(
-            institution_id=institution.institution_id,
-            account_name="Confirm Account",
-            account_type=AccountType.CREDIT_CARD,
-            tax_treatment=TaxTreatmentType.NOT_APPLICABLE,
-            last_4_digits="8888",
-            tracks_transactions=True,
-        )
-        db_session.add(account)
-        db_session.commit()
-
         # Create template
         template = ImportTemplate(
             template_name="Confirm Template",
-            institution_id=institution.institution_id,
             file_format=FileFormat.CSV,
             column_mappings={
                 "transaction_date": "Date",
@@ -412,6 +382,19 @@ class TestImportConfirmEndpoint:
             date_format="%m/%d/%Y",
         )
         db_session.add(template)
+        db_session.commit()
+
+        # Create account with template
+        account = Account(
+            institution_id=institution.institution_id,
+            template_id=template.template_id,
+            account_name="Confirm Account",
+            account_type=AccountType.CREDIT_CARD,
+            tax_treatment=TaxTreatmentType.NOT_APPLICABLE,
+            last_4_digits="8888",
+            tracks_transactions=True,
+        )
+        db_session.add(account)
         db_session.commit()
 
         db_session.refresh(account)
@@ -479,22 +462,9 @@ class TestImportBatchEndpoints:
         db_session.add(uncategorized)
         db_session.commit()
 
-        # Create account
-        account = Account(
-            institution_id=institution.institution_id,
-            account_name="Batch Account",
-            account_type=AccountType.CREDIT_CARD,
-            tax_treatment=TaxTreatmentType.NOT_APPLICABLE,
-            last_4_digits="7777",
-            tracks_transactions=True,
-        )
-        db_session.add(account)
-        db_session.commit()
-
         # Create template
         template = ImportTemplate(
             template_name="Batch Template",
-            institution_id=institution.institution_id,
             file_format=FileFormat.CSV,
             column_mappings={
                 "transaction_date": "Date",
@@ -506,6 +476,19 @@ class TestImportBatchEndpoints:
             date_format="%m/%d/%Y",
         )
         db_session.add(template)
+        db_session.commit()
+
+        # Create account with template
+        account = Account(
+            institution_id=institution.institution_id,
+            template_id=template.template_id,
+            account_name="Batch Account",
+            account_type=AccountType.CREDIT_CARD,
+            tax_treatment=TaxTreatmentType.NOT_APPLICABLE,
+            last_4_digits="7777",
+            tracks_transactions=True,
+        )
+        db_session.add(account)
         db_session.commit()
 
         db_session.refresh(account)

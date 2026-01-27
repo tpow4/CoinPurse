@@ -32,22 +32,6 @@ class ImportTemplateRepository:
         stmt = stmt.order_by(ImportTemplate.template_name)
         return list(self.db.scalars(stmt))
 
-    def get_by_institution(
-        self, institution_id: int, include_inactive: bool = False
-    ) -> list[ImportTemplate]:
-        """
-        Get all templates for a specific institution
-
-        Args:
-            institution_id: The institution ID to filter by
-            include_inactive: If True, includes inactive templates
-        """
-        stmt = select(ImportTemplate).where(ImportTemplate.institution_id == institution_id)
-        if not include_inactive:
-            stmt = stmt.where(ImportTemplate.is_active)
-        stmt = stmt.order_by(ImportTemplate.template_name)
-        return list(self.db.scalars(stmt))
-
     def get_by_name(self, name: str) -> ImportTemplate | None:
         """Get template by exact name"""
         stmt = select(ImportTemplate).where(ImportTemplate.template_name == name)

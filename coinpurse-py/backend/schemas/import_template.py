@@ -45,7 +45,6 @@ class ImportTemplateBase(BaseModel):
     """Shared fields"""
 
     template_name: str = Field(..., min_length=1, max_length=100)
-    institution_id: int
     file_format: FileFormat
     column_mappings: dict[str, Any]
     amount_config: dict[str, Any]
@@ -76,7 +75,6 @@ class ImportTemplateUpdate(BaseModel):
     """Schema for updating an import template - all fields optional"""
 
     template_name: str | None = Field(None, min_length=1, max_length=100)
-    institution_id: int | None = None
     file_format: FileFormat | None = None
     column_mappings: dict[str, Any] | None = None
     amount_config: dict[str, Any] | None = None

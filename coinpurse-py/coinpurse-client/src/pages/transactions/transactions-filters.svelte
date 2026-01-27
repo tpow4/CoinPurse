@@ -72,10 +72,10 @@
 		onClearFilters,
 	}: Props = $props();
 
-	// Local state for bound values
-	let localAccountId = $state(selectedAccountId);
-	let localCategoryId = $state(selectedCategoryId);
-	let localDatePreset = $state(datePreset);
+	// Local state for bound values (initialized by $effect below)
+	let localAccountId = $state('');
+	let localCategoryId = $state('');
+	let localDatePreset = $state<DatePreset>('last30');
 
 	// Sync local state with props
 	$effect(() => {
@@ -156,11 +156,10 @@
 	}
 </script>
 
-<div class="space-y-4 rounded-lg border p-4">
-	<!-- Row 1: Search, Account, Category -->
-	<div class="flex flex-wrap gap-4">
-		<div class="min-w-[200px] flex-1">
-			<Label for="search" class="mb-1 block text-sm">Search</Label>
+<div class="space-y-2 rounded-lg border p-3">
+	<!-- Row 1: Search, Account, Category, Date Range -->
+	<div class="flex flex-wrap items-center gap-3">
+		<div class="min-w-[180px] flex-1">
 			<Input
 				type="text"
 				id="search"
@@ -170,8 +169,7 @@
 			/>
 		</div>
 
-		<div class="min-w-[180px]">
-			<Label for="account" class="mb-1 block text-sm">Account</Label>
+		<div class="min-w-[160px]">
 			<Combobox
 				id="account"
 				items={accountItems}
@@ -181,8 +179,7 @@
 			/>
 		</div>
 
-		<div class="min-w-[180px]">
-			<Label for="category" class="mb-1 block text-sm">Category</Label>
+		<div class="min-w-[160px]">
 			<Combobox
 				id="category"
 				items={categoryItems}
@@ -191,12 +188,8 @@
 				searchPlaceholder="Search categories..."
 			/>
 		</div>
-	</div>
 
-	<!-- Row 2: Date Range -->
-	<div class="flex flex-wrap items-end gap-4">
-		<div class="min-w-[160px]">
-			<Label for="date-preset" class="mb-1 block text-sm">Date Range</Label>
+		<div class="min-w-[140px]">
 			<Select.Root type="single" bind:value={localDatePreset}>
 				<Select.Trigger id="date-preset" class="w-full">
 					{datePresetLabel}
@@ -210,8 +203,7 @@
 		</div>
 
 		{#if datePreset === 'custom'}
-			<div class="min-w-[140px]">
-				<Label for="start-date" class="mb-1 block text-sm">Start Date</Label>
+			<div class="min-w-[130px]">
 				<Input
 					type="date"
 					id="start-date"
@@ -220,8 +212,7 @@
 				/>
 			</div>
 
-			<div class="min-w-[140px]">
-				<Label for="end-date" class="mb-1 block text-sm">End Date</Label>
+			<div class="min-w-[130px]">
 				<Input
 					type="date"
 					id="end-date"
@@ -232,45 +223,42 @@
 		{/if}
 	</div>
 
-	<!-- Row 3: Transaction Type Toggle, Amount Range -->
-	<div class="flex flex-wrap items-end gap-6">
+	<!-- Row 2: Type Toggle, Amount Range, Include Inactive, Clear Filters -->
+	<div class="flex flex-wrap items-center gap-3">
 		<!-- Credit/Debit Toggle -->
-		<div>
-			<Label class="mb-1 block text-sm">Type</Label>
-			<div class="flex rounded-md border">
-				<Button
-					type="button"
-					variant={transactionFilter === 'all' ? 'default' : 'ghost'}
-					size="sm"
-					class="rounded-r-none"
-					onclick={() => onTransactionFilterChange('all')}
-				>
-					All
-				</Button>
-				<Button
-					type="button"
-					variant={transactionFilter === 'credits' ? 'default' : 'ghost'}
-					size="sm"
-					class="rounded-none border-x"
-					onclick={() => onTransactionFilterChange('credits')}
-				>
-					Credits
-				</Button>
-				<Button
-					type="button"
-					variant={transactionFilter === 'debits' ? 'default' : 'ghost'}
-					size="sm"
-					class="rounded-l-none"
-					onclick={() => onTransactionFilterChange('debits')}
-				>
-					Debits
-				</Button>
-			</div>
+		<div class="flex rounded-md border">
+			<Button
+				type="button"
+				variant={transactionFilter === 'all' ? 'default' : 'ghost'}
+				size="sm"
+				class="rounded-r-none"
+				onclick={() => onTransactionFilterChange('all')}
+			>
+				All
+			</Button>
+			<Button
+				type="button"
+				variant={transactionFilter === 'credits' ? 'default' : 'ghost'}
+				size="sm"
+				class="rounded-none border-x"
+				onclick={() => onTransactionFilterChange('credits')}
+			>
+				Credits
+			</Button>
+			<Button
+				type="button"
+				variant={transactionFilter === 'debits' ? 'default' : 'ghost'}
+				size="sm"
+				class="rounded-l-none"
+				onclick={() => onTransactionFilterChange('debits')}
+			>
+				Debits
+			</Button>
 		</div>
 
 		<!-- Amount Range -->
-		<div class="min-w-[250px] flex-1 max-w-[400px]">
-			<Label class="mb-1 block text-sm">Amount Range</Label>
+		<div class="flex min-w-[220px] max-w-[350px] flex-1 items-center gap-2">
+			<Label class="shrink-0 text-sm">Amount:</Label>
 			<AmountRangeSlider
 				min={amountRangeMin}
 				max={amountRangeMax}
@@ -280,10 +268,7 @@
 				onMaxChange={onAmountMaxChange}
 			/>
 		</div>
-	</div>
 
-	<!-- Row 4: Include Inactive, Clear Filters -->
-	<div class="flex items-center justify-between">
 		<div class="flex items-center gap-2">
 			<Checkbox
 				id="include-inactive"
