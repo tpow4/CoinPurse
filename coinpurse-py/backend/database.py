@@ -127,7 +127,7 @@ def _seed_import_templates(db):
                 "credit_column": "Credit",
                 "decimal_places": 2,
             },
-            "date_format": "%m/%d/%Y",
+            "date_format": "%y/%m/%d",
             "header_row": 1,
             "skip_rows": 0,
         },
