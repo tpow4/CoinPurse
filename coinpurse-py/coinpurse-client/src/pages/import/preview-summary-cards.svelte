@@ -1,7 +1,12 @@
 <script lang="ts">
     import type { ImportPreviewSummary } from '$lib/types';
     import * as Card from '$lib/components/ui/card';
-    import { CircleCheck, TriangleAlert, Copy, FileText } from '@lucide/svelte';
+    import {
+        TriangleAlert,
+        Copy,
+        FileText,
+        CircleArrowUp,
+    } from '@lucide/svelte';
 
     interface Props {
         summary: ImportPreviewSummary;
@@ -30,10 +35,10 @@
             <div
                 class="flex size-10 items-center justify-center rounded-full bg-green-500/10"
             >
-                <CircleCheck class="size-5 text-green-500" />
+                <CircleArrowUp class="size-5 text-green-500" />
             </div>
             <div>
-                <p class="text-muted-foreground text-sm">Valid</p>
+                <p class="text-muted-foreground text-sm">New</p>
                 <p class="text-2xl font-bold text-green-600">
                     {summary.valid_rows}
                 </p>
