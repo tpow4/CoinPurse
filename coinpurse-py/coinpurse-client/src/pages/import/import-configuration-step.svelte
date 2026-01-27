@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Account, ImportTemplate } from '$lib/types';
+    import type { Account } from '$lib/types';
     import { Button } from '$lib/components/ui/button';
     import { Label } from '$lib/components/ui/label';
     import * as Card from '$lib/components/ui/card';
@@ -8,54 +8,29 @@
 
     interface Props {
         accounts: Account[];
-        templates: ImportTemplate[];
         accountId: number | null;
-        templateId: number | null;
         file: File | null;
         loading: boolean;
         onAccountChange: (value: number | null) => void;
-        onTemplateChange: (value: number | null) => void;
         onFileChange: (value: File | null) => void;
         onSubmit: () => void;
     }
 
-    let {
-        accounts,
-        templates,
-        accountId,
-        templateId,
-        file,
-        loading,
-        onAccountChange,
-        onTemplateChange,
-        onFileChange,
-        onSubmit,
-    }: Props = $props();
+    let { accounts, accountId, file, loading, onAccountChange, onFileChange, onSubmit }: Props =
+        $props();
 
     let fileInput: HTMLInputElement;
 
     // Derived values for Select components
     const accountValue = $derived(accountId ? String(accountId) : '');
-    const templateValue = $derived(templateId ? String(templateId) : '');
+
+    // Get selected account for template validation
+    const selectedAccount = $derived(accounts.find((a) => a.account_id === accountId));
+    const hasTemplate = $derived(selectedAccount?.template_id != null);
 
     function handleAccountChange(value: string) {
         onAccountChange(value ? Number(value) : null);
     }
-
-    function handleTemplateChange(value: string) {
-        onTemplateChange(value ? Number(value) : null);
-    }
-
-    // Get selected template for file type info
-    const selectedTemplate = $derived(
-        templates.find((t) => t.template_id === templateId)
-    );
-
-    // Get file extension hint from template
-    const acceptedFileTypes = $derived(() => {
-        if (!selectedTemplate) return '.csv,.xlsx,.xls';
-        return selectedTemplate.file_format === 'excel' ? '.xlsx,.xls' : '.csv';
-    });
 
     function handleFileSelect(event: Event) {
         const input = event.target as HTMLInputElement;
@@ -79,17 +54,13 @@
         fileInput?.click();
     }
 
-    const canSubmit = $derived(
-        accountId !== null && templateId !== null && file !== null
-    );
+    const canSubmit = $derived(accountId !== null && hasTemplate && file !== null);
 </script>
 
 <Card.Root>
     <Card.Header>
         <Card.Title>Configure Import</Card.Title>
-        <Card.Description
-            >Select an account and template, then upload your file.</Card.Description
-        >
+        <Card.Description>Select an account and upload your file.</Card.Description>
     </Card.Header>
 
     <Card.Content class="space-y-6">
@@ -99,7 +70,8 @@
             <Select.Root type="single" value={accountValue} onValueChange={handleAccountChange}>
                 <Select.Trigger id="account-select" class="w-full">
                     {#if accountId}
-                        {accounts.find((a) => a.account_id === accountId)?.account_name ?? 'Select account'}
+                        {accounts.find((a) => a.account_id === accountId)?.account_name ??
+                            'Select account'}
                     {:else}
                         Select account
                     {/if}
@@ -112,36 +84,10 @@
                     {/each}
                 </Select.Content>
             </Select.Root>
-            {#if accountId && accounts.find((a) => a.account_id === accountId)?.template_id}
-                <p class="text-muted-foreground text-sm">
-                    This account has an associated template that will be
-                    auto-selected.
-                </p>
-            {/if}
-        </div>
-
-        <!-- Template Selection -->
-        <div class="space-y-2">
-            <Label for="template-select">Import Template</Label>
-            <Select.Root type="single" value={templateValue} onValueChange={handleTemplateChange}>
-                <Select.Trigger id="template-select" class="w-full">
-                    {#if templateId}
-                        {templates.find((t) => t.template_id === templateId)?.template_name ?? 'Select template'}
-                    {:else}
-                        Select template
-                    {/if}
-                </Select.Trigger>
-                <Select.Content>
-                    {#each templates as template}
-                        <Select.Item value={String(template.template_id)}>
-                            {template.template_name}
-                        </Select.Item>
-                    {/each}
-                </Select.Content>
-            </Select.Root>
-            {#if selectedTemplate}
-                <p class="text-muted-foreground text-sm">
-                    Expects: {selectedTemplate.file_format.toUpperCase()} file
+            {#if selectedAccount && !hasTemplate}
+                <p class="text-destructive text-sm">
+                    This account has no import template configured. Please configure a template for
+                    this account before importing.
                 </p>
             {/if}
         </div>
@@ -152,7 +98,7 @@
             <input
                 bind:this={fileInput}
                 type="file"
-                accept={acceptedFileTypes()}
+                accept=".csv,.xlsx,.xls"
                 onchange={handleFileSelect}
                 class="hidden"
             />
@@ -186,16 +132,8 @@
                     </div>
                 {:else}
                     <Upload class="text-muted-foreground mb-4 size-10" />
-                    <p class="mb-1 font-medium">
-                        Drop your file here or click to browse
-                    </p>
-                    <p class="text-muted-foreground text-sm">
-                        {#if selectedTemplate}
-                            Accepts {selectedTemplate.file_format.toUpperCase()} files
-                        {:else}
-                            Select a template first to see accepted file types
-                        {/if}
-                    </p>
+                    <p class="mb-1 font-medium">Drop your file here or click to browse</p>
+                    <p class="text-muted-foreground text-sm">Accepts CSV and Excel files</p>
                 {/if}
             </div>
         </div>
