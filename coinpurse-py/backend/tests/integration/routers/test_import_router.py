@@ -322,10 +322,7 @@ class TestImportUploadEndpoint:
 1/16/2026,1/16/2026,Test Purchase,Shopping,-50.00"""
 
         files = {"file": ("test.csv", io.BytesIO(csv_content.encode()), "text/csv")}
-        data = {
-            "account_id": setup_import_data["account"].account_id,
-            "template_id": setup_import_data["template"].template_id,
-        }
+        data = {"account_id": setup_import_data["account"].account_id}
 
         response = client.post("/api/import/upload", files=files, data=data)
 
@@ -336,20 +333,31 @@ class TestImportUploadEndpoint:
         assert result["summary"]["valid_rows"] == 2
         assert len(result["transactions"]) == 2
 
-    def test_upload_invalid_template(self, client, setup_import_data):
-        """Should return error for invalid template"""
+    def test_upload_account_without_template(self, client, db_session, setup_import_data):
+        """Should return error when account has no template configured"""
+        # Create account without template
+        account_no_template = Account(
+            institution_id=setup_import_data["institution"].institution_id,
+            account_name="No Template Account",
+            account_type=AccountType.CREDIT_CARD,
+            tax_treatment=TaxTreatmentType.NOT_APPLICABLE,
+            last_4_digits="0000",
+            tracks_transactions=True,
+            template_id=None,
+        )
+        db_session.add(account_no_template)
+        db_session.commit()
+        db_session.refresh(account_no_template)
+
         csv_content = "Transaction Date,Description,Amount\n1/15/2026,Test,100"
 
         files = {"file": ("test.csv", io.BytesIO(csv_content.encode()), "text/csv")}
-        data = {
-            "account_id": setup_import_data["account"].account_id,
-            "template_id": 99999,  # Invalid
-        }
+        data = {"account_id": account_no_template.account_id}
 
         response = client.post("/api/import/upload", files=files, data=data)
 
-        assert response.status_code == 400
-        assert "not found" in response.json()["detail"]
+        assert response.status_code == 422
+        assert "no import template configured" in response.json()["detail"]
 
 
 class TestImportConfirmEndpoint:
@@ -407,7 +415,7 @@ class TestImportConfirmEndpoint:
 1/17/2026,1/17/2026,Another,-25.00"""
 
         files = {"file": ("test.csv", io.BytesIO(csv_content.encode()), "text/csv")}
-        data = {"account_id": account.account_id, "template_id": template.template_id}
+        data = {"account_id": account.account_id}
 
         preview_response = client.post("/api/import/upload", files=files, data=data)
         preview = preview_response.json()
@@ -497,7 +505,7 @@ class TestImportBatchEndpoints:
         # Create and confirm a batch
         csv_content = "Date,Posted Date,Desc,Amt\n1/15/2026,1/15/2026,Test,100.00"
         files = {"file": ("test.csv", io.BytesIO(csv_content.encode()), "text/csv")}
-        data = {"account_id": account.account_id, "template_id": template.template_id}
+        data = {"account_id": account.account_id}
 
         preview = client.post("/api/import/upload", files=files, data=data).json()
         client.post(
@@ -523,11 +531,15 @@ class TestImportBatchEndpoints:
 
         assert response.status_code == 200
         data = response.json()
-        assert all(b["account_id"] == setup_with_batches["account"].account_id for b in data)
+        assert all(
+            b["account_id"] == setup_with_batches["account"].account_id for b in data
+        )
 
     def test_get_batch_detail(self, client, setup_with_batches):
         """Should get batch details"""
-        response = client.get(f"/api/import/batches/{setup_with_batches['import_batch_id']}")
+        response = client.get(
+            f"/api/import/batches/{setup_with_batches['import_batch_id']}"
+        )
 
         assert response.status_code == 200
         data = response.json()
