@@ -16,12 +16,14 @@
 		get data() {
 			return data;
 		},
+		get columns() {
+			return columns;
+		},
         initialState: {
             columnPinning: {
                 right: ["actions"]
             }
         },
-		columns,
 		getCoreRowModel: getCoreRowModel(),
 	});
 </script>

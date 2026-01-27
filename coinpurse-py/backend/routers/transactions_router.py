@@ -17,6 +17,7 @@ from schemas.transaction import (
     TransactionCreate,
     TransactionResponse,
     TransactionUpdate,
+    TransactionWithNamesResponse,
 )
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
@@ -100,6 +101,60 @@ def list_transactions(
         )
 
     return repo.get_all(include_inactive=include_inactive)
+
+
+@router.get("/with-names", response_model=list[TransactionWithNamesResponse])
+def list_transactions_with_names(
+    account_id: int | None = Query(None, description="Filter by account ID"),
+    category_id: int | None = Query(None, description="Filter by category ID"),
+    start_date: date | None = Query(None, description="Start date (inclusive)"),
+    end_date: date | None = Query(None, description="End date (inclusive)"),
+    include_inactive: bool = Query(False, description="Include inactive transactions"),
+    db: Session = Depends(get_db),
+):
+    """
+    Get all transactions with account and category names included.
+    Ideal for grid/table display.
+
+    - **account_id**: Optional filter by account ID
+    - **category_id**: Optional filter by category ID
+    - **start_date**: Optional start date filter (inclusive)
+    - **end_date**: Optional end date filter (inclusive)
+    - **include_inactive**: Set to true to include inactive transactions
+    """
+    repo = TransactionRepository(db)
+
+    # Use filtered query with relationships
+    if (
+        account_id is not None
+        or category_id is not None
+        or start_date is not None
+        or end_date is not None
+    ):
+        transactions = repo.get_by_date_range(
+            start_date=start_date,
+            end_date=end_date,
+            account_id=account_id,
+            category_id=category_id,
+            include_inactive=include_inactive,
+            with_relationships=True,
+        )
+    else:
+        transactions = repo.get_all(
+            include_inactive=include_inactive, with_relationships=True
+        )
+
+    # Map to response with names
+    return [
+        TransactionWithNamesResponse(
+            **{
+                **TransactionResponse.model_validate(t).model_dump(),
+                "account_name": t.account.account_name,
+                "category_name": t.category.name,
+            }
+        )
+        for t in transactions
+    ]
 
 
 @router.get("/search", response_model=list[TransactionResponse])

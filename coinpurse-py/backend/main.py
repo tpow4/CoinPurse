@@ -10,6 +10,7 @@ from scalar_fastapi import get_scalar_api_reference
 from routers.accounts_router import router as accounts_router
 from routers.balances_router import router as balances_router
 from routers.categories_router import router as categories_router
+from routers.import_router import router as import_router
 from routers.institutions_router import router as institutions_router
 from routers.transactions_router import router as transactions_router
 
@@ -29,12 +30,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Rotuer Registrations
+# Router Registrations
 app.include_router(institutions_router, prefix="/api")
 app.include_router(accounts_router, prefix="/api")
 app.include_router(balances_router, prefix="/api")
 app.include_router(categories_router, prefix="/api")
 app.include_router(transactions_router, prefix="/api")
+app.include_router(import_router, prefix="/api")
 
 
 @app.get("/")

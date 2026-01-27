@@ -5,7 +5,7 @@ These are DTOs (Data Transfer Objects) for request/response validation
 
 from datetime import date, datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 BALANCE_DESCRIPTION = "Balance in cents"
 
@@ -39,15 +39,12 @@ class BalanceUpdate(BaseModel):
 class BalanceResponse(BalanceBase):
     """Schema for returning a balance (what API sends back)"""
 
+    # Allow pydantic to work with SQLAlchemy models
+    model_config = ConfigDict(from_attributes=True)
+
     balance_id: int
     created_at: datetime
     modified_at: datetime
-
-    class Config:
-        """Pydantic configuration"""
-
-        # Allows Pydantic to work with SQLAlchemy models
-        from_attributes = True
 
 
 class MonthlyBalancePoint(BaseModel):

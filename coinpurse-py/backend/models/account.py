@@ -9,6 +9,8 @@ from .base import AccountType, Base, TaxTreatmentType
 # imports types for FKs only during type checking
 if TYPE_CHECKING:
     from .balance import AccountBalance
+    from .import_batch import ImportBatch
+    from .import_template import ImportTemplate
     from .institution import Institution
     from .transaction import Transaction
 
@@ -21,6 +23,9 @@ class Account(Base):
     account_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     institution_id: Mapped[int] = mapped_column(
         ForeignKey("institutions.institution_id")
+    )
+    template_id: Mapped[int | None] = mapped_column(
+        ForeignKey("import_templates.template_id"), nullable=True
     )
     account_name: Mapped[str]
     account_type: Mapped[AccountType]
@@ -37,12 +42,16 @@ class Account(Base):
 
     # Relationships
     institution: Mapped["Institution"] = relationship(back_populates="accounts")
+    import_template: Mapped["ImportTemplate | None"] = relationship(
+        back_populates="accounts"
+    )
     transactions: Mapped[list["Transaction"]] = relationship(
         back_populates="account", cascade="all, delete-orphan"
     )
     balances: Mapped[list["AccountBalance"]] = relationship(
         back_populates="account", cascade="all, delete-orphan"
     )
+    import_batches: Mapped[list["ImportBatch"]] = relationship(back_populates="account")
 
     def __repr__(self):
         return f"<Account(id={self.account_id}, name='{self.account_name}', type={self.account_type.value})>"

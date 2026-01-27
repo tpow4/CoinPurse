@@ -1,5 +1,5 @@
 import { apiFetch, buildQueryString } from '../api';
-import type { TransactionFilters, Transaction, SearchParams, TransactionCreate, TransactionUpdate } from '$lib/types';
+import type { TransactionFilters, Transaction, TransactionWithNames, SearchParams, TransactionCreate, TransactionUpdate } from '$lib/types';
 
 export const transactionsApi = {
   /**
@@ -8,6 +8,15 @@ export const transactionsApi = {
   getAll(filters: TransactionFilters = {}): Promise<Transaction[]> {
     const query = buildQueryString(filters);
     return apiFetch<Transaction[]>(`/transactions${query}`);
+  },
+
+  /**
+   * Get all transactions with account and category names included
+   * Ideal for grid/table display
+   */
+  getAllWithNames(filters: TransactionFilters = {}): Promise<TransactionWithNames[]> {
+    const query = buildQueryString(filters);
+    return apiFetch<TransactionWithNames[]>(`/transactions/with-names${query}`);
   },
 
   /**

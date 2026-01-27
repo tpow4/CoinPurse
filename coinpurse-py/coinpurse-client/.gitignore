@@ -8,11 +8,16 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-.build
-.svelte-kit
+/build
+/.svelte-kit
 dist
 dist-ssr
 *.local
+/package
+
+# vite config files
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
 
 # local env files
 .env
@@ -29,3 +34,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+

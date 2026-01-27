@@ -39,7 +39,7 @@ export interface Institution {
     name: string;
     is_active: boolean;
     created_at: string;
-    updated_at: string;
+    modified_at: string;
 }
 
 export interface InstitutionCreate {
@@ -58,7 +58,7 @@ export interface Category {
     name: string;
     is_active: boolean;
     created_at: string;
-    updated_at: string;
+    modified_at: string;
 }
 
 export interface CategoryCreate {
@@ -77,6 +77,7 @@ export interface Account {
     account_id: number;
     account_name: string;
     institution_id: number;
+    template_id: number | null;
     account_type: AccountType;
     tax_treatment: TaxTreatmentType;
     last_4_digits: string;
@@ -153,6 +154,11 @@ export interface TransactionUpdate {
     is_active?: boolean;
 }
 
+export interface TransactionWithNames extends Transaction {
+    account_name: string;
+    category_name: string;
+}
+
 // Balance types
 
 export interface AccountBalance {
@@ -220,6 +226,72 @@ export interface TransactionFilters {
 export interface SearchParams {
     q: string;
     include_inactive?: boolean;
+}
+
+// Import types
+
+export enum FileFormat {
+    CSV = 'csv',
+    EXCEL = 'excel',
+}
+
+export enum ImportStatus {
+    PREVIEW = 'preview',
+    COMPLETED = 'completed',
+    FAILED = 'failed',
+}
+
+export interface ImportTemplate {
+    template_id: number;
+    template_name: string;
+    file_format: FileFormat;
+    column_mappings: Record<string, string | null>;
+    amount_config: Record<string, any>;
+    header_row: number;
+    skip_rows: number;
+    date_format: string;
+    is_active: boolean;
+    created_at: string;
+    modified_at: string;
+}
+
+export interface ParsedTransaction {
+    row_number: number;
+    transaction_date: string | null;
+    posted_date: string | null;
+    description: string;
+    amount: number; // Amount in cents
+    transaction_type: string; // CREDIT or DEBIT
+    category_name: string | null;
+    coinpurse_category_id: number | null;
+    is_duplicate: boolean;
+    validation_errors: string[];
+}
+
+export interface ImportPreviewSummary {
+    total_rows: number;
+    valid_rows: number;
+    duplicate_count: number;
+    validation_errors: number;
+}
+
+export interface ImportPreviewResponse {
+    import_batch_id: number;
+    summary: ImportPreviewSummary;
+    transactions: ParsedTransaction[];
+}
+
+export interface ImportConfirmRequest {
+    import_batch_id: number;
+    selected_rows: number[];
+}
+
+export interface ImportConfirmResponse {
+    import_batch_id: number;
+    imported_count: number;
+    skipped_count: number;
+    duplicate_count: number;
+    status: ImportStatus;
 }
 
 // Helper types

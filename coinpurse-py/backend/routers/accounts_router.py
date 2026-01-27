@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models.account import Account
 from repositories.account_repository import AccountRepository
+from repositories.import_template_repository import ImportTemplateRepository
 from repositories.institution_repository import InstitutionRepository
 from schemas.account import AccountCreate, AccountResponse, AccountUpdate
 
@@ -22,6 +23,7 @@ def create_account(account_data: AccountCreate, db: Session = Depends(get_db)):
 
     - **account_name**: Name of the account (required)
     - **institution_id**: ID of the institution this account belongs to (required)
+    - **template_id**: ID of the import template to use (optional)
     - **account_type**: Type of account (checking, credit_card, savings, etc.) (required)
     - **tax_treatment**: Tax treatment type of the account (required)
     - **last_4_digits**: Last 4 digits of the account number (required)
@@ -39,6 +41,15 @@ def create_account(account_data: AccountCreate, db: Session = Depends(get_db)):
             status_code=400,
             detail=f"Institution with ID {account_data.institution_id} not found",
         )
+
+    # Validate template exists if provided
+    if account_data.template_id is not None:
+        template_repo = ImportTemplateRepository(db)
+        if not template_repo.exists(account_data.template_id):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Import template with ID {account_data.template_id} not found",
+            )
 
     # Check if name already exists
     if repo.name_exists(account_data.account_name):
@@ -118,6 +129,7 @@ def update_account(
     - **account_id**: The ID of the account to update
     - **account_name**: New name (optional)
     - **institution_id**: New institution ID (optional)
+    - **template_id**: New import template ID (optional)
     - **account_type**: New account type (optional)
     - **tax_treatment**: New tax treatment type (optional)
     - **last_4_digits**: New last 4 digits (optional)
@@ -141,6 +153,15 @@ def update_account(
             raise HTTPException(
                 status_code=400,
                 detail=f"Institution with ID {account_data.institution_id} not found",
+            )
+
+    # Validate template exists if being updated
+    if account_data.template_id is not None:
+        template_repo = ImportTemplateRepository(db)
+        if not template_repo.exists(account_data.template_id):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Import template with ID {account_data.template_id} not found",
             )
 
     # Check if new name conflicts with existing account

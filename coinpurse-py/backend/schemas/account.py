@@ -5,7 +5,7 @@ These are DTOs (Data Transfer Objects) for request/response validation
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from models.base import AccountType, TaxTreatmentType
 
@@ -15,6 +15,7 @@ class AccountBase(BaseModel):
 
     account_name: str = Field(..., min_length=1, max_length=100)
     institution_id: int
+    template_id: int | None = None
     account_type: AccountType
     tax_treatment: TaxTreatmentType
     last_4_digits: str = Field(..., min_length=4, max_length=4, pattern=r"^\d{4}$")
@@ -35,6 +36,7 @@ class AccountUpdate(BaseModel):
 
     account_name: str | None = Field(None, min_length=1, max_length=100)
     institution_id: int | None = None
+    template_id: int | None = None
     account_type: AccountType | None = None
     tax_treatment: TaxTreatmentType | None = None
     last_4_digits: str | None = Field(
@@ -49,12 +51,10 @@ class AccountUpdate(BaseModel):
 class AccountResponse(AccountBase):
     """Schema for returning an account (what API sends back)"""
 
+    # Allow pydantic to work with SQLAlchemy models
+    model_config = ConfigDict(from_attributes=True)
+
     account_id: int
     created_at: datetime
     modified_at: datetime
 
-    class Config:
-        """Pydantic configuration"""
-
-        # Allows Pydantic to work with SQLAlchemy models
-        from_attributes = True

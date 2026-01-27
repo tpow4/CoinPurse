@@ -6,6 +6,7 @@
         Tag,
         Wallet,
         ArrowLeftRight,
+        Upload,
         Settings,
         SunIcon,
         MoonIcon,
@@ -20,6 +21,7 @@
         { href: '/', label: 'Home', icon: House },
         { href: '/categories', label: 'Categories', icon: Tag },
         { href: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
+        { href: '/import', label: 'Import', icon: Upload },
         { href: '/admin', label: 'Admin', icon: Settings },
     ];
 
