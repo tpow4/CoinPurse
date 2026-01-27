@@ -10,7 +10,7 @@
     import * as Select from '$lib/components/ui/select';
     import { Input } from '$lib/components/ui/input';
     import { Button } from '$lib/components/ui/button';
-    import { AlertTriangle } from '@lucide/svelte';
+    import { TriangleAlert } from '@lucide/svelte';
 
     interface Props {
         open: boolean;
@@ -393,7 +393,7 @@
                                     >
                                         {monthName}
                                         {#if existing}
-                                            <AlertTriangle
+                                            <TriangleAlert
                                                 class="h-3 w-3 text-amber-500"
                                             />
                                         {/if}
