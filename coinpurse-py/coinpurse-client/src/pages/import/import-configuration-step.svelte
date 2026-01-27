@@ -32,32 +32,19 @@
         onSubmit,
     }: Props = $props();
 
-    // Local state for select bindings
-    let localAccountId = $state<string>('');
-    let localTemplateId = $state<string>('');
     let fileInput: HTMLInputElement;
 
-    // Sync local state with props
-    $effect(() => {
-        localAccountId = accountId ? String(accountId) : '';
-    });
-    $effect(() => {
-        localTemplateId = templateId ? String(templateId) : '';
-    });
+    // Derived values for Select components
+    const accountValue = $derived(accountId ? String(accountId) : '');
+    const templateValue = $derived(templateId ? String(templateId) : '');
 
-    // Notify parent when local values change
-    $effect(() => {
-        const numericValue = localAccountId ? Number(localAccountId) : null;
-        if (numericValue !== accountId) {
-            onAccountChange(numericValue);
-        }
-    });
-    $effect(() => {
-        const numericValue = localTemplateId ? Number(localTemplateId) : null;
-        if (numericValue !== templateId) {
-            onTemplateChange(numericValue);
-        }
-    });
+    function handleAccountChange(value: string) {
+        onAccountChange(value ? Number(value) : null);
+    }
+
+    function handleTemplateChange(value: string) {
+        onTemplateChange(value ? Number(value) : null);
+    }
 
     // Get selected template for file type info
     const selectedTemplate = $derived(
@@ -109,22 +96,19 @@
         <!-- Account Selection -->
         <div class="space-y-2">
             <Label for="account-select">Account</Label>
-            <Select.Root type="single" bind:value={localAccountId}>
+            <Select.Root type="single" value={accountValue} onValueChange={handleAccountChange}>
                 <Select.Trigger id="account-select" class="w-full">
-                    {#if localAccountId}
-                        {accounts.find(
-                            (a) => String(a.account_id) === localAccountId
-                        )?.account_name ?? 'Select account'}
+                    {#if accountId}
+                        {accounts.find((a) => a.account_id === accountId)?.account_name ?? 'Select account'}
                     {:else}
                         Select account
                     {/if}
                 </Select.Trigger>
                 <Select.Content>
                     {#each accounts as account}
-                        <Select.Item
-                            value={String(account.account_id)}
-                            label={account.account_name}
-                        />
+                        <Select.Item value={String(account.account_id)}>
+                            {account.account_name}
+                        </Select.Item>
                     {/each}
                 </Select.Content>
             </Select.Root>
@@ -139,22 +123,19 @@
         <!-- Template Selection -->
         <div class="space-y-2">
             <Label for="template-select">Import Template</Label>
-            <Select.Root type="single" bind:value={localTemplateId}>
+            <Select.Root type="single" value={templateValue} onValueChange={handleTemplateChange}>
                 <Select.Trigger id="template-select" class="w-full">
-                    {#if localTemplateId}
-                        {templates.find(
-                            (t) => String(t.template_id) === localTemplateId
-                        )?.template_name ?? 'Select template'}
+                    {#if templateId}
+                        {templates.find((t) => t.template_id === templateId)?.template_name ?? 'Select template'}
                     {:else}
                         Select template
                     {/if}
                 </Select.Trigger>
                 <Select.Content>
                     {#each templates as template}
-                        <Select.Item
-                            value={String(template.template_id)}
-                            label={template.template_name}
-                        />
+                        <Select.Item value={String(template.template_id)}>
+                            {template.template_name}
+                        </Select.Item>
                     {/each}
                 </Select.Content>
             </Select.Root>
