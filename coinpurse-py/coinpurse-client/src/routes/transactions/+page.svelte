@@ -9,6 +9,8 @@
 		type TransactionFilter,
 	} from '../../pages/transactions/transactions-filters.svelte';
 	import { createColumns } from '../../pages/transactions/columns';
+	import { Button } from '$lib/components/ui/button';
+	import { Upload } from '@lucide/svelte';
 
 	// Data state
 	let transactions = $state<TransactionWithNames[]>([]);
@@ -208,7 +210,13 @@
 </script>
 
 <div class="mx-auto max-w-[1400px] p-8">
-	<h1 class="mb-6 text-3xl font-bold">Transactions</h1>
+	<div class="mb-6 flex items-center justify-between">
+		<h1 class="text-3xl font-bold">Transactions</h1>
+		<Button href="/import">
+			<Upload class="mr-2 size-4" />
+			Import
+		</Button>
+	</div>
 
 	{#if error}
 		<div class="mb-4 rounded bg-red-50 p-4 text-red-700">
