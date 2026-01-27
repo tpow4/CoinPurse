@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { untrack } from 'svelte';
     import type { Snippet } from 'svelte';
     import * as Collapsible from '$lib/components/ui/collapsible';
     import { ChevronDown, ChevronRight } from '@lucide/svelte';
@@ -20,8 +19,10 @@
         children,
     }: Props = $props();
 
-    // Initialize once with defaultOpen, don't sync reactively
-    let open = $state(untrack(() => defaultOpen));
+    let open = $state(defaultOpen);
+    function onOpenChange(isOpen: boolean) {
+        open = isOpen;
+    }
 
     const headerClass = $derived.by(() => {
         switch (variant) {
@@ -46,7 +47,7 @@
     });
 </script>
 
-<Collapsible.Root bind:open class="rounded-lg border">
+<Collapsible.Root open={defaultOpen} {onOpenChange} class="rounded-lg border">
     <Collapsible.Trigger
         class="flex w-full items-center justify-between rounded-t-lg px-4 py-3 text-left transition-colors {headerClass}"
     >

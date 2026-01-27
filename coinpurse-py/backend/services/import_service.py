@@ -85,7 +85,8 @@ class ImportService:
 
         # Calculate summary
         total_rows = len(transactions)
-        valid_rows = sum(1 for t in transactions if not t.get("validation_errors"))
+        valid_rows = sum(1 for t in transactions if not t.get("validation_errors")
+                         and not t.get("is_duplicate"))
         duplicate_count = sum(1 for t in transactions if t.get("is_duplicate"))
         validation_errors = sum(1 for t in transactions if t.get("validation_errors"))
 
