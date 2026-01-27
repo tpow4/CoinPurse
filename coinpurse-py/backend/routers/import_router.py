@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models import CategoryMapping, ImportTemplate
+from repositories.account_repository import AccountRepository
 from repositories.category_mapping_repository import CategoryMappingRepository
 from repositories.import_batch_repository import ImportBatchRepository
 from repositories.import_template_repository import ImportTemplateRepository
@@ -42,21 +43,32 @@ router = APIRouter(prefix="/import", tags=["import"])
 async def upload_and_preview(
     file: UploadFile = File(..., description="CSV or Excel file to import"),
     account_id: int = Form(..., description="Target account ID"),
-    template_id: int = Form(..., description="Import template ID to use"),
     db: Session = Depends(get_db),
 ):
     """
     Upload a file and preview transactions before importing.
 
     - **file**: The CSV or Excel file to import
-    - **account_id**: The account to import transactions into
-    - **template_id**: The import template that defines how to parse the file
+    - **account_id**: The account to import transactions into (must have template configured)
 
     Returns a preview with:
     - import_batch_id: Use this to confirm the import
     - summary: Counts of total, valid, duplicate, and error rows
     - transactions: List of parsed transactions with validation status
     """
+    # Validate account exists and has a template
+    account_repo = AccountRepository(db)
+    account = account_repo.get_by_id(account_id)
+
+    if not account:
+        raise HTTPException(status_code=404, detail=f"Account {account_id} not found")
+
+    if not account.template_id:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Account '{account.account_name}' has no import template configured.",
+        )
+
     service = ImportService(db)
 
     try:
@@ -70,7 +82,7 @@ async def upload_and_preview(
             file=file_obj,
             file_name=file.filename or "unknown",
             account_id=account_id,
-            template_id=template_id,
+            template_id=account.template_id,
         )
         return result
 

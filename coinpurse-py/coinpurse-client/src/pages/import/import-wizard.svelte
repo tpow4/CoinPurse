@@ -1,10 +1,5 @@
 <script lang="ts">
-    import type {
-        Account,
-        ImportConfirmResponse,
-        ImportPreviewResponse,
-        ImportTemplate,
-    } from '$lib/types';
+    import type { Account, ImportConfirmResponse, ImportPreviewResponse } from '$lib/types';
     import { accountsApi } from '$lib/api/accounts';
     import { importApi } from '$lib/api/import';
     import ImportConfigurationStep from './import-configuration-step.svelte';
@@ -17,7 +12,6 @@
 
     // Step 1: Configuration state
     let accountId = $state<number | null>(null);
-    let templateId = $state<number | null>(null);
     let file = $state<File | null>(null);
 
     // Step 2: Preview state
@@ -33,21 +27,16 @@
 
     // Reference data
     let accounts = $state<Account[]>([]);
-    let templates = $state<ImportTemplate[]>([]);
 
     // Load reference data on mount
     async function loadReferenceData() {
         try {
-            const [accountsRes, templatesRes] = await Promise.all([
-                accountsApi.getAll(false),
-                importApi.getTemplates(false),
-            ]);
+            const accountsRes = await accountsApi.getAll(false);
             // Only show accounts that track transactions
             accounts = accountsRes.filter((a) => a.tracks_transactions);
-            templates = templatesRes;
         } catch (e) {
             console.error('Failed to load reference data:', e);
-            error = 'Failed to load accounts and templates';
+            error = 'Failed to load accounts';
         }
     }
 
@@ -55,21 +44,15 @@
         loadReferenceData();
     });
 
-    // Handle account selection - auto-populate template
+    // Handle account selection
     function handleAccountChange(newAccountId: number | null) {
         accountId = newAccountId;
-        if (newAccountId) {
-            const account = accounts.find((a) => a.account_id === newAccountId);
-            if (account?.template_id) {
-                templateId = account.template_id;
-            }
-        }
     }
 
     // Handle file upload and preview
     async function handleUploadAndPreview() {
-        if (!accountId || !templateId || !file) {
-            error = 'Please select an account, template, and file';
+        if (!accountId || !file) {
+            error = 'Please select an account and file';
             return;
         }
 
@@ -77,11 +60,7 @@
         error = '';
 
         try {
-            previewResponse = await importApi.uploadAndPreview(
-                file,
-                accountId,
-                templateId
-            );
+            previewResponse = await importApi.uploadAndPreview(file, accountId);
 
             // Pre-select all valid, non-duplicate rows
             selectedRows = new Set(
@@ -129,7 +108,6 @@
     function handleReset() {
         currentStep = 'config';
         accountId = null;
-        templateId = null;
         file = null;
         previewResponse = null;
         selectedRows = new Set();
@@ -214,13 +192,10 @@
 {#if currentStep === 'config'}
     <ImportConfigurationStep
         {accounts}
-        {templates}
         {accountId}
-        {templateId}
         {file}
         {loading}
         onAccountChange={handleAccountChange}
-        onTemplateChange={(v) => (templateId = v)}
         onFileChange={(v) => (file = v)}
         onSubmit={handleUploadAndPreview}
     />

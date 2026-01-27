@@ -25,16 +25,12 @@ export const importApi = {
 	/**
 	 * Upload a file and get preview of parsed transactions
 	 * Uses multipart form data instead of JSON
+	 * Template is derived from the account's configured template
 	 */
-	async uploadAndPreview(
-		file: File,
-		accountId: number,
-		templateId: number
-	): Promise<ImportPreviewResponse> {
+	async uploadAndPreview(file: File, accountId: number): Promise<ImportPreviewResponse> {
 		const formData = new FormData();
 		formData.append('file', file);
 		formData.append('account_id', String(accountId));
-		formData.append('template_id', String(templateId));
 
 		const url = `${API_BASE_URL}/import/upload`;
 
