@@ -37,7 +37,7 @@ python-dotenv==1.2.1
 python-multipart==0.0.22
 PyYAML==6.0.3
 rich==14.3.1
-rich-toolkit==0.17.1
+rich-toolkit==0.17.2
 rignore==0.7.6
 ruff==0.14.14
 scalar_fastapi==1.6.1
