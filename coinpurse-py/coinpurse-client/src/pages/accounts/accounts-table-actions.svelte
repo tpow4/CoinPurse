@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { Account } from "$lib/types";
 	import { Button } from "$lib/components/ui/button";
+	import PencilIcon from "@lucide/svelte/icons/pencil";
+	import TrashIcon from "@lucide/svelte/icons/trash-2";
 
 	interface Props {
 		account: Account;
@@ -11,21 +13,23 @@
 	let { account, onEdit, onDelete }: Props = $props();
 </script>
 
-<div class="flex gap-2">
+<div class="flex gap-1 justify-end">
 	<Button
-		variant="secondary"
+		variant="ghost"
 		size="sm"
 		disabled={!account.active}
 		onclick={() => onEdit?.(account)}
+		title="Edit"
 	>
-		Edit
+		<PencilIcon class="size-4" />
 	</Button>
 	<Button
-		variant="destructive"
+		variant="ghost"
 		size="sm"
 		disabled={!account.active}
 		onclick={() => onDelete?.(account)}
+		title="Delete"
 	>
-		Delete
+		<TrashIcon class="size-4" />
 	</Button>
 </div>
