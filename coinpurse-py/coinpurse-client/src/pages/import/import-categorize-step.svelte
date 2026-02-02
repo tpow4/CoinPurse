@@ -40,37 +40,28 @@
         }))
     );
 
-    // Local state for per-row combobox values (string for combobox binding)
-    // Initialize from overrides or first candidate
-    let rowValues = $state<Record<number, string>>(initRowValues());
-
-    function initRowValues(): Record<number, string> {
+    function buildRowValues(
+        txs: ParsedTransaction[],
+        overrides: Map<number, number>
+    ): Record<number, string> {
         const values: Record<number, string> = {};
-        // Note: this runs once at component creation. transactions/categoryOverrides
-        // are available from props at that point.
-        return values;
-    }
-
-    // Initialize row values on first render
-    $effect(() => {
-        // Only initialize if rowValues is empty (first render)
-        if (Object.keys(rowValues).length > 0) return;
-        const values: Record<number, string> = {};
-        for (const tx of transactions) {
-            if (categoryOverrides.has(tx.row_number)) {
-                values[tx.row_number] = String(
-                    categoryOverrides.get(tx.row_number)
-                );
+        for (const tx of txs) {
+            if (overrides.has(tx.row_number)) {
+                values[tx.row_number] = String(overrides.get(tx.row_number));
             } else if (tx.candidate_category_ids.length >= 1) {
-                values[tx.row_number] = String(
-                    tx.candidate_category_ids[0]
-                );
+                values[tx.row_number] = String(tx.candidate_category_ids[0]);
             } else {
                 values[tx.row_number] = '';
             }
         }
-        rowValues = values;
-    });
+        return values;
+    }
+
+    // Local state for per-row combobox values (string for combobox binding).
+    // Initialize eagerly so bind targets are never undefined.
+    let rowValues = $state<Record<number, string>>(
+        buildRowValues(transactions, categoryOverrides)
+    );
 
     // Count how many have a category selected
     const categorizedCount = $derived(
