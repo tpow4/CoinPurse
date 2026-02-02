@@ -228,6 +228,35 @@ export interface SearchParams {
     include_inactive?: boolean;
 }
 
+// Category Mapping types
+
+export interface CategoryMapping {
+    mapping_id: number;
+    institution_id: number;
+    bank_category_name: string;
+    coinpurse_category_id: number;
+    priority: number;
+    is_active: boolean;
+    created_at: string;
+    modified_at: string;
+}
+
+export interface CategoryMappingCreate {
+    institution_id: number;
+    bank_category_name: string;
+    coinpurse_category_id: number;
+    priority?: number;
+    is_active?: boolean;
+}
+
+export interface CategoryMappingUpdate {
+    institution_id?: number;
+    bank_category_name?: string;
+    coinpurse_category_id?: number;
+    priority?: number;
+    is_active?: boolean;
+}
+
 // Import types
 
 export enum FileFormat {

@@ -18,9 +18,13 @@ class CategoryMapping(Base):
     __tablename__ = "category_mappings"
 
     mapping_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    institution_id: Mapped[int] = mapped_column(ForeignKey("institutions.institution_id"))
+    institution_id: Mapped[int] = mapped_column(
+        ForeignKey("institutions.institution_id")
+    )
     bank_category_name: Mapped[str] = mapped_column(String(100))
-    coinpurse_category_id: Mapped[int] = mapped_column(ForeignKey("categories.category_id"))
+    coinpurse_category_id: Mapped[int] = mapped_column(
+        ForeignKey("categories.category_id")
+    )
     priority: Mapped[int] = mapped_column(default=1)
     is_active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(UTC))
@@ -29,8 +33,12 @@ class CategoryMapping(Base):
     )
 
     # Relationships
-    institution: Mapped["Institution"] = relationship(back_populates="category_mappings")
+    institution: Mapped["Institution"] = relationship(
+        back_populates="category_mappings"
+    )
     category: Mapped["Category"] = relationship(back_populates="category_mappings")
 
     def __repr__(self):
-        return f"<CategoryMapping(id={self.mapping_id}, bank='{self.bank_category_name}')>"
+        return (
+            f"<CategoryMapping(id={self.mapping_id}, bank='{self.bank_category_name}')>"
+        )
