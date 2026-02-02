@@ -264,6 +264,7 @@ export interface ParsedTransaction {
     transaction_type: string; // CREDIT or DEBIT
     category_name: string | null;
     coinpurse_category_id: number | null;
+    candidate_category_ids: number[];
     is_duplicate: boolean;
     validation_errors: string[];
 }
@@ -284,6 +285,7 @@ export interface ImportPreviewResponse {
 export interface ImportConfirmRequest {
     import_batch_id: number;
     selected_rows: number[];
+    category_overrides?: Record<number, number>; // row_number → category_id
 }
 
 export interface ImportConfirmResponse {
