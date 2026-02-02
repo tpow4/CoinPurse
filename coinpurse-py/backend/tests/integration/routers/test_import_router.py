@@ -209,8 +209,8 @@ class TestCategoryMappingEndpoints:
         data = response.json()
         assert data["bank_category_name"] == "Bank Category"
 
-    def test_create_mapping_duplicate(self, client, setup_data):
-        """Should reject duplicate mappings"""
+    def test_create_mapping_exact_duplicate(self, client, setup_data):
+        """Should reject exact duplicate mappings (same institution + bank category + coinpurse category)"""
         # Create first mapping
         client.post(
             "/api/import/category-mappings",
@@ -221,7 +221,7 @@ class TestCategoryMappingEndpoints:
             },
         )
 
-        # Try duplicate
+        # Try exact duplicate (same triple)
         response = client.post(
             "/api/import/category-mappings",
             json={
@@ -233,6 +233,37 @@ class TestCategoryMappingEndpoints:
 
         assert response.status_code == 400
         assert "already exists" in response.json()["detail"]
+
+    def test_create_mapping_same_bank_category_different_coinpurse(self, client, db_session, setup_data):
+        """Should allow same bank category mapped to different coinpurse categories"""
+        # Create a second category
+        category2 = Category(name="Another Category")
+        db_session.add(category2)
+        db_session.commit()
+        db_session.refresh(category2)
+
+        # Create first mapping
+        response1 = client.post(
+            "/api/import/category-mappings",
+            json={
+                "institution_id": setup_data["institution"].institution_id,
+                "bank_category_name": "Ambiguous",
+                "coinpurse_category_id": setup_data["category"].category_id,
+            },
+        )
+        assert response1.status_code == 201
+
+        # Create second mapping with same bank category but different coinpurse category
+        response2 = client.post(
+            "/api/import/category-mappings",
+            json={
+                "institution_id": setup_data["institution"].institution_id,
+                "bank_category_name": "Ambiguous",
+                "coinpurse_category_id": category2.category_id,
+                "priority": 2,
+            },
+        )
+        assert response2.status_code == 201
 
     def test_list_mappings_by_institution(self, client, db_session, setup_data):
         """Should filter mappings by institution"""
@@ -441,6 +472,31 @@ class TestImportConfirmEndpoint:
         result = response.json()
         assert result["imported_count"] == 2
         assert result["skipped_count"] == 1  # Third row not selected
+        assert result["status"] == "completed"
+
+    def test_confirm_with_category_override(self, client, db_session, setup_with_preview):
+        """Should use overridden category when category_overrides provided"""
+        # Create a category to override with
+        override_category = Category(name="Override Category")
+        db_session.add(override_category)
+        db_session.commit()
+        db_session.refresh(override_category)
+
+        # Confirm with override for row 2
+        response = client.post(
+            "/api/import/confirm",
+            json={
+                "import_batch_id": setup_with_preview["import_batch_id"],
+                "selected_rows": [2, 3],
+                "category_overrides": {
+                    "2": override_category.category_id,
+                },
+            },
+        )
+
+        assert response.status_code == 200
+        result = response.json()
+        assert result["imported_count"] == 2
         assert result["status"] == "completed"
 
     def test_confirm_invalid_batch(self, client):

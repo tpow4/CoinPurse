@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, String, UniqueConstraint
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
@@ -16,10 +16,6 @@ class CategoryMapping(Base):
     """Maps institution-specific category names to CoinPurse categories"""
 
     __tablename__ = "category_mappings"
-
-    __table_args__ = (
-        UniqueConstraint("institution_id", "bank_category_name", name="uq_institution_bank_category"),
-    )
 
     mapping_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     institution_id: Mapped[int] = mapped_column(ForeignKey("institutions.institution_id"))

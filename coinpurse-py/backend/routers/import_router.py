@@ -111,6 +111,7 @@ def confirm_import(
         result = service.confirm_import(
             import_batch_id=request.import_batch_id,
             selected_rows=request.selected_rows,
+            category_overrides=request.category_overrides,
         )
         return result
 
@@ -357,11 +358,15 @@ def create_category_mapping(
     """
     repo = CategoryMappingRepository(db)
 
-    # Check for duplicate mapping
-    if repo.mapping_exists(mapping_data.institution_id, mapping_data.bank_category_name):
+    # Check for exact duplicate mapping (same institution + bank category + coinpurse category)
+    if repo.mapping_exists(
+        mapping_data.institution_id,
+        mapping_data.bank_category_name,
+        mapping_data.coinpurse_category_id,
+    ):
         raise HTTPException(
             status_code=400,
-            detail=f"Mapping for '{mapping_data.bank_category_name}' already exists for this institution",
+            detail=f"Mapping for '{mapping_data.bank_category_name}' -> category {mapping_data.coinpurse_category_id} already exists for this institution",
         )
 
     mapping = CategoryMapping(**mapping_data.model_dump())
@@ -386,13 +391,17 @@ def update_category_mapping(
     if not mapping:
         raise HTTPException(status_code=404, detail=f"Mapping {mapping_id} not found")
 
-    # Check for conflict if bank_category_name is being updated
-    if mapping_data.bank_category_name:
+    # Check for conflict if bank_category_name or coinpurse_category_id is being updated
+    if mapping_data.bank_category_name or mapping_data.coinpurse_category_id:
         institution_id = mapping_data.institution_id or mapping.institution_id
-        if repo.mapping_exists(institution_id, mapping_data.bank_category_name, exclude_id=mapping_id):
+        bank_cat = mapping_data.bank_category_name or mapping.bank_category_name
+        coinpurse_cat = mapping_data.coinpurse_category_id or mapping.coinpurse_category_id
+        if repo.mapping_exists(
+            institution_id, bank_cat, coinpurse_cat, exclude_id=mapping_id
+        ):
             raise HTTPException(
                 status_code=400,
-                detail=f"Mapping for '{mapping_data.bank_category_name}' already exists",
+                detail=f"Mapping for '{bank_cat}' -> category {coinpurse_cat} already exists",
             )
 
     # Update only provided fields
