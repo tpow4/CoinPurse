@@ -30,27 +30,48 @@ def seed_data():
     """Seed initial data into the database"""
     db = SessionLocal()
     try:
-        _seed_uncategorized_category(db)
+        _seed_categories(db)
         _seed_institutions(db)
         _seed_import_templates(db)
     finally:
         db.close()
 
 
-def _seed_uncategorized_category(db):
-    """Seed the Uncategorized category"""
-    stmt = select(Category).where(Category.name == "Uncategorized")
-    existing = db.scalar(stmt)
-    if existing is None:
-        db.add(Category(name="Uncategorized"))
-        db.commit()
-        print("Seeded 'Uncategorized' category.")
-    elif not existing.is_active:
-        existing.is_active = True
-        db.commit()
-        print("Re-activated 'Uncategorized' category.")
-    else:
-        print("'Uncategorized' category already exists.")
+def _seed_categories(db):
+    """Seed the default categories"""
+    categories = [
+        "Uncategorized",
+        "Automotive",
+        "Bills & utilities",
+        "Education",
+        "Entertainment",
+        "Fees & adjustments",
+        "Food & drink",
+        "Gas",
+        "Gifts & donations",
+        "Groceries",
+        "Health",
+        "Home improvement",
+        "Miscellaneous",
+        "Payment services",
+        "Professional services",
+        "Shopping",
+        "Travel",
+    ]
+
+    for name in categories:
+        stmt = select(Category).where(Category.name == name)
+        existing = db.scalar(stmt)
+        if existing is None:
+            db.add(Category(name=name))
+            print(f"Seeded '{name}' category.")
+        elif not existing.is_active:
+            existing.is_active = True
+            print(f"Re-activated '{name}' category.")
+        else:
+            print(f"'{name}' category already exists.")
+
+    db.commit()
 
 
 def _seed_institutions(db):
