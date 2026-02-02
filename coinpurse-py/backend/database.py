@@ -3,7 +3,14 @@ from pathlib import Path
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
-from models import Base, Category, CategoryMapping, FileFormat, ImportTemplate, Institution
+from models import (
+    Base,
+    Category,
+    CategoryMapping,
+    FileFormat,
+    ImportTemplate,
+    Institution,
+)
 
 BASE_DIR = Path(__file__).resolve().parent
 DATABASE_PATH = BASE_DIR / "coinpurse.db"
@@ -175,49 +182,49 @@ def _seed_category_mappings(db):
     # bank_category_name -> list of coinpurse_category_ids
     institution_mappings = {
         "Chase": [
-            ("Automotive", [1]),
-            ("Bills & utilities", [2]),
-            ("Education", [3]),
-            ("Entertainment", [4]),
-            ("Fees & adjustments", [5]),
-            ("Food & drink", [6]),
-            ("Gas", [7]),
-            ("Gifts & donations", [8]),
-            ("Groceries", [9]),
-            ("Health & wellness", [10]),
-            ("Home", [11]),
-            ("Miscellaneous", [12]),
-            ("Personal", [13]),
-            ("Professional services", [14]),
-            ("Shopping", [15]),
-            ("Travel", [16]),
+            ("Automotive", [2]),
+            ("Bills & utilities", [3]),
+            ("Education", [4]),
+            ("Entertainment", [5]),
+            ("Fees & adjustments", [6]),
+            ("Food & drink", [7]),
+            ("Gas", [8]),
+            ("Gifts & donations", [9]),
+            ("Groceries", [10]),
+            ("Health & wellness", [11]),
+            ("Home", [12]),
+            ("Miscellaneous", [13]),
+            ("Personal", [14]),
+            ("Professional services", [15]),
+            ("Shopping", [16]),
+            ("Travel", [17]),
         ],
         "Discover": [
-            ("Automotive", [1]),
-            ("Department stores", [15]),
-            ("Education", [3]),
-            ("Gasoline", [7]),
-            ("Government services", [14]),
-            ("Home improvement", [11]),
-            ("Medical services", [10]),
-            ("Merchandise", [15]),
-            ("Restaurants", [6]),
-            ("Services", [14]),
-            ("Supermarkets", [9]),
-            ("Travel / Entertainment", [4, 16]),
-            ("Wholesale clubs", [15]),
+            ("Automotive", [2]),
+            ("Department stores", [16]),
+            ("Education", [4]),
+            ("Gasoline", [8]),
+            ("Government services", [15]),
+            ("Home improvement", [12]),
+            ("Medical services", [11]),
+            ("Merchandise", [16]),
+            ("Restaurants", [7]),
+            ("Services", [15]),
+            ("Supermarkets", [10]),
+            ("Travel / Entertainment", [5, 17]),
+            ("Wholesale clubs", [16]),
         ],
         "Capital One": [
-            ("Dining", [6]),
-            ("Entertainment", [4]),
-            ("Gas/Automotive", [1, 7]),
-            ("Grocery", [9]),
-            ("Healthcare", [10]),
-            ("Internet", [2]),
-            ("Other", [12]),
-            ("Other services", [14]),
-            ("Other Travel", [16]),
-            ("Phone/cable", [2]),
+            ("Dining", [7]),
+            ("Entertainment", [5]),
+            ("Gas/Automotive", [2, 8]),
+            ("Grocery", [10]),
+            ("Healthcare", [11]),
+            ("Internet", [3]),
+            ("Other", [13]),
+            ("Other services", [15]),
+            ("Other Travel", [17]),
+            ("Phone/cable", [3]),
         ],
     }
 
@@ -226,7 +233,9 @@ def _seed_category_mappings(db):
             select(Institution).where(Institution.name == institution_name)
         )
         if not institution:
-            print(f"{institution_name} institution not found, skipping category mappings.")
+            print(
+                f"{institution_name} institution not found, skipping category mappings."
+            )
             continue
 
         for bank_category, category_ids in mappings:
@@ -251,7 +260,9 @@ def _seed_category_mappings(db):
                         f"'{bank_category}' -> category {category_id} (priority {priority})."
                     )
                 else:
-                    print(f"{institution_name} mapping '{bank_category}' -> {category_id} already exists.")
+                    print(
+                        f"{institution_name} mapping '{bank_category}' -> {category_id} already exists."
+                    )
 
         db.commit()
 
