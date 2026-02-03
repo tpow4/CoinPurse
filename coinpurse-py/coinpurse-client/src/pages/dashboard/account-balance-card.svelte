@@ -17,6 +17,7 @@
     import { Button } from '$lib/components/ui/button';
     import AccountBalanceChart from './account-balance-chart.svelte';
     import AddBalanceDialog from './add-balance-dialog.svelte';
+    import { formatCurrency, formatDate } from '$lib/format';
 
     interface Props {
         account: (Account & { institution_name?: string }) | Account;
@@ -33,16 +34,6 @@
         onCreateBalance,
         onCreateBalanceBatch,
     }: Props = $props();
-
-    const currency = new Intl.NumberFormat(undefined, {
-        style: 'currency',
-        currency: 'USD',
-    });
-    const dateFmt = new Intl.DateTimeFormat(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
 
     const accountTypeLabelByValue: Record<string, string> = {
         [AccountType.BANKING]: 'Banking',
@@ -61,12 +52,12 @@
     );
 
     const balanceText = $derived(
-        latestBalance ? currency.format(latestBalance.balance / 100) : 'No data'
+        latestBalance ? formatCurrency(latestBalance.balance / 100) : 'No data'
     );
 
     const updatedText = $derived(
         latestBalance
-            ? `Updated ${dateFmt.format(new Date(latestBalance.balance_date))}`
+            ? `Updated ${formatDate(new Date(latestBalance.balance_date))}`
             : ''
     );
 

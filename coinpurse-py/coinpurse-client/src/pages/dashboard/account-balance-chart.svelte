@@ -4,20 +4,13 @@
     import { curveLinear } from 'd3-shape';
     import { scaleUtc } from 'd3-scale';
     import * as Chart from '$lib/components/ui/chart/index.js';
+    import { formatCompactCurrency, formatDate, formatDateCompact } from '$lib/format';
 
     interface Props {
         balances: AccountBalance[];
     }
 
     let { balances }: Props = $props();
-
-    const compactCurrency = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        notation: 'compact',
-        compactDisplay: 'short',
-        maximumFractionDigits: 1,
-    });
 
     function parseIsoDate(date: string): Date {
         // Ensure stable UTC date parsing for YYYY-MM-DD inputs
@@ -81,15 +74,12 @@
                 },
                 xAxis: {
                     format: (v: Date) =>
-                        v.toLocaleDateString(undefined, {
-                            day: '2-digit',
-                            month: '2-digit',
-                        }),
+                        formatDateCompact(v),
                 },
                 yAxis: {
                     format: (v) =>
                         typeof v === 'number'
-                            ? compactCurrency.format(v)
+                            ? formatCompactCurrency(v)
                             : String(v),
                 },
             }}
@@ -97,11 +87,7 @@
             {#snippet tooltip()}
                 <Chart.Tooltip
                     labelFormatter={(v: Date) =>
-                        v.toLocaleDateString(undefined, {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                        })}
+                        formatDate(v)}
                     indicator="line"
                 />
             {/snippet}

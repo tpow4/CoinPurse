@@ -4,28 +4,50 @@
     import {
         House,
         Tag,
-        Wallet,
         ArrowLeftRight,
         Upload,
         Settings,
         SunIcon,
         MoonIcon,
+        Wallet,
     } from '@lucide/svelte';
     import { page } from '$app/state';
     import { Button } from '$lib/components/ui/button';
     import { toggleMode, ModeWatcher } from 'mode-watcher';
+    import * as m from '$lib/paraglide/messages';
+    import {
+        getLocale,
+        localizeHref,
+        deLocalizeHref,
+    } from '$lib/paraglide/runtime';
 
     let { children } = $props();
 
-    const navItems = [
-        { href: '/', label: 'Home', icon: House },
-        { href: '/categories', label: 'Categories', icon: Tag },
-        { href: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
-        { href: '/import', label: 'Import', icon: Upload },
-        { href: '/admin', label: 'Admin', icon: Settings },
-    ];
+    $effect(() => {
+        document.documentElement.lang = getLocale();
+    });
 
-    const isActive = (href: string) => page.url.pathname === href;
+    const navItems = $derived([
+        { href: localizeHref('/'), label: m.nav_home(), icon: House },
+        {
+            href: localizeHref('/categories'),
+            label: m.nav_categories(),
+            icon: Tag,
+        },
+        {
+            href: localizeHref('/transactions'),
+            label: m.nav_transactions(),
+            icon: ArrowLeftRight,
+        },
+        { href: localizeHref('/import'), label: m.nav_import(), icon: Upload },
+        { href: localizeHref('/admin'), label: m.nav_admin(), icon: Settings },
+    ]);
+
+    const isActive = (href: string) => {
+        const currentPath = deLocalizeHref(page.url.pathname);
+        const itemPath = deLocalizeHref(href);
+        return currentPath === itemPath;
+    };
 </script>
 
 <ModeWatcher />

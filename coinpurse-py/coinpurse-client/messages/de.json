@@ -1,0 +1,19 @@
+{
+    "$schema": "https://inlang.com/schema/inlang-message-format",
+    "locale_name": "Deutsch",
+    "nav_home": "Startseite",
+    "nav_categories": "Kategorien",
+    "nav_transactions": "Transaktionen",
+    "nav_import": "Importieren",
+    "nav_admin": "Verwaltung",
+    "admin_title": "Verwaltung",
+    "admin_description": "Institutionen und Konten verwalten",
+    "admin_tab_general": "Allgemein",
+    "admin_tab_institutions": "Institutionen",
+    "admin_tab_accounts": "Konten",
+    "general_locale_label": "Sprache",
+    "general_locale_description": "Wähle die Anzeigesprache der Anwendung.",
+    "general_currency_label": "Währung",
+    "general_currency_description": "Wähle die Standardwährung für die Betragsanzeige.",
+    "general_saved": "Einstellungen gespeichert"
+}

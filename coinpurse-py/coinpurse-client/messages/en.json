@@ -1,0 +1,19 @@
+{
+    "$schema": "https://inlang.com/schema/inlang-message-format",
+    "locale_name": "English",
+    "nav_home": "Home",
+    "nav_categories": "Categories",
+    "nav_transactions": "Transactions",
+    "nav_import": "Import",
+    "nav_admin": "Admin",
+    "admin_title": "Admin",
+    "admin_description": "Manage institutions and accounts",
+    "admin_tab_general": "General",
+    "admin_tab_institutions": "Institutions",
+    "admin_tab_accounts": "Accounts",
+    "general_locale_label": "Language",
+    "general_locale_description": "Choose the display language for the application.",
+    "general_currency_label": "Currency",
+    "general_currency_description": "Choose the default currency for displaying amounts.",
+    "general_saved": "Settings saved"
+}

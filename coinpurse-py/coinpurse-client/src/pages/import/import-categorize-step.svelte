@@ -4,6 +4,7 @@
     import { Button } from '$lib/components/ui/button';
     import * as Card from '$lib/components/ui/card';
     import * as Table from '$lib/components/ui/table';
+    import { formatCurrency, formatDate } from '$lib/format';
 
     interface Props {
         transactions: ParsedTransaction[];
@@ -88,18 +89,13 @@
             .filter((name): name is string => !!name);
     }
 
-    function formatDate(dateStr: string | null): string {
+    function formatDateCell(dateStr: string | null): string {
         if (!dateStr) return '-';
-        const date = new Date(dateStr);
-        return date.toLocaleDateString();
+        return formatDate(new Date(dateStr));
     }
 
     function formatAmount(cents: number): string {
-        const dollars = cents / 100;
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-        }).format(dollars);
+        return formatCurrency(cents / 100);
     }
 
     function getAmountClass(amount: number): string {
@@ -159,7 +155,7 @@
                                 {tx.row_number}
                             </Table.Cell>
                             <Table.Cell class="text-sm">
-                                {formatDate(tx.transaction_date)}
+                                {formatDateCell(tx.transaction_date)}
                             </Table.Cell>
                             <Table.Cell
                                 class="max-w-62.5 truncate"

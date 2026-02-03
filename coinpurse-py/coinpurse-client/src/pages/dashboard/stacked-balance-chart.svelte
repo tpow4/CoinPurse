@@ -15,6 +15,7 @@
     } from '$lib/components/ui/card';
     import { ButtonGroup } from '$lib/components/ui/button-group';
     import { Button } from '$lib/components/ui/button';
+    import { formatCompactCurrency, formatPercent, formatDate, formatDateCompact } from '$lib/format';
 
     type DateRange = 'ytd' | '1y' | 'max';
 
@@ -41,23 +42,6 @@
     let response = $state<MonthlyBalanceAggregateResponse | null>(null);
     let selectedRange = $state<DateRange>('ytd');
 
-    const compactCurrency = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        notation: 'compact',
-        compactDisplay: 'short',
-        maximumFractionDigits: 1,
-    });
-
-    const percent = new Intl.NumberFormat(undefined, {
-        style: 'percent',
-        maximumFractionDigits: 1,
-    });
-    const dateFmt = new Intl.DateTimeFormat(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
     const changeIsPositive = $derived(netWorthChange >= 0);
     const changeClass = $derived(
         changeIsPositive ? 'text-emerald-600' : 'text-red-600'
@@ -190,14 +174,14 @@
                     </CardTitle>
                     <div class="flex flex-row items-center gap-3">
                         <div class="text-3xl font-semibold tracking-tight">
-                            {compactCurrency.format(netWorthTotal / 100)}
+                            {formatCompactCurrency(netWorthTotal / 100)}
                         </div>
                         <div class="flex flex-col pl-8 items-center text-xs">
                             <span
                                 class="text-muted-foreground uppercase tracking-wide"
                             >
                                 {#if lastUpdatedDate}
-                                    {dateFmt.format(
+                                    {formatDate(
                                         parseIsoDate(lastUpdatedDate)
                                     )}
                                 {:else}
@@ -207,10 +191,10 @@
                             {#if hasPreviousBalances}
                                 <span class={changeClass}>
                                     {changeIsPositive ? '▲' : '▼'}
-                                    {compactCurrency.format(
+                                    {formatCompactCurrency(
                                         Math.abs(netWorthChange) / 100
                                     )}
-                                    ({percent.format(
+                                    ({formatPercent(
                                         Math.abs(netWorthChangePercent)
                                     )})
                                 </span>
@@ -226,7 +210,7 @@
                             Liquid total
                         </div>
                         <div class="text-lg font-semibold">
-                            {compactCurrency.format(liquidTotal / 100)}
+                            {formatCompactCurrency(liquidTotal / 100)}
                         </div>
                     </div>
                 </div>
@@ -262,15 +246,12 @@
                             },
                             xAxis: {
                                 format: (v: Date) =>
-                                    v.toLocaleDateString(undefined, {
-                                        month: 'short',
-                                        year: 'numeric',
-                                    }),
+                                    formatDateCompact(v),
                             },
                             yAxis: {
                                 format: (v) =>
                                     typeof v === 'number'
-                                        ? compactCurrency.format(v)
+                                        ? formatCompactCurrency(v)
                                         : String(v),
                             },
                         }}
@@ -278,10 +259,7 @@
                         {#snippet tooltip()}
                             <Chart.Tooltip
                                 labelFormatter={(v: Date) =>
-                                    v.toLocaleDateString(undefined, {
-                                        year: 'numeric',
-                                        month: 'long',
-                                    })}
+                                    formatDateCompact(v)}
                                 indicator="line"
                             />
                         {/snippet}
