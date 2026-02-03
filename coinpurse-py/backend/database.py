@@ -1,3 +1,8 @@
+"""
+Database initialization and session management for CoinPurse application.
+This module sets up the SQLite database, creates tables, and seeds initial data.
+"""
+
 from pathlib import Path
 
 from sqlalchemy import create_engine, select
@@ -179,52 +184,55 @@ def _seed_import_templates(db):
 
 def _seed_category_mappings(db):
     """Seed category mappings for institutions"""
-    # bank_category_name -> list of coinpurse_category_ids
+    categories = db.scalars(select(Category)).all()
+    cat_by_name = {c.name: c.category_id for c in categories}
+
+    # bank_category_name -> list of coinpurse category names
     institution_mappings = {
         "Chase": [
-            ("Automotive", [2]),
-            ("Bills & utilities", [3]),
-            ("Education", [4]),
-            ("Entertainment", [5]),
-            ("Fees & adjustments", [6]),
-            ("Food & drink", [7]),
-            ("Gas", [8]),
-            ("Gifts & donations", [9]),
-            ("Groceries", [10]),
-            ("Health & wellness", [11]),
-            ("Home", [12]),
-            ("Miscellaneous", [13]),
-            ("Personal", [14]),
-            ("Professional services", [15]),
-            ("Shopping", [16]),
-            ("Travel", [17]),
+            ("Automotive", ["Automotive"]),
+            ("Bills & utilities", ["Bills & utilities"]),
+            ("Education", ["Education"]),
+            ("Entertainment", ["Entertainment"]),
+            ("Fees & adjustments", ["Fees & adjustments"]),
+            ("Food & drink", ["Food & drink"]),
+            ("Gas", ["Gas"]),
+            ("Gifts & donations", ["Gifts & donations"]),
+            ("Groceries", ["Groceries"]),
+            ("Health & wellness", ["Health"]),
+            ("Home", ["Home improvement"]),
+            ("Miscellaneous", ["Miscellaneous"]),
+            ("Personal", ["Payment services"]),
+            ("Professional services", ["Professional services"]),
+            ("Shopping", ["Shopping"]),
+            ("Travel", ["Travel"]),
         ],
         "Discover": [
-            ("Automotive", [2]),
-            ("Department stores", [16]),
-            ("Education", [4]),
-            ("Gasoline", [8]),
-            ("Government services", [15]),
-            ("Home improvement", [12]),
-            ("Medical services", [11]),
-            ("Merchandise", [16]),
-            ("Restaurants", [7]),
-            ("Services", [15]),
-            ("Supermarkets", [10]),
-            ("Travel / Entertainment", [5, 17]),
-            ("Wholesale clubs", [16]),
+            ("Automotive", ["Automotive"]),
+            ("Department stores", ["Shopping"]),
+            ("Education", ["Education"]),
+            ("Gasoline", ["Gas"]),
+            ("Government services", ["Professional services"]),
+            ("Home improvement", ["Home improvement"]),
+            ("Medical services", ["Health"]),
+            ("Merchandise", ["Shopping"]),
+            ("Restaurants", ["Food & drink"]),
+            ("Services", ["Professional services"]),
+            ("Supermarkets", ["Groceries"]),
+            ("Travel / Entertainment", ["Entertainment", "Travel"]),
+            ("Wholesale clubs", ["Shopping"]),
         ],
         "Capital One": [
-            ("Dining", [7]),
-            ("Entertainment", [5]),
-            ("Gas/Automotive", [2, 8]),
-            ("Grocery", [10]),
-            ("Healthcare", [11]),
-            ("Internet", [3]),
-            ("Other", [13]),
-            ("Other services", [15]),
-            ("Other Travel", [17]),
-            ("Phone/cable", [3]),
+            ("Dining", ["Food & drink"]),
+            ("Entertainment", ["Entertainment"]),
+            ("Gas/Automotive", ["Automotive", "Gas"]),
+            ("Grocery", ["Groceries"]),
+            ("Healthcare", ["Health"]),
+            ("Internet", ["Bills & utilities"]),
+            ("Other", ["Miscellaneous"]),
+            ("Other services", ["Professional services"]),
+            ("Other Travel", ["Travel"]),
+            ("Phone/cable", ["Bills & utilities"]),
         ],
     }
 
@@ -238,7 +246,15 @@ def _seed_category_mappings(db):
             )
             continue
 
-        for bank_category, category_ids in mappings:
+        for bank_category, category_names in mappings:
+            category_ids = []
+            for name in category_names:
+                cid = cat_by_name.get(name)
+                if cid is None:
+                    print(f"Category '{name}' not found, skipping.")
+                    continue
+                category_ids.append(cid)
+
             for priority, category_id in enumerate(category_ids, start=1):
                 stmt = select(CategoryMapping).where(
                     CategoryMapping.institution_id == institution.institution_id,
