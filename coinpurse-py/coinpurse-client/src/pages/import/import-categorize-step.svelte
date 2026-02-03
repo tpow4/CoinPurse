@@ -63,11 +63,6 @@
         buildRowValues(transactions, categoryOverrides)
     );
 
-    // Keep rowValues in sync when props change
-    $effect(() => {
-        rowValues = buildRowValues(transactions, categoryOverrides);
-    });
-
     // Count how many have a category selected
     const categorizedCount = $derived(
         transactions.filter(
