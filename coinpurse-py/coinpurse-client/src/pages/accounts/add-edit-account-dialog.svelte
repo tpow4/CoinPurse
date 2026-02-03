@@ -152,6 +152,7 @@
 
     function handleSubmit(e: SubmitEvent) {
         e.preventDefault();
+        if (loading) return;
         onSubmit({
             account_name: formData.account_name,
             institution_id: Number(formData.institution_id),
@@ -166,7 +167,7 @@
 </script>
 
 <Dialog.Root {open} {onOpenChange}>
-    <Dialog.Content class="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+    <Dialog.Content class="sm:max-w-125 max-h-[90vh] overflow-y-auto">
         <Dialog.Header>
             <Dialog.Title>
                 {editingAccount !== null ? 'Edit Account' : 'Add Account'}

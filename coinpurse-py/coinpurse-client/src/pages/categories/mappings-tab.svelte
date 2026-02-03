@@ -307,7 +307,7 @@
     </div>
 
     <!-- Institution filter -->
-    <div class="mb-6 max-w-[400px]">
+    <div class="mb-6 max-w-100">
         <Combobox
             items={institutionItems}
             bind:value={selectedInstitutionId}
@@ -334,7 +334,7 @@
                 <Table.Header>
                     <Table.Row>
                         <Table.Head class="w-[35%]">Bank Category</Table.Head>
-                        <Table.Head class="w-[50px] text-center"></Table.Head>
+                        <Table.Head class="w-12.5 text-center"></Table.Head>
                         <Table.Head class="w-[40%]"
                             >CoinPurse Categories</Table.Head
                         >
@@ -446,7 +446,7 @@
         if (!open) deleteRow = null;
     }}
 >
-    <Dialog.Content class="sm:max-w-[425px]">
+    <Dialog.Content class="sm:max-w-106.25">
         <Dialog.Header>
             <Dialog.Title>Delete Mapping</Dialog.Title>
             <Dialog.Description>

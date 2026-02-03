@@ -82,12 +82,12 @@
         No transactions in this section.
     </div>
 {:else}
-    <div class="max-h-[400px] overflow-auto">
+    <div class="max-h-100 overflow-auto">
         <Table.Root>
             <Table.Header>
                 <Table.Row>
                     {#if selectable}
-                        <Table.Head class="w-[50px]">
+                        <Table.Head class="w-12.5">
                             <Checkbox
                                 checked={allSelected}
                                 indeterminate={someSelected}
@@ -96,11 +96,11 @@
                             />
                         </Table.Head>
                     {/if}
-                    <Table.Head class="w-[60px]">Row</Table.Head>
-                    <Table.Head class="w-[100px]">Date</Table.Head>
+                    <Table.Head class="w-15">Row</Table.Head>
+                    <Table.Head class="w-25">Date</Table.Head>
                     <Table.Head>Description</Table.Head>
-                    <Table.Head class="w-[120px] text-right">Amount</Table.Head>
-                    <Table.Head class="w-[100px]">Category</Table.Head>
+                    <Table.Head class="w-30 text-right">Amount</Table.Head>
+                    <Table.Head class="w-25">Category</Table.Head>
                     {#if showErrors}
                         <Table.Head>Errors</Table.Head>
                     {/if}
@@ -128,7 +128,7 @@
                             >{formatDate(tx.transaction_date)}</Table.Cell
                         >
                         <Table.Cell
-                            class="max-w-[300px] truncate"
+                            class="max-w-75 truncate"
                             title={tx.description}
                         >
                             {tx.description}

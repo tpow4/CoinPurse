@@ -140,18 +140,18 @@
             No transactions need category review.
         </div>
     {:else}
-        <div class="max-h-[500px] overflow-auto">
+        <div class="max-h-125 overflow-auto">
             <Table.Root>
                 <Table.Header>
                     <Table.Row>
-                        <Table.Head class="w-[60px]">Row</Table.Head>
-                        <Table.Head class="w-[100px]">Date</Table.Head>
+                        <Table.Head class="w-15">Row</Table.Head>
+                        <Table.Head class="w-25">Date</Table.Head>
                         <Table.Head>Description</Table.Head>
-                        <Table.Head class="w-[120px] text-right"
+                        <Table.Head class="w-30 text-right"
                             >Amount</Table.Head
                         >
-                        <Table.Head class="w-[120px]">Bank Category</Table.Head>
-                        <Table.Head class="w-[220px]">Category</Table.Head>
+                        <Table.Head class="w-30">Bank Category</Table.Head>
+                        <Table.Head class="w-55">Category</Table.Head>
                     </Table.Row>
                 </Table.Header>
                 <Table.Body>
@@ -167,7 +167,7 @@
                                 {formatDate(tx.transaction_date)}
                             </Table.Cell>
                             <Table.Cell
-                                class="max-w-[250px] truncate"
+                                class="max-w-62.5 truncate"
                                 title={tx.description}
                             >
                                 {tx.description}
