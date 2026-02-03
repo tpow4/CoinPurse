@@ -118,7 +118,9 @@ def confirm_import(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error confirming import: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error confirming import: {str(e)}"
+        )
 
 
 # =============================================================================
@@ -156,7 +158,9 @@ def get_batch(import_batch_id: int, db: Session = Depends(get_db)):
     batch = repo.get_by_id(import_batch_id)
 
     if not batch:
-        raise HTTPException(status_code=404, detail=f"Batch {import_batch_id} not found")
+        raise HTTPException(
+            status_code=404, detail=f"Batch {import_batch_id} not found"
+        )
 
     # Build response with related names
     response = ImportBatchDetailResponse(
@@ -323,7 +327,9 @@ def list_category_mappings(
     repo = CategoryMappingRepository(db)
 
     if institution_id:
-        return repo.get_by_institution(institution_id, include_inactive=include_inactive)
+        return repo.get_by_institution(
+            institution_id, include_inactive=include_inactive
+        )
     return repo.get_all(include_inactive=include_inactive)
 
 
@@ -343,7 +349,9 @@ def get_category_mapping(mapping_id: int, db: Session = Depends(get_db)):
     return mapping
 
 
-@router.post("/category-mappings", response_model=CategoryMappingResponse, status_code=201)
+@router.post(
+    "/category-mappings", response_model=CategoryMappingResponse, status_code=201
+)
 def create_category_mapping(
     mapping_data: CategoryMappingCreate,
     db: Session = Depends(get_db),
@@ -391,11 +399,18 @@ def update_category_mapping(
     if not mapping:
         raise HTTPException(status_code=404, detail=f"Mapping {mapping_id} not found")
 
-    # Check for conflict if bank_category_name or coinpurse_category_id is being updated
-    if mapping_data.bank_category_name or mapping_data.coinpurse_category_id:
+    # Check for conflict if institution_id, bank_category_name,
+    # or coinpurse_category_id is being updated
+    if (
+        mapping_data.institution_id
+        or mapping_data.bank_category_name
+        or mapping_data.coinpurse_category_id
+    ):
         institution_id = mapping_data.institution_id or mapping.institution_id
         bank_cat = mapping_data.bank_category_name or mapping.bank_category_name
-        coinpurse_cat = mapping_data.coinpurse_category_id or mapping.coinpurse_category_id
+        coinpurse_cat = (
+            mapping_data.coinpurse_category_id or mapping.coinpurse_category_id
+        )
         if repo.mapping_exists(
             institution_id, bank_cat, coinpurse_cat, exclude_id=mapping_id
         ):
