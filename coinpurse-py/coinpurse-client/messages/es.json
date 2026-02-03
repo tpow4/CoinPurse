@@ -1,4 +1,19 @@
 {
-    "$schema": "https://inlang.com/schema/inlang-message-format",
-    "example_message": "Hola {username}"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "example_message": "Hola {username}",
+  "nav_home": "Inicio",
+  "nav_categories": "Categorías",
+  "nav_transactions": "Transacciones",
+  "nav_import": "Importar",
+  "nav_admin": "Administración",
+  "admin_title": "Administración",
+  "admin_description": "Gestionar instituciones y cuentas",
+  "admin_tab_general": "General",
+  "admin_tab_institutions": "Instituciones",
+  "admin_tab_accounts": "Cuentas",
+  "general_locale_label": "Idioma",
+  "general_locale_description": "Elige el idioma de la aplicación.",
+  "general_currency_label": "Moneda",
+  "general_currency_description": "Elige la moneda predeterminada para mostrar importes.",
+  "general_saved": "Configuración guardada"
 }
