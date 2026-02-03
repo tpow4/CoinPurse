@@ -36,7 +36,9 @@ class CategoryMapper:
         category = self.db.scalar(stmt)
 
         if category is None:
-            raise ValueError("Uncategorized category not found. Please run database seeding.")
+            raise ValueError(
+                "Uncategorized category not found. Please run database seeding."
+            )
 
         self._uncategorized_id = category.category_id
         return self._uncategorized_id
@@ -132,8 +134,11 @@ class CategoryMapper:
 
             normalized_name = bank_category.lower().strip()
             candidates = mappings.get(normalized_name, [])
-            txn["candidate_category_ids"] = candidates
-            txn["coinpurse_category_id"] = candidates[0] if candidates else uncategorized_id
+            candidate_ids = list(candidates)
+            txn["candidate_category_ids"] = candidate_ids
+            txn["coinpurse_category_id"] = (
+                candidate_ids[0] if candidate_ids else uncategorized_id
+            )
 
         return parsed_transactions
 

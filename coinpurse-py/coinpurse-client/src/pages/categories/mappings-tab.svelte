@@ -1,11 +1,6 @@
 <script lang="ts">
     import { ApiException } from '$lib/api';
-    import type {
-        Institution,
-        Category,
-        CategoryMapping,
-        CategoryMappingCreate,
-    } from '$lib/types';
+    import type { Institution, Category, CategoryMapping } from '$lib/types';
     import { institutionsApi } from '$lib/api/institutions';
     import { categoriesApi } from '$lib/api/categories';
     import { categoryMappingsApi } from '$lib/api/category-mappings';
@@ -196,59 +191,17 @@
         loading = true;
 
         try {
-            if (row.isNew) {
-                // Create all new mappings
-                for (const catId of row.editCategoryIds) {
-                    const createData: CategoryMappingCreate = {
-                        institution_id: institutionId,
-                        bank_category_name: row.editName.trim(),
-                        coinpurse_category_id: Number(catId),
-                    };
-                    await categoryMappingsApi.create(createData);
-                }
-            } else {
-                // Diff-based save
-                const oldCatIds = new Set(row.categoryIds);
-                const newCatIds = new Set(row.editCategoryIds);
-                const nameChanged =
-                    row.editName.trim() !== row.bankCategoryName;
+            const nameChanged =
+                !row.isNew && row.editName.trim() !== row.bankCategoryName;
 
-                // Delete removed categories
-                for (let i = 0; i < row.categoryIds.length; i++) {
-                    if (!newCatIds.has(row.categoryIds[i])) {
-                        await categoryMappingsApi.delete(
-                            row.mappingIds[i],
-                            true
-                        );
-                    }
-                }
-
-                // Create added categories
-                for (const catId of row.editCategoryIds) {
-                    if (!oldCatIds.has(catId)) {
-                        const createData: CategoryMappingCreate = {
-                            institution_id: institutionId,
-                            bank_category_name: row.editName.trim(),
-                            coinpurse_category_id: Number(catId),
-                        };
-                        await categoryMappingsApi.create(createData);
-                    }
-                }
-
-                // Update bank_category_name on remaining mappings if name changed
-                if (nameChanged) {
-                    for (let i = 0; i < row.categoryIds.length; i++) {
-                        if (newCatIds.has(row.categoryIds[i])) {
-                            await categoryMappingsApi.update(
-                                row.mappingIds[i],
-                                {
-                                    bank_category_name: row.editName.trim(),
-                                }
-                            );
-                        }
-                    }
-                }
-            }
+            await categoryMappingsApi.saveGroup({
+                institution_id: institutionId,
+                bank_category_name: row.editName.trim(),
+                coinpurse_category_ids: row.editCategoryIds.map(Number),
+                old_bank_category_name: nameChanged
+                    ? row.bankCategoryName
+                    : undefined,
+            });
 
             // Reload mappings from API
             await loadMappings(institutionId);
@@ -269,10 +222,10 @@
         deleteLoading = true;
         error = '';
         try {
-            // Hard delete all mappings in this group
-            for (const mappingId of deleteRow.mappingIds) {
-                await categoryMappingsApi.delete(mappingId, true);
-            }
+            await categoryMappingsApi.deleteGroup({
+                institution_id: Number(selectedInstitutionId),
+                bank_category_name: deleteRow.bankCategoryName,
+            });
             deleteRow = null;
             await loadMappings(Number(selectedInstitutionId));
         } catch (e) {

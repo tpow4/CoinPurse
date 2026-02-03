@@ -131,7 +131,9 @@
             // Build category_overrides from the Map
             const overrides: Record<number, number> = {};
             categoryOverrides.forEach((categoryId, rowNumber) => {
-                overrides[rowNumber] = categoryId;
+                if (selectedRows.has(rowNumber)) {
+                    overrides[rowNumber] = categoryId;
+                }
             });
 
             confirmResponse = await importApi.confirmImport({
