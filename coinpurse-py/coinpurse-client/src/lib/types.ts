@@ -228,6 +228,35 @@ export interface SearchParams {
     include_inactive?: boolean;
 }
 
+// Category Mapping types
+
+export interface CategoryMapping {
+    mapping_id: number;
+    institution_id: number;
+    bank_category_name: string;
+    coinpurse_category_id: number;
+    priority: number;
+    is_active: boolean;
+    created_at: string;
+    modified_at: string;
+}
+
+export interface CategoryMappingCreate {
+    institution_id: number;
+    bank_category_name: string;
+    coinpurse_category_id: number;
+    priority?: number;
+    is_active?: boolean;
+}
+
+export interface CategoryMappingUpdate {
+    institution_id?: number;
+    bank_category_name?: string;
+    coinpurse_category_id?: number;
+    priority?: number;
+    is_active?: boolean;
+}
+
 // Import types
 
 export enum FileFormat {
@@ -264,6 +293,7 @@ export interface ParsedTransaction {
     transaction_type: string; // CREDIT or DEBIT
     category_name: string | null;
     coinpurse_category_id: number | null;
+    candidate_category_ids: number[];
     is_duplicate: boolean;
     validation_errors: string[];
 }
@@ -284,6 +314,7 @@ export interface ImportPreviewResponse {
 export interface ImportConfirmRequest {
     import_batch_id: number;
     selected_rows: number[];
+    category_overrides?: Record<number, number>; // row_number → category_id
 }
 
 export interface ImportConfirmResponse {

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { AccountWithInstitution } from './columns';
+    import type { Category } from '$lib/types';
     import type { ColumnDef } from '@tanstack/table-core';
     import {
         createSvelteTable,
@@ -9,8 +9,8 @@
     import * as Table from '$lib/components/ui/table';
 
     interface Props {
-        data: AccountWithInstitution[];
-        columns: ColumnDef<AccountWithInstitution>[];
+        data: Category[];
+        columns: ColumnDef<Category>[];
     }
 
     let { data, columns }: Props = $props();
@@ -54,7 +54,7 @@
                 {#each table.getRowModel().rows as row}
                     <Table.Row
                         data-state={row.getIsSelected() && 'selected'}
-                        class={!row.original.active ? 'opacity-60' : ''}
+                        class={!row.original.is_active ? 'opacity-60' : ''}
                     >
                         {#each row.getVisibleCells() as cell}
                             <Table.Cell

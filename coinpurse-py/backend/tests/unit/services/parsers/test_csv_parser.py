@@ -5,8 +5,6 @@ Unit tests for CSV parser
 import io
 from datetime import date
 
-import pytest
-
 from services.parsers import CsvParser
 
 

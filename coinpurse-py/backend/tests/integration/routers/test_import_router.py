@@ -209,8 +209,8 @@ class TestCategoryMappingEndpoints:
         data = response.json()
         assert data["bank_category_name"] == "Bank Category"
 
-    def test_create_mapping_duplicate(self, client, setup_data):
-        """Should reject duplicate mappings"""
+    def test_create_mapping_exact_duplicate(self, client, setup_data):
+        """Should reject exact duplicate mappings (same institution + bank category + coinpurse category)"""
         # Create first mapping
         client.post(
             "/api/import/category-mappings",
@@ -221,7 +221,7 @@ class TestCategoryMappingEndpoints:
             },
         )
 
-        # Try duplicate
+        # Try exact duplicate (same triple)
         response = client.post(
             "/api/import/category-mappings",
             json={
@@ -233,6 +233,37 @@ class TestCategoryMappingEndpoints:
 
         assert response.status_code == 400
         assert "already exists" in response.json()["detail"]
+
+    def test_create_mapping_same_bank_category_different_coinpurse(self, client, db_session, setup_data):
+        """Should allow same bank category mapped to different coinpurse categories"""
+        # Create a second category
+        category2 = Category(name="Another Category")
+        db_session.add(category2)
+        db_session.commit()
+        db_session.refresh(category2)
+
+        # Create first mapping
+        response1 = client.post(
+            "/api/import/category-mappings",
+            json={
+                "institution_id": setup_data["institution"].institution_id,
+                "bank_category_name": "Ambiguous",
+                "coinpurse_category_id": setup_data["category"].category_id,
+            },
+        )
+        assert response1.status_code == 201
+
+        # Create second mapping with same bank category but different coinpurse category
+        response2 = client.post(
+            "/api/import/category-mappings",
+            json={
+                "institution_id": setup_data["institution"].institution_id,
+                "bank_category_name": "Ambiguous",
+                "coinpurse_category_id": category2.category_id,
+                "priority": 2,
+            },
+        )
+        assert response2.status_code == 201
 
     def test_list_mappings_by_institution(self, client, db_session, setup_data):
         """Should filter mappings by institution"""
@@ -322,10 +353,7 @@ class TestImportUploadEndpoint:
 1/16/2026,1/16/2026,Test Purchase,Shopping,-50.00"""
 
         files = {"file": ("test.csv", io.BytesIO(csv_content.encode()), "text/csv")}
-        data = {
-            "account_id": setup_import_data["account"].account_id,
-            "template_id": setup_import_data["template"].template_id,
-        }
+        data = {"account_id": setup_import_data["account"].account_id}
 
         response = client.post("/api/import/upload", files=files, data=data)
 
@@ -336,20 +364,31 @@ class TestImportUploadEndpoint:
         assert result["summary"]["valid_rows"] == 2
         assert len(result["transactions"]) == 2
 
-    def test_upload_invalid_template(self, client, setup_import_data):
-        """Should return error for invalid template"""
+    def test_upload_account_without_template(self, client, db_session, setup_import_data):
+        """Should return error when account has no template configured"""
+        # Create account without template
+        account_no_template = Account(
+            institution_id=setup_import_data["institution"].institution_id,
+            account_name="No Template Account",
+            account_type=AccountType.CREDIT_CARD,
+            tax_treatment=TaxTreatmentType.NOT_APPLICABLE,
+            last_4_digits="0000",
+            tracks_transactions=True,
+            template_id=None,
+        )
+        db_session.add(account_no_template)
+        db_session.commit()
+        db_session.refresh(account_no_template)
+
         csv_content = "Transaction Date,Description,Amount\n1/15/2026,Test,100"
 
         files = {"file": ("test.csv", io.BytesIO(csv_content.encode()), "text/csv")}
-        data = {
-            "account_id": setup_import_data["account"].account_id,
-            "template_id": 99999,  # Invalid
-        }
+        data = {"account_id": account_no_template.account_id}
 
         response = client.post("/api/import/upload", files=files, data=data)
 
-        assert response.status_code == 400
-        assert "not found" in response.json()["detail"]
+        assert response.status_code == 422
+        assert "no import template configured" in response.json()["detail"]
 
 
 class TestImportConfirmEndpoint:
@@ -407,7 +446,7 @@ class TestImportConfirmEndpoint:
 1/17/2026,1/17/2026,Another,-25.00"""
 
         files = {"file": ("test.csv", io.BytesIO(csv_content.encode()), "text/csv")}
-        data = {"account_id": account.account_id, "template_id": template.template_id}
+        data = {"account_id": account.account_id}
 
         preview_response = client.post("/api/import/upload", files=files, data=data)
         preview = preview_response.json()
@@ -433,6 +472,31 @@ class TestImportConfirmEndpoint:
         result = response.json()
         assert result["imported_count"] == 2
         assert result["skipped_count"] == 1  # Third row not selected
+        assert result["status"] == "completed"
+
+    def test_confirm_with_category_override(self, client, db_session, setup_with_preview):
+        """Should use overridden category when category_overrides provided"""
+        # Create a category to override with
+        override_category = Category(name="Override Category")
+        db_session.add(override_category)
+        db_session.commit()
+        db_session.refresh(override_category)
+
+        # Confirm with override for row 2
+        response = client.post(
+            "/api/import/confirm",
+            json={
+                "import_batch_id": setup_with_preview["import_batch_id"],
+                "selected_rows": [2, 3],
+                "category_overrides": {
+                    "2": override_category.category_id,
+                },
+            },
+        )
+
+        assert response.status_code == 200
+        result = response.json()
+        assert result["imported_count"] == 2
         assert result["status"] == "completed"
 
     def test_confirm_invalid_batch(self, client):
@@ -497,7 +561,7 @@ class TestImportBatchEndpoints:
         # Create and confirm a batch
         csv_content = "Date,Posted Date,Desc,Amt\n1/15/2026,1/15/2026,Test,100.00"
         files = {"file": ("test.csv", io.BytesIO(csv_content.encode()), "text/csv")}
-        data = {"account_id": account.account_id, "template_id": template.template_id}
+        data = {"account_id": account.account_id}
 
         preview = client.post("/api/import/upload", files=files, data=data).json()
         client.post(
@@ -523,11 +587,15 @@ class TestImportBatchEndpoints:
 
         assert response.status_code == 200
         data = response.json()
-        assert all(b["account_id"] == setup_with_batches["account"].account_id for b in data)
+        assert all(
+            b["account_id"] == setup_with_batches["account"].account_id for b in data
+        )
 
     def test_get_batch_detail(self, client, setup_with_batches):
         """Should get batch details"""
-        response = client.get(f"/api/import/batches/{setup_with_batches['import_batch_id']}")
+        response = client.get(
+            f"/api/import/batches/{setup_with_batches['import_batch_id']}"
+        )
 
         assert response.status_code == 200
         data = response.json()

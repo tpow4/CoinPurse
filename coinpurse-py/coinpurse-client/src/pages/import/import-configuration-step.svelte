@@ -16,8 +16,15 @@
         onSubmit: () => void;
     }
 
-    let { accounts, accountId, file, loading, onAccountChange, onFileChange, onSubmit }: Props =
-        $props();
+    let {
+        accounts,
+        accountId,
+        file,
+        loading,
+        onAccountChange,
+        onFileChange,
+        onSubmit,
+    }: Props = $props();
 
     let fileInput: HTMLInputElement;
 
@@ -25,7 +32,9 @@
     const accountValue = $derived(accountId ? String(accountId) : '');
 
     // Get selected account for template validation
-    const selectedAccount = $derived(accounts.find((a) => a.account_id === accountId));
+    const selectedAccount = $derived(
+        accounts.find((a) => a.account_id === accountId)
+    );
     const hasTemplate = $derived(selectedAccount?.template_id != null);
 
     function handleAccountChange(value: string) {
@@ -54,24 +63,32 @@
         fileInput?.click();
     }
 
-    const canSubmit = $derived(accountId !== null && hasTemplate && file !== null);
+    const canSubmit = $derived(
+        accountId !== null && hasTemplate && file !== null
+    );
 </script>
 
 <Card.Root>
     <Card.Header>
         <Card.Title>Configure Import</Card.Title>
-        <Card.Description>Select an account and upload your file.</Card.Description>
+        <Card.Description
+            >Select an account and upload your file.</Card.Description
+        >
     </Card.Header>
 
     <Card.Content class="space-y-6">
         <!-- Account Selection -->
         <div class="space-y-2">
             <Label for="account-select">Account</Label>
-            <Select.Root type="single" value={accountValue} onValueChange={handleAccountChange}>
+            <Select.Root
+                type="single"
+                value={accountValue}
+                onValueChange={handleAccountChange}
+            >
                 <Select.Trigger id="account-select" class="w-full">
                     {#if accountId}
-                        {accounts.find((a) => a.account_id === accountId)?.account_name ??
-                            'Select account'}
+                        {accounts.find((a) => a.account_id === accountId)
+                            ?.account_name ?? 'Select account'}
                     {:else}
                         Select account
                     {/if}
@@ -86,8 +103,8 @@
             </Select.Root>
             {#if selectedAccount && !hasTemplate}
                 <p class="text-destructive text-sm">
-                    This account has no import template configured. Please configure a template for
-                    this account before importing.
+                    This account has no import template configured. Please
+                    configure a template for this account before importing.
                 </p>
             {/if}
         </div>
@@ -132,8 +149,12 @@
                     </div>
                 {:else}
                     <Upload class="text-muted-foreground mb-4 size-10" />
-                    <p class="mb-1 font-medium">Drop your file here or click to browse</p>
-                    <p class="text-muted-foreground text-sm">Accepts CSV and Excel files</p>
+                    <p class="mb-1 font-medium">
+                        Drop your file here or click to browse
+                    </p>
+                    <p class="text-muted-foreground text-sm">
+                        Accepts CSV and Excel files
+                    </p>
                 {/if}
             </div>
         </div>

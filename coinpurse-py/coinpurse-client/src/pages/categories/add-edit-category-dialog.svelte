@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Institution } from '$lib/types';
+    import type { Category } from '$lib/types';
     import * as Dialog from '$lib/components/ui/dialog';
     import * as Field from '$lib/components/ui/field';
     import { Input } from '$lib/components/ui/input';
@@ -7,7 +7,7 @@
 
     interface Props {
         open: boolean;
-        editingInstitution?: Institution | null;
+        editingCategory?: Category | null;
         loading?: boolean;
         error?: string;
         fieldErrors?: {
@@ -19,7 +19,7 @@
 
     let {
         open = false,
-        editingInstitution = null,
+        editingCategory = null,
         loading = false,
         error = '',
         fieldErrors = {},
@@ -29,10 +29,10 @@
 
     let formData = $state({ name: '' });
 
-    // Update form data when editing institution changes
+    // Update form data when editing category changes
     $effect(() => {
-        if (editingInstitution) {
-            formData.name = editingInstitution.name;
+        if (editingCategory) {
+            formData.name = editingCategory.name;
         } else {
             formData.name = '';
         }
@@ -49,14 +49,12 @@
     <Dialog.Content class="sm:max-w-106.25">
         <Dialog.Header>
             <Dialog.Title>
-                {editingInstitution !== null
-                    ? 'Edit Institution'
-                    : 'Add Institution'}
+                {editingCategory !== null ? 'Edit Category' : 'Add Category'}
             </Dialog.Title>
             <Dialog.Description>
-                {editingInstitution !== null
-                    ? 'Update the institution details below.'
-                    : 'Add a new financial institution to track your accounts.'}
+                {editingCategory !== null
+                    ? 'Update the category details below.'
+                    : 'Add a new category to organize your transactions.'}
             </Dialog.Description>
         </Dialog.Header>
 
@@ -69,14 +67,12 @@
                 {/if}
 
                 <Field.Field data-invalid={fieldErrors.name ? true : undefined}>
-                    <Field.Label for="institution_name"
-                        >Institution Name</Field.Label
-                    >
+                    <Field.Label for="category_name">Category Name</Field.Label>
                     <Input
                         type="text"
-                        id="institution_name"
+                        id="category_name"
                         bind:value={formData.name}
-                        placeholder="e.g., Chase Bank"
+                        placeholder="e.g., Groceries"
                         aria-invalid={fieldErrors.name ? true : undefined}
                     />
                     {#if fieldErrors.name}
@@ -96,7 +92,7 @@
                 <Button type="submit" disabled={loading}>
                     {loading
                         ? 'Saving...'
-                        : editingInstitution !== null
+                        : editingCategory !== null
                           ? 'Update'
                           : 'Create'}
                 </Button>

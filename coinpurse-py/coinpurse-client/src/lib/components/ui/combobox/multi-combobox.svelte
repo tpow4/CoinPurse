@@ -14,7 +14,7 @@
 
     interface Props {
         items: ComboboxItem[];
-        value?: string;
+        values?: string[];
         open?: boolean;
         placeholder?: string;
         searchPlaceholder?: string;
@@ -28,10 +28,10 @@
 
     let {
         items,
-        value = $bindable(''),
+        values = $bindable([]),
         open = $bindable(false),
-        placeholder = 'Select…',
-        searchPlaceholder = 'Search…',
+        placeholder = 'Select...',
+        searchPlaceholder = 'Search...',
         emptyText = 'No results found.',
         disabled = false,
         id,
@@ -40,13 +40,21 @@
         contentClass,
     }: Props = $props();
 
-    const selectedItem = $derived(
-        items.find((item) => item.value === value) ?? null
-    );
+    const selectedLabels = $derived(() => {
+        const selected = items.filter((item) => values.includes(item.value));
+        if (selected.length === 0) return '';
+        if (selected.length <= 2)
+            return selected.map((s) => s.label).join(', ');
+        return `${selected.length} selected`;
+    });
 
     function handleSelect(item: ComboboxItem) {
-        value = item.value;
-        open = false;
+        if (disabled) return;
+        if (values.includes(item.value)) {
+            values = values.filter((v) => v !== item.value);
+        } else {
+            values = [...values, item.value];
+        }
     }
 </script>
 
@@ -63,9 +71,7 @@
             className
         )}
     >
-        <span class="truncate"
-            >{selectedItem ? selectedItem.label : placeholder}</span
-        >
+        <span class="truncate">{selectedLabels() || placeholder}</span>
         <ChevronsUpDownIcon class="ml-2 size-4 shrink-0 opacity-50" />
     </Popover.Trigger>
 
@@ -87,7 +93,7 @@
                             <CheckIcon
                                 class={cn(
                                     'mr-2 size-4',
-                                    item.value === value
+                                    values.includes(item.value)
                                         ? 'opacity-100'
                                         : 'opacity-0'
                                 )}
