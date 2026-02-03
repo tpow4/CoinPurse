@@ -94,20 +94,28 @@
         }
     }
 
+    let loadMappingsVersion = 0;
+
     async function loadMappings(institutionId: number) {
+        const version = ++loadMappingsVersion;
         loading = true;
         error = '';
         try {
-            mappings = await categoryMappingsApi.getAll(institutionId);
+            const result = await categoryMappingsApi.getAll(institutionId);
+            if (version !== loadMappingsVersion) return;
+            mappings = result;
             rows = groupMappings(mappings);
         } catch (e) {
+            if (version !== loadMappingsVersion) return;
             if (e instanceof ApiException) {
                 error = e.detail;
             } else {
                 error = 'Failed to load mappings';
             }
         } finally {
-            loading = false;
+            if (version === loadMappingsVersion) {
+                loading = false;
+            }
         }
     }
 

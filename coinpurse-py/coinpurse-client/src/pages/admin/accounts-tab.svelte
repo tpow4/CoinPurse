@@ -302,7 +302,7 @@
 
     <!-- Search and filters -->
     <div class="flex gap-4 mb-6 items-center">
-        <div class="flex-1 max-w-[400px]">
+        <div class="flex-1 max-w-100">
             <Input
                 type="text"
                 placeholder="Search accounts..."
