@@ -285,6 +285,288 @@ class TestCategoryMappingEndpoints:
         assert len(data) == 1
 
 
+class TestCategoryMappingGroupEndpoints:
+    """Tests for batch category mapping group endpoints"""
+
+    @pytest.fixture
+    def setup_data(self, db_session):
+        """Create test institution and categories"""
+        institution = Institution(name="Group Bank")
+        cats = [Category(name=n) for n in ["Food", "Travel", "Bills"]]
+        db_session.add(institution)
+        db_session.add_all(cats)
+        db_session.commit()
+        db_session.refresh(institution)
+        for c in cats:
+            db_session.refresh(c)
+        return {"institution": institution, "categories": cats}
+
+    def test_save_group_create_new(self, client, setup_data):
+        """Should create a new mapping group in one call"""
+        inst = setup_data["institution"]
+        cats = setup_data["categories"]
+
+        response = client.put(
+            "/api/import/category-mappings/group",
+            json={
+                "institution_id": inst.institution_id,
+                "bank_category_name": "Dining",
+                "coinpurse_category_ids": [cats[0].category_id, cats[1].category_id],
+            },
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 2
+        assert all(m["bank_category_name"] == "Dining" for m in data)
+        returned_cat_ids = {m["coinpurse_category_id"] for m in data}
+        assert returned_cat_ids == {cats[0].category_id, cats[1].category_id}
+
+    def test_save_group_add_category(self, client, db_session, setup_data):
+        """Should add a category to an existing group"""
+        inst = setup_data["institution"]
+        cats = setup_data["categories"]
+
+        # Create initial group with one category
+        mapping = CategoryMapping(
+            institution_id=inst.institution_id,
+            bank_category_name="Groceries",
+            coinpurse_category_id=cats[0].category_id,
+        )
+        db_session.add(mapping)
+        db_session.commit()
+
+        # Save group with two categories
+        response = client.put(
+            "/api/import/category-mappings/group",
+            json={
+                "institution_id": inst.institution_id,
+                "bank_category_name": "Groceries",
+                "coinpurse_category_ids": [cats[0].category_id, cats[1].category_id],
+            },
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 2
+
+    def test_save_group_remove_category(self, client, db_session, setup_data):
+        """Should remove a category from an existing group"""
+        inst = setup_data["institution"]
+        cats = setup_data["categories"]
+
+        # Create initial group with two categories
+        for c in cats[:2]:
+            db_session.add(
+                CategoryMapping(
+                    institution_id=inst.institution_id,
+                    bank_category_name="Mixed",
+                    coinpurse_category_id=c.category_id,
+                )
+            )
+        db_session.commit()
+
+        # Save group keeping only one
+        response = client.put(
+            "/api/import/category-mappings/group",
+            json={
+                "institution_id": inst.institution_id,
+                "bank_category_name": "Mixed",
+                "coinpurse_category_ids": [cats[0].category_id],
+            },
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+        assert data[0]["coinpurse_category_id"] == cats[0].category_id
+
+    def test_save_group_rename(self, client, db_session, setup_data):
+        """Should rename a mapping group"""
+        inst = setup_data["institution"]
+        cats = setup_data["categories"]
+
+        mapping = CategoryMapping(
+            institution_id=inst.institution_id,
+            bank_category_name="Old Name",
+            coinpurse_category_id=cats[0].category_id,
+        )
+        db_session.add(mapping)
+        db_session.commit()
+
+        response = client.put(
+            "/api/import/category-mappings/group",
+            json={
+                "institution_id": inst.institution_id,
+                "bank_category_name": "New Name",
+                "coinpurse_category_ids": [cats[0].category_id],
+                "old_bank_category_name": "Old Name",
+            },
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+        assert data[0]["bank_category_name"] == "New Name"
+
+        # Verify old name no longer exists
+        list_response = client.get(
+            f"/api/import/category-mappings?institution_id={inst.institution_id}"
+        )
+        names = {m["bank_category_name"] for m in list_response.json()}
+        assert "Old Name" not in names
+        assert "New Name" in names
+
+    def test_save_group_rename_conflict(self, client, db_session, setup_data):
+        """Should reject rename if new name conflicts with existing group"""
+        inst = setup_data["institution"]
+        cats = setup_data["categories"]
+
+        # Create two groups
+        db_session.add(
+            CategoryMapping(
+                institution_id=inst.institution_id,
+                bank_category_name="Group A",
+                coinpurse_category_id=cats[0].category_id,
+            )
+        )
+        db_session.add(
+            CategoryMapping(
+                institution_id=inst.institution_id,
+                bank_category_name="Group B",
+                coinpurse_category_id=cats[1].category_id,
+            )
+        )
+        db_session.commit()
+
+        # Try to rename Group A to Group B
+        response = client.put(
+            "/api/import/category-mappings/group",
+            json={
+                "institution_id": inst.institution_id,
+                "bank_category_name": "Group B",
+                "coinpurse_category_ids": [cats[0].category_id],
+                "old_bank_category_name": "Group A",
+            },
+        )
+
+        assert response.status_code == 400
+        assert "already exists" in response.json()["detail"]
+
+    def test_save_group_duplicate_category_ids(self, client, setup_data):
+        """Should reject duplicate category IDs in request"""
+        inst = setup_data["institution"]
+        cats = setup_data["categories"]
+
+        response = client.put(
+            "/api/import/category-mappings/group",
+            json={
+                "institution_id": inst.institution_id,
+                "bank_category_name": "Dupes",
+                "coinpurse_category_ids": [cats[0].category_id, cats[0].category_id],
+            },
+        )
+
+        assert response.status_code == 400
+        assert "Duplicate" in response.json()["detail"]
+
+    def test_save_group_empty_categories(self, client, setup_data):
+        """Should reject empty category list"""
+        inst = setup_data["institution"]
+
+        response = client.put(
+            "/api/import/category-mappings/group",
+            json={
+                "institution_id": inst.institution_id,
+                "bank_category_name": "Empty",
+                "coinpurse_category_ids": [],
+            },
+        )
+
+        assert response.status_code == 422  # Pydantic validation (min_length=1)
+
+    def test_save_group_rename_and_change_categories(self, client, db_session, setup_data):
+        """Should rename and modify categories in a single call"""
+        inst = setup_data["institution"]
+        cats = setup_data["categories"]
+
+        # Create group with cats[0] and cats[1]
+        for c in cats[:2]:
+            db_session.add(
+                CategoryMapping(
+                    institution_id=inst.institution_id,
+                    bank_category_name="Original",
+                    coinpurse_category_id=c.category_id,
+                )
+            )
+        db_session.commit()
+
+        # Rename and swap cats[1] for cats[2]
+        response = client.put(
+            "/api/import/category-mappings/group",
+            json={
+                "institution_id": inst.institution_id,
+                "bank_category_name": "Renamed",
+                "coinpurse_category_ids": [cats[0].category_id, cats[2].category_id],
+                "old_bank_category_name": "Original",
+            },
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 2
+        assert all(m["bank_category_name"] == "Renamed" for m in data)
+        returned_cat_ids = {m["coinpurse_category_id"] for m in data}
+        assert returned_cat_ids == {cats[0].category_id, cats[2].category_id}
+
+    def test_delete_group(self, client, db_session, setup_data):
+        """Should delete all mappings in a group"""
+        inst = setup_data["institution"]
+        cats = setup_data["categories"]
+
+        for c in cats[:2]:
+            db_session.add(
+                CategoryMapping(
+                    institution_id=inst.institution_id,
+                    bank_category_name="Delete Me",
+                    coinpurse_category_id=c.category_id,
+                )
+            )
+        db_session.commit()
+
+        response = client.request(
+            "DELETE",
+            "/api/import/category-mappings/group",
+            json={
+                "institution_id": inst.institution_id,
+                "bank_category_name": "Delete Me",
+            },
+        )
+
+        assert response.status_code == 204
+
+        # Verify deleted
+        list_response = client.get(
+            f"/api/import/category-mappings?institution_id={inst.institution_id}"
+        )
+        assert len(list_response.json()) == 0
+
+    def test_delete_group_not_found(self, client, setup_data):
+        """Should return 404 when deleting a non-existent group"""
+        inst = setup_data["institution"]
+
+        response = client.request(
+            "DELETE",
+            "/api/import/category-mappings/group",
+            json={
+                "institution_id": inst.institution_id,
+                "bank_category_name": "Nonexistent",
+            },
+        )
+
+        assert response.status_code == 404
+
+
 class TestImportUploadEndpoint:
     """Tests for the upload and preview endpoint"""
 
