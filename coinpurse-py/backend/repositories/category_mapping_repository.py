@@ -69,7 +69,7 @@ class CategoryMappingRepository:
         )
         return self.db.scalar(stmt)
 
-    def get_mappings_dict(self, institution_id: int) -> dict[str, int]:
+    def get_mappings_dict(self, institution_id: int) -> dict[str, list[int]]:
         """
         Get all mappings for an institution as a dictionary
 
@@ -77,10 +77,22 @@ class CategoryMappingRepository:
             institution_id: The institution ID
 
         Returns:
-            Dict mapping bank_category_name -> coinpurse_category_id
+            Dict mapping bank_category_name -> list of coinpurse_category_ids
         """
-        mappings = self.get_by_institution(institution_id)
-        return {m.bank_category_name: m.coinpurse_category_id for m in mappings}
+        stmt = (
+            select(CategoryMapping)
+            .where(
+                CategoryMapping.institution_id == institution_id,
+                CategoryMapping.is_active,
+            )
+            .order_by(CategoryMapping.bank_category_name, CategoryMapping.priority.desc())
+        )
+        mappings = list(self.db.scalars(stmt))
+
+        result: dict[str, list[int]] = {}
+        for m in mappings:
+            result.setdefault(m.bank_category_name, []).append(m.coinpurse_category_id)
+        return result
 
     def create(self, mapping: CategoryMapping) -> CategoryMapping:
         """Create a new category mapping"""
@@ -110,19 +122,25 @@ class CategoryMappingRepository:
         return self.get_by_id(mapping_id) is not None
 
     def mapping_exists(
-        self, institution_id: int, bank_category_name: str, exclude_id: int | None = None
+        self,
+        institution_id: int,
+        bank_category_name: str,
+        coinpurse_category_id: int,
+        exclude_id: int | None = None,
     ) -> bool:
         """
-        Check if a mapping already exists for this institution/bank category combo
+        Check if an exact mapping triple already exists
 
         Args:
             institution_id: The institution ID
             bank_category_name: The bank's category name
+            coinpurse_category_id: The CoinPurse category ID
             exclude_id: Optional ID to exclude (for updates)
         """
         stmt = select(CategoryMapping).where(
             CategoryMapping.institution_id == institution_id,
             CategoryMapping.bank_category_name == bank_category_name,
+            CategoryMapping.coinpurse_category_id == coinpurse_category_id,
             CategoryMapping.is_active,
         )
         if exclude_id:

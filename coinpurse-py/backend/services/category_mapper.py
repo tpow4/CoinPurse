@@ -13,7 +13,7 @@ class CategoryMapper:
 
     def __init__(self, db: Session):
         self.db = db
-        self._mapping_cache: dict[int, dict[str, int]] | None = None
+        self._mapping_cache: dict[int, dict[str, list[int]]] | None = None
         self._uncategorized_id: int | None = None
 
     def get_uncategorized_category_id(self) -> int:
@@ -41,7 +41,7 @@ class CategoryMapper:
         self._uncategorized_id = category.category_id
         return self._uncategorized_id
 
-    def get_mappings_for_institution(self, institution_id: int) -> dict[str, int]:
+    def get_mappings_for_institution(self, institution_id: int) -> dict[str, list[int]]:
         """
         Get all category mappings for an institution.
 
@@ -49,7 +49,7 @@ class CategoryMapper:
             institution_id: The institution ID
 
         Returns:
-            Dict mapping bank_category_name -> coinpurse_category_id
+            Dict mapping bank_category_name -> list of coinpurse_category_ids (ordered by priority desc)
         """
         if self._mapping_cache is None:
             self._mapping_cache = {}
@@ -67,13 +67,11 @@ class CategoryMapper:
         )
         mappings = list(self.db.scalars(stmt))
 
-        # Build dict - higher priority mappings come first and won't be overwritten
-        mapping_dict: dict[str, int] = {}
+        # Build dict - each bank category maps to a list of coinpurse category IDs
+        mapping_dict: dict[str, list[int]] = {}
         for m in mappings:
-            # Normalize bank category name for matching
             normalized_name = m.bank_category_name.lower().strip()
-            if normalized_name not in mapping_dict:
-                mapping_dict[normalized_name] = m.coinpurse_category_id
+            mapping_dict.setdefault(normalized_name, []).append(m.coinpurse_category_id)
 
         self._mapping_cache[institution_id] = mapping_dict
         return mapping_dict
@@ -85,6 +83,7 @@ class CategoryMapper:
     ) -> int:
         """
         Map a bank category name to a CoinPurse category ID.
+        Returns the highest-priority candidate, or Uncategorized if no mapping.
 
         Args:
             institution_id: The institution ID
@@ -99,8 +98,9 @@ class CategoryMapper:
         mappings = self.get_mappings_for_institution(institution_id)
         normalized_name = bank_category_name.lower().strip()
 
-        if normalized_name in mappings:
-            return mappings[normalized_name]
+        candidates = mappings.get(normalized_name, [])
+        if candidates:
+            return candidates[0]
 
         return self.get_uncategorized_category_id()
 
@@ -117,7 +117,7 @@ class CategoryMapper:
             parsed_transactions: List of parsed transaction dicts
 
         Returns:
-            Same list with 'coinpurse_category_id' field added
+            Same list with 'coinpurse_category_id' and 'candidate_category_ids' fields added
         """
         uncategorized_id = self.get_uncategorized_category_id()
         mappings = self.get_mappings_for_institution(institution_id)
@@ -127,10 +127,13 @@ class CategoryMapper:
 
             if not bank_category:
                 txn["coinpurse_category_id"] = uncategorized_id
+                txn["candidate_category_ids"] = []
                 continue
 
             normalized_name = bank_category.lower().strip()
-            txn["coinpurse_category_id"] = mappings.get(normalized_name, uncategorized_id)
+            candidates = mappings.get(normalized_name, [])
+            txn["candidate_category_ids"] = candidates
+            txn["coinpurse_category_id"] = candidates[0] if candidates else uncategorized_id
 
         return parsed_transactions
 

@@ -21,6 +21,7 @@ class ParsedTransaction(BaseModel):
     transaction_type: str  # CREDIT or DEBIT
     category_name: str | None = None
     coinpurse_category_id: int | None = None
+    candidate_category_ids: list[int] = Field(default_factory=list)
     is_duplicate: bool = False
     validation_errors: list[str] = Field(default_factory=list)
 
@@ -50,6 +51,10 @@ class ImportConfirmRequest(BaseModel):
 
     import_batch_id: int
     selected_rows: list[int] = Field(..., description="Row numbers to import")
+    category_overrides: dict[int, int] = Field(
+        default_factory=dict,
+        description="Map of row_number -> coinpurse_category_id",
+    )
 
 
 class ImportConfirmResponse(BaseModel):

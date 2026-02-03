@@ -3,10 +3,8 @@ Unit tests for Excel parser
 """
 
 import io
-from datetime import date
 
 import pandas as pd
-import pytest
 
 from services.parsers import ExcelParser
 
@@ -35,7 +33,14 @@ class TestExcelParserBasic:
                 "Amount": "100.00",
             },
         ]
-        columns = ["Transaction Date", "Post Date", "Description", "Category", "Type", "Amount"]
+        columns = [
+            "Transaction Date",
+            "Post Date",
+            "Description",
+            "Category",
+            "Type",
+            "Amount",
+        ]
         excel_file = create_excel_file(data, columns)
 
         parser = ExcelParser(
@@ -64,7 +69,14 @@ class TestExcelParserBasic:
                 "Amount": "-50.00",
             },
         ]
-        columns = ["Transaction Date", "Post Date", "Description", "Category", "Type", "Amount"]
+        columns = [
+            "Transaction Date",
+            "Post Date",
+            "Description",
+            "Category",
+            "Type",
+            "Amount",
+        ]
         excel_file = create_excel_file(data, columns)
 
         parser = ExcelParser(

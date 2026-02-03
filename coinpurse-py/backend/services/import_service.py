@@ -121,6 +121,7 @@ class ImportService:
                 transaction_type=t.get("transaction_type", "DEBIT"),
                 category_name=t.get("bank_category"),
                 coinpurse_category_id=t.get("coinpurse_category_id"),
+                candidate_category_ids=t.get("candidate_category_ids", []),
                 is_duplicate=t.get("is_duplicate", False),
                 validation_errors=t.get("validation_errors", []),
             )
@@ -137,6 +138,7 @@ class ImportService:
         self,
         import_batch_id: int,
         selected_rows: list[int],
+        category_overrides: dict[int, int] | None = None,
     ) -> ImportConfirmResponse:
         """
         Confirm and execute an import for selected rows.
@@ -192,15 +194,16 @@ class ImportService:
             txn_date = self._parse_date_from_json(t["transaction_date"])
             post_date = self._parse_date_from_json(t.get("posted_date")) or txn_date
 
-            # Skip if no category mapped
-            category_id = t.get("coinpurse_category_id")
+            # Apply category override if provided
+            overrides = category_overrides or {}
+            category_id = overrides.get(t["row_number"], t.get("coinpurse_category_id"))
             if category_id is None:
                 skipped_count += 1
                 continue
 
             transaction = Transaction(
                 account_id=batch.account_id,
-                category_id=t["coinpurse_category_id"],
+                category_id=category_id,
                 transaction_date=txn_date,
                 posted_date=post_date,
                 amount=t["amount"],
