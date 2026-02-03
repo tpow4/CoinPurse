@@ -183,10 +183,21 @@ class CategoryMappingRepository:
         # Return the updated group
         return self.get_active_by_group(institution_id, bank_category_name)
 
+    def soft_delete_group(self, institution_id: int, bank_category_name: str) -> None:
+        """Soft-delete all active mappings in a group by setting is_active=False"""
+        # Only targets active mappings — inactive ones are already soft-deleted
+        for m in self.get_active_by_group(institution_id, bank_category_name):
+            m.is_active = False
+        self.db.commit()
+
     def delete_group(self, institution_id: int, bank_category_name: str) -> None:
-        """Hard-delete all mappings in a group in one transaction"""
-        existing = self.get_active_by_group(institution_id, bank_category_name)
-        for m in existing:
+        """Permanently remove all mappings (active and inactive) in a group"""
+        # Queries without is_active filter so previously soft-deleted rows are also removed
+        stmt = select(CategoryMapping).where(
+            CategoryMapping.institution_id == institution_id,
+            CategoryMapping.bank_category_name == bank_category_name,
+        )
+        for m in self.db.scalars(stmt):
             self.db.delete(m)
         self.db.commit()
 

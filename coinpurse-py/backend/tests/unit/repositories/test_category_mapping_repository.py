@@ -86,7 +86,11 @@ class TestSaveGroup:
         db_session.refresh(inst)
         for c in cats:
             db_session.refresh(c)
-        return {"inst": inst, "cats": cats, "repo": CategoryMappingRepository(db_session)}
+        return {
+            "inst": inst,
+            "cats": cats,
+            "repo": CategoryMappingRepository(db_session),
+        }
 
     def test_creates_new_group(self, setup):
         repo = setup["repo"]
@@ -136,9 +140,7 @@ class TestSaveGroup:
             )
         db_session.commit()
 
-        result = repo.save_group(
-            inst.institution_id, "Shrink", [cats[0].category_id]
-        )
+        result = repo.save_group(inst.institution_id, "Shrink", [cats[0].category_id])
 
         assert len(result) == 1
         assert result[0].coinpurse_category_id == cats[0].category_id
@@ -287,3 +289,5 @@ class TestDeleteGroup:
         repo = CategoryMappingRepository(db_session)
         # Should not raise
         repo.delete_group(inst.institution_id, "Nonexistent")
+        # verify still empty
+        assert repo.get_active_by_group(inst.institution_id, "Nonexistent") == []

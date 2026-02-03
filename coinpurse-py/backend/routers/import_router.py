@@ -89,9 +89,11 @@ async def upload_and_preview(
         return result
 
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error processing file: {str(e)}"
+        ) from e
 
 
 @router.post("/confirm", response_model=ImportConfirmResponse)
@@ -118,11 +120,11 @@ def confirm_import(
         return result
 
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error confirming import: {str(e)}"
-        )
+        ) from e
 
 
 # =============================================================================
@@ -268,12 +270,13 @@ def update_template(
         raise HTTPException(status_code=404, detail=f"Template {template_id} not found")
 
     # Check for name conflict
-    if template_data.template_name:
-        if repo.name_exists(template_data.template_name, exclude_id=template_id):
-            raise HTTPException(
-                status_code=400,
-                detail=f"Template '{template_data.template_name}' already exists",
-            )
+    if template_data.template_name and repo.name_exists(
+        template_data.template_name, exclude_id=template_id
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Template '{template_data.template_name}' already exists",
+        )
 
     # Update only provided fields
     update_data = template_data.model_dump(exclude_unset=True)
@@ -359,8 +362,22 @@ def save_category_mapping_group(
             detail="Duplicate category IDs in request",
         )
 
+    # If renaming, verify the source group actually exists
+    if data.old_bank_category_name:
+        existing_under_old_name = repo.get_active_by_group(
+            data.institution_id, data.old_bank_category_name
+        )
+        if not existing_under_old_name:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No mappings found for '{data.old_bank_category_name}'",
+            )
+
     # If renaming, check the new name doesn't conflict with another existing group
-    if data.old_bank_category_name and data.old_bank_category_name != data.bank_category_name:
+    if (
+        data.old_bank_category_name
+        and data.old_bank_category_name != data.bank_category_name
+    ):
         existing_under_new_name = repo.get_active_by_group(
             data.institution_id, data.bank_category_name
         )
@@ -382,13 +399,18 @@ def save_category_mapping_group(
 @router.delete("/category-mappings/group", status_code=204)
 def delete_category_mapping_group(
     data: CategoryMappingGroupDelete,
+    hard_delete: bool = False,
     db: Session = Depends(get_db),
 ):
     """
     Delete all mappings in a group (institution + bank category name) in one transaction.
+
+    - **hard_delete**: If True, permanently removes rows from the database.
+                If False (default), soft-deletes by setting is_active=False.
     """
     repo = CategoryMappingRepository(db)
 
+    # Check active mappings exist before attempting delete
     existing = repo.get_active_by_group(data.institution_id, data.bank_category_name)
     if not existing:
         raise HTTPException(
@@ -396,7 +418,13 @@ def delete_category_mapping_group(
             detail=f"No mappings found for '{data.bank_category_name}'",
         )
 
-    repo.delete_group(data.institution_id, data.bank_category_name)
+    if hard_delete:
+        # Permanently remove all rows (active and inactive) for this group
+        repo.delete_group(data.institution_id, data.bank_category_name)
+    else:
+        # Soft-delete: mark active mappings as inactive, preserving the rows
+        repo.soft_delete_group(data.institution_id, data.bank_category_name)
+
     return None
 
 
