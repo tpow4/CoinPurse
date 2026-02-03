@@ -1,36 +1,36 @@
 <script lang="ts">
-    import type { Institution } from '$lib/types';
+    import type { Category } from '$lib/types';
     import { Button } from '$lib/components/ui/button';
     import PencilIcon from '@lucide/svelte/icons/pencil';
     import TrashIcon from '@lucide/svelte/icons/trash-2';
 
     interface Props {
-        institution: Institution;
-        onEdit?: (institution: Institution) => void;
-        onDelete?: (institution: Institution) => void;
+        category: Category;
+        onEdit?: (category: Category) => void;
+        onDelete?: (category: Category) => void;
     }
 
-    let { institution, onEdit, onDelete }: Props = $props();
+    let { category, onEdit, onDelete }: Props = $props();
 </script>
 
 <div class="flex gap-1 justify-end">
     <Button
         variant="ghost"
         size="sm"
-        disabled={!institution.is_active}
-        onclick={() => onEdit?.(institution)}
+        disabled={!category.is_active}
+        onclick={() => onEdit?.(category)}
         title="Edit"
-        aria-label="Edit Institution"
+        aria-label="Edit"
     >
         <PencilIcon class="size-4" />
     </Button>
     <Button
         variant="ghost"
         size="sm"
-        disabled={!institution.is_active}
-        onclick={() => onDelete?.(institution)}
+        disabled={!category.is_active}
+        onclick={() => onDelete?.(category)}
         title="Delete"
-        aria-label="Delete Institution"
+        aria-label="Delete"
     >
         <TrashIcon class="size-4" />
     </Button>

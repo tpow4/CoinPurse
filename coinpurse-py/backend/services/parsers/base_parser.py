@@ -109,7 +109,9 @@ class BaseParser(ABC):
         transaction_date = self._parse_date(
             row, self.column_mappings.get("transaction_date"), errors
         )
-        posted_date = self._parse_date(row, self.column_mappings.get("posted_date"), errors)
+        posted_date = self._parse_date(
+            row, self.column_mappings.get("posted_date"), errors
+        )
 
         # Both dates are required
         if transaction_date is None:
@@ -118,7 +120,9 @@ class BaseParser(ABC):
             errors.append("Posted date is required")
 
         # Parse description
-        description = self._get_string_value(row, self.column_mappings.get("description"), "")
+        description = self._get_string_value(
+            row, self.column_mappings.get("description"), ""
+        )
         if not description:
             errors.append("Description is required")
 
@@ -126,7 +130,9 @@ class BaseParser(ABC):
         amount, transaction_type = self._parse_amount(row, errors)
 
         # Parse bank category (optional)
-        bank_category = self._get_string_value(row, self.column_mappings.get("category"), None)
+        bank_category = self._get_string_value(
+            row, self.column_mappings.get("category"), None
+        )
 
         return ParsedRow(
             row_number=row_number,
@@ -184,7 +190,9 @@ class BaseParser(ABC):
             errors.append(f"Error parsing amount: {e}")
             return (0, "DEBIT")
 
-    def _parse_bank_standard(self, row: pd.Series, decimal_places: int) -> tuple[int, str]:
+    def _parse_bank_standard(
+        self, row: pd.Series, decimal_places: int
+    ) -> tuple[int, str]:
         """Parse amount with bank standard convention (positive=in, negative=out)"""
         amount_col = self.column_mappings.get("amount")
         raw_amount = self._get_numeric_value(row, amount_col, 0.0)
@@ -202,10 +210,16 @@ class BaseParser(ABC):
         transaction_type = "CREDIT" if amount_cents >= 0 else "DEBIT"
         return (amount_cents, transaction_type)
 
-    def _parse_split_columns(self, row: pd.Series, decimal_places: int) -> tuple[int, str]:
+    def _parse_split_columns(
+        self, row: pd.Series, decimal_places: int
+    ) -> tuple[int, str]:
         """Parse amount from separate debit/credit columns"""
-        debit_col = self.amount_config.get("debit_column") or self.column_mappings.get("debit")
-        credit_col = self.amount_config.get("credit_column") or self.column_mappings.get("credit")
+        debit_col = self.amount_config.get("debit_column") or self.column_mappings.get(
+            "debit"
+        )
+        credit_col = self.amount_config.get(
+            "credit_column"
+        ) or self.column_mappings.get("credit")
 
         debit_amount = self._get_numeric_value(row, debit_col, 0.0)
         credit_amount = self._get_numeric_value(row, credit_col, 0.0)
@@ -219,7 +233,9 @@ class BaseParser(ABC):
             amount_cents = self._to_cents(-abs(debit_amount), decimal_places)
             return (amount_cents, "DEBIT")
 
-    def _parse_amount_with_type(self, row: pd.Series, decimal_places: int) -> tuple[int, str]:
+    def _parse_amount_with_type(
+        self, row: pd.Series, decimal_places: int
+    ) -> tuple[int, str]:
         """Parse amount with separate type indicator column"""
         amount_col = self.column_mappings.get("amount")
         type_col = self.column_mappings.get("transaction_type")
@@ -227,7 +243,6 @@ class BaseParser(ABC):
         raw_amount = abs(self._get_numeric_value(row, amount_col, 0.0))
         type_value = self._get_string_value(row, type_col, "").lower()
 
-        debit_indicator = self.amount_config.get("debit_indicator", "debit").lower()
         credit_indicator = self.amount_config.get("credit_indicator", "credit").lower()
 
         if credit_indicator in type_value:
@@ -248,7 +263,9 @@ class BaseParser(ABC):
             return default
         return str(value)
 
-    def _get_numeric_value(self, row: pd.Series, column_name: str | None, default: float) -> float:
+    def _get_numeric_value(
+        self, row: pd.Series, column_name: str | None, default: float
+    ) -> float:
         """Get a numeric value from a row, handling missing columns and NaN"""
         if not column_name or column_name not in row.index:
             return default

@@ -191,13 +191,7 @@
             onclick={onConfirm}
             disabled={loading || totalSelected === 0}
         >
-            {#if loading}
-                Importing...
-            {:else}
-                Import {totalSelected} Transaction{totalSelected !== 1
-                    ? 's'
-                    : ''}
-            {/if}
+            Next: Review Categories
         </Button>
     </div>
 </div>

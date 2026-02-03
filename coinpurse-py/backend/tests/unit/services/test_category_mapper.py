@@ -179,6 +179,26 @@ class TestCategoryMapper:
         assert result[2]["coinpurse_category_id"] == setup_data["uncategorized"].category_id
         assert result[3]["coinpurse_category_id"] == setup_data["uncategorized"].category_id
 
+    def test_map_categories_batch_sets_candidate_ids(self, db_session, setup_data):
+        """Should set candidate_category_ids for each transaction"""
+        mapper = CategoryMapper(db_session)
+        chase = setup_data["chase"]
+
+        parsed = [
+            {"row_number": 1, "bank_category": "Food & Drink"},
+            {"row_number": 2, "bank_category": "Unknown"},
+            {"row_number": 3, "bank_category": None},
+        ]
+
+        result = mapper.map_categories(chase.institution_id, parsed)
+
+        # Known mapping should have candidate list with the mapped ID
+        assert result[0]["candidate_category_ids"] == [setup_data["restaurants"].category_id]
+        # Unknown mapping should have empty candidate list
+        assert result[1]["candidate_category_ids"] == []
+        # None bank_category should have empty candidate list
+        assert result[2]["candidate_category_ids"] == []
+
     def test_cache_is_used(self, db_session, setup_data):
         """Should cache mappings for performance"""
         mapper = CategoryMapper(db_session)
@@ -188,10 +208,11 @@ class TestCategoryMapper:
         mapper.get_mappings_for_institution(chase.institution_id)
         assert chase.institution_id in mapper._mapping_cache
 
-        # Cache should contain the mappings
+        # Cache should contain the mappings as lists
         cached = mapper._mapping_cache[chase.institution_id]
         assert "food & drink" in cached
         assert "shopping" in cached
+        assert isinstance(cached["food & drink"], list)
 
     def test_clear_cache(self, db_session, setup_data):
         """Should clear cache when requested"""
@@ -205,3 +226,65 @@ class TestCategoryMapper:
 
         assert mapper._mapping_cache is None
         assert mapper._uncategorized_id is None
+
+    def test_ambiguous_mapping_returns_candidates(self, db_session, setup_data):
+        """Bank category with multiple mappings should return all candidate IDs"""
+        discover = setup_data["discover"]
+        travel = Category(name="Travel")
+        db_session.add(travel)
+        db_session.commit()
+
+        # Create two mappings for same bank category with different priorities
+        mapping_high = CategoryMapping(
+            institution_id=discover.institution_id,
+            bank_category_name="Travel/Entertainment",
+            coinpurse_category_id=travel.category_id,
+            priority=2,
+        )
+        mapping_low = CategoryMapping(
+            institution_id=discover.institution_id,
+            bank_category_name="Travel/Entertainment",
+            coinpurse_category_id=setup_data["entertainment"].category_id,
+            priority=1,
+        )
+        db_session.add_all([mapping_high, mapping_low])
+        db_session.commit()
+
+        mapper = CategoryMapper(db_session)
+        parsed = [{"row_number": 1, "bank_category": "Travel/Entertainment"}]
+
+        result = mapper.map_categories(discover.institution_id, parsed)
+
+        # Should have both candidates ordered by priority (high first)
+        assert travel.category_id in result[0]["candidate_category_ids"]
+        assert setup_data["entertainment"].category_id in result[0]["candidate_category_ids"]
+        assert len(result[0]["candidate_category_ids"]) == 2
+        # Default should be highest priority
+        assert result[0]["coinpurse_category_id"] == travel.category_id
+
+    def test_ambiguous_mapping_map_category_returns_highest_priority(self, db_session, setup_data):
+        """map_category should return highest-priority candidate"""
+        discover = setup_data["discover"]
+        travel = Category(name="Travel")
+        db_session.add(travel)
+        db_session.commit()
+
+        mapping_high = CategoryMapping(
+            institution_id=discover.institution_id,
+            bank_category_name="Travel/Entertainment",
+            coinpurse_category_id=travel.category_id,
+            priority=2,
+        )
+        mapping_low = CategoryMapping(
+            institution_id=discover.institution_id,
+            bank_category_name="Travel/Entertainment",
+            coinpurse_category_id=setup_data["entertainment"].category_id,
+            priority=1,
+        )
+        db_session.add_all([mapping_high, mapping_low])
+        db_session.commit()
+
+        mapper = CategoryMapper(db_session)
+        result = mapper.map_category(discover.institution_id, "Travel/Entertainment")
+
+        assert result == travel.category_id
