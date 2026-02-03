@@ -81,12 +81,17 @@ class ImportService:
         )
 
         # Detect duplicates
-        transactions = self.duplicate_detector.check_duplicates(account_id, transactions)
+        transactions = self.duplicate_detector.check_duplicates(
+            account_id, transactions
+        )
 
         # Calculate summary
         total_rows = len(transactions)
-        valid_rows = sum(1 for t in transactions if not t.get("validation_errors")
-                         and not t.get("is_duplicate"))
+        valid_rows = sum(
+            1
+            for t in transactions
+            if not t.get("validation_errors") and not t.get("is_duplicate")
+        )
         duplicate_count = sum(1 for t in transactions if t.get("is_duplicate"))
         validation_errors = sum(1 for t in transactions if t.get("validation_errors"))
 
@@ -186,6 +191,7 @@ class ImportService:
 
         # Create transactions
         now = datetime.now(UTC)
+        overrides = category_overrides or {}
         for t in transactions_to_import:
             # Determine transaction type enum
             txn_type = self._map_transaction_type(t.get("transaction_type", "DEBIT"))
@@ -195,7 +201,6 @@ class ImportService:
             post_date = self._parse_date_from_json(t.get("posted_date")) or txn_date
 
             # Apply category override if provided
-            overrides = category_overrides or {}
             category_id = overrides.get(t["row_number"], t.get("coinpurse_category_id"))
             if category_id is None:
                 skipped_count += 1

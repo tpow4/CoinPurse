@@ -14,6 +14,8 @@ from repositories.import_batch_repository import ImportBatchRepository
 from repositories.import_template_repository import ImportTemplateRepository
 from schemas.category_mapping import (
     CategoryMappingCreate,
+    CategoryMappingGroupDelete,
+    CategoryMappingGroupSave,
     CategoryMappingResponse,
     CategoryMappingUpdate,
 )
@@ -331,6 +333,71 @@ def list_category_mappings(
             institution_id, include_inactive=include_inactive
         )
     return repo.get_all(include_inactive=include_inactive)
+
+
+@router.put("/category-mappings/group", response_model=list[CategoryMappingResponse])
+def save_category_mapping_group(
+    data: CategoryMappingGroupSave,
+    db: Session = Depends(get_db),
+):
+    """
+    Batch-save a mapping group in a single transaction.
+
+    Reconciles the desired state for all mappings sharing an institution + bank category name:
+    - Creates new mappings for added category IDs
+    - Deletes mappings for removed category IDs
+    - Renames retained mappings if bank_category_name changed
+
+    Pass old_bank_category_name when renaming an existing group.
+    """
+    repo = CategoryMappingRepository(db)
+
+    # Check for duplicate category IDs in the request
+    if len(data.coinpurse_category_ids) != len(set(data.coinpurse_category_ids)):
+        raise HTTPException(
+            status_code=400,
+            detail="Duplicate category IDs in request",
+        )
+
+    # If renaming, check the new name doesn't conflict with another existing group
+    if data.old_bank_category_name and data.old_bank_category_name != data.bank_category_name:
+        existing_under_new_name = repo.get_active_by_group(
+            data.institution_id, data.bank_category_name
+        )
+        if existing_under_new_name:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Mapping group '{data.bank_category_name}' already exists for this institution",
+            )
+
+    result = repo.save_group(
+        institution_id=data.institution_id,
+        bank_category_name=data.bank_category_name,
+        coinpurse_category_ids=data.coinpurse_category_ids,
+        old_bank_category_name=data.old_bank_category_name,
+    )
+    return result
+
+
+@router.delete("/category-mappings/group", status_code=204)
+def delete_category_mapping_group(
+    data: CategoryMappingGroupDelete,
+    db: Session = Depends(get_db),
+):
+    """
+    Delete all mappings in a group (institution + bank category name) in one transaction.
+    """
+    repo = CategoryMappingRepository(db)
+
+    existing = repo.get_active_by_group(data.institution_id, data.bank_category_name)
+    if not existing:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No mappings found for '{data.bank_category_name}'",
+        )
+
+    repo.delete_group(data.institution_id, data.bank_category_name)
+    return None
 
 
 @router.get("/category-mappings/{mapping_id}", response_model=CategoryMappingResponse)

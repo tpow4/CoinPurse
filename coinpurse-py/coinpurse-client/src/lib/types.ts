@@ -257,6 +257,18 @@ export interface CategoryMappingUpdate {
     is_active?: boolean;
 }
 
+export interface CategoryMappingGroupSave {
+    institution_id: number;
+    bank_category_name: string;
+    coinpurse_category_ids: number[];
+    old_bank_category_name?: string;
+}
+
+export interface CategoryMappingGroupDelete {
+    institution_id: number;
+    bank_category_name: string;
+}
+
 // Import types
 
 export enum FileFormat {
