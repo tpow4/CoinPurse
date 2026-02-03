@@ -9,13 +9,17 @@
         Settings,
         SunIcon,
         MoonIcon,
+        Wallet,
     } from '@lucide/svelte';
     import { page } from '$app/state';
     import { Button } from '$lib/components/ui/button';
     import { toggleMode, ModeWatcher } from 'mode-watcher';
-    import { Wallet } from '@lucide/svelte';
     import * as m from '$lib/paraglide/messages';
-    import { getLocale, localizeHref, deLocalizeHref } from '$lib/paraglide/runtime';
+    import {
+        getLocale,
+        localizeHref,
+        deLocalizeHref,
+    } from '$lib/paraglide/runtime';
 
     let { children } = $props();
 
@@ -25,8 +29,16 @@
 
     const navItems = $derived([
         { href: localizeHref('/'), label: m.nav_home(), icon: House },
-        { href: localizeHref('/categories'), label: m.nav_categories(), icon: Tag },
-        { href: localizeHref('/transactions'), label: m.nav_transactions(), icon: ArrowLeftRight },
+        {
+            href: localizeHref('/categories'),
+            label: m.nav_categories(),
+            icon: Tag,
+        },
+        {
+            href: localizeHref('/transactions'),
+            label: m.nav_transactions(),
+            icon: ArrowLeftRight,
+        },
         { href: localizeHref('/import'), label: m.nav_import(), icon: Upload },
         { href: localizeHref('/admin'), label: m.nav_admin(), icon: Settings },
     ]);
