@@ -1,5 +1,7 @@
 import type { ColumnDef } from '@tanstack/table-core';
 import type { TransactionWithNames } from '$lib/types';
+import { formatCurrency, formatDate } from '$lib/format';
+import * as m from '$lib/paraglide/messages';
 
 // Helper to format transaction type for display
 function formatTransactionType(type: string): string {
@@ -9,42 +11,33 @@ function formatTransactionType(type: string): string {
         .join(' ');
 }
 
-// Helper to format amount as currency
-function formatCurrency(cents: number): string {
-    const dollars = Math.abs(cents) / 100;
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    }).format(dollars);
-}
-
 export function createColumns(): ColumnDef<TransactionWithNames>[] {
     return [
         {
             accessorKey: 'transaction_date',
-            header: 'Date',
+            header: m.txn_col_date(),
             cell: ({ row }) => {
                 const date = new Date(
                     row.getValue('transaction_date') as string
                 );
-                return date.toLocaleDateString();
+                return formatDate(date);
             },
         },
         {
             accessorKey: 'account_name',
-            header: 'Account',
+            header: m.txn_col_account(),
         },
         {
             accessorKey: 'description',
-            header: 'Description',
+            header: m.txn_col_description(),
         },
         {
             accessorKey: 'category_name',
-            header: 'Category',
+            header: m.txn_col_category(),
         },
         {
             accessorKey: 'transaction_type',
-            header: 'Type',
+            header: m.txn_col_type(),
             cell: ({ row }) => {
                 const type = row.getValue('transaction_type') as string;
                 return formatTransactionType(type);
@@ -52,10 +45,10 @@ export function createColumns(): ColumnDef<TransactionWithNames>[] {
         },
         {
             accessorKey: 'amount',
-            header: 'Amount',
+            header: m.txn_col_amount(),
             cell: ({ row }) => {
                 const cents = row.getValue('amount') as number;
-                const formatted = formatCurrency(cents);
+                const formatted = formatCurrency(Math.abs(cents) / 100);
                 const prefix = cents < 0 ? '-' : '';
                 return `${prefix}${formatted}`;
             },

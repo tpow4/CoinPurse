@@ -4,20 +4,14 @@
     import { curveLinear } from 'd3-shape';
     import { scaleUtc } from 'd3-scale';
     import * as Chart from '$lib/components/ui/chart/index.js';
+    import { formatCompactCurrency, formatDate, formatDateCompact } from '$lib/format';
+    import * as m from '$lib/paraglide/messages';
 
     interface Props {
         balances: AccountBalance[];
     }
 
     let { balances }: Props = $props();
-
-    const compactCurrency = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        notation: 'compact',
-        compactDisplay: 'short',
-        maximumFractionDigits: 1,
-    });
 
     function parseIsoDate(date: string): Date {
         // Ensure stable UTC date parsing for YYYY-MM-DD inputs
@@ -53,14 +47,14 @@
     );
 
     const chartConfig = {
-        balance: { label: 'Balance', color: 'var(--chart-1)' },
+        balance: { label: m.balance_chart_label(), color: 'var(--chart-1)' },
     } satisfies Chart.ChartConfig;
 
     const hasData = $derived(chartData.length >= 2);
 </script>
 
 {#if hasData}
-    <Chart.Container config={chartConfig} class="min-h-[180px] w-full">
+    <Chart.Container config={chartConfig} class="min-h-45 w-full">
         <AreaChart
             data={chartData}
             x="date"
@@ -81,15 +75,12 @@
                 },
                 xAxis: {
                     format: (v: Date) =>
-                        v.toLocaleDateString(undefined, {
-                            day: '2-digit',
-                            month: '2-digit',
-                        }),
+                        formatDateCompact(v),
                 },
                 yAxis: {
                     format: (v) =>
                         typeof v === 'number'
-                            ? compactCurrency.format(v)
+                            ? formatCompactCurrency(v)
                             : String(v),
                 },
             }}
@@ -97,11 +88,7 @@
             {#snippet tooltip()}
                 <Chart.Tooltip
                     labelFormatter={(v: Date) =>
-                        v.toLocaleDateString(undefined, {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                        })}
+                        formatDate(v)}
                     indicator="line"
                 />
             {/snippet}
@@ -109,8 +96,8 @@
     </Chart.Container>
 {:else}
     <div
-        class="min-h-[180px] w-full flex items-center justify-center text-sm text-muted-foreground bg-muted/30 border border-dashed rounded-md"
+        class="min-h-45 w-full flex items-center justify-center text-sm text-muted-foreground bg-muted/30 border border-dashed rounded-md"
     >
-        Add at least two balances to see a trend.
+        {m.balance_chart_empty()}
     </div>
 {/if}

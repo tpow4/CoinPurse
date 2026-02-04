@@ -2,6 +2,8 @@ import type { ColumnDef } from '@tanstack/table-core';
 import type { Account } from '$lib/types';
 import { renderComponent } from '$lib/components/ui/data-table/render-helpers.js';
 import AccountsTableActions from './accounts-table-actions.svelte';
+import * as m from '$lib/paraglide/messages';
+import { formatDate } from '$lib/format';
 
 // Extended account type with institution name for display
 export interface AccountWithInstitution extends Account {
@@ -27,15 +29,15 @@ export function createColumns(
     return [
         {
             accessorKey: 'account_name',
-            header: 'Account Name',
+            header: m.acct_col_name(),
         },
         {
             accessorKey: 'institution_name',
-            header: 'Institution',
+            header: m.acct_col_institution(),
         },
         {
             accessorKey: 'account_type',
-            header: 'Type',
+            header: m.acct_col_type(),
             cell: ({ row }) => {
                 const type = row.getValue('account_type') as string;
                 return formatAccountType(type);
@@ -43,7 +45,7 @@ export function createColumns(
         },
         {
             accessorKey: 'tax_treatment',
-            header: 'Tax Treatment',
+            header: m.acct_col_tax(),
             cell: ({ row }) => {
                 const treatment = row.getValue('tax_treatment') as string;
                 return formatAccountType(treatment);
@@ -51,7 +53,7 @@ export function createColumns(
         },
         {
             accessorKey: 'last_4_digits',
-            header: 'Last 4',
+            header: m.acct_col_last4(),
             cell: ({ row }) => {
                 const last4 = row.getValue('last_4_digits') as string;
                 return last4 || '-';
@@ -59,39 +61,38 @@ export function createColumns(
         },
         {
             accessorKey: 'tracks_transactions',
-            header: 'Tracks Txns',
+            header: m.acct_col_tracks_txns(),
             cell: ({ row }) => {
                 const tracks = row.getValue('tracks_transactions') as boolean;
-                return tracks ? 'Yes' : 'No';
+                return tracks ? m.acct_col_yes() : m.acct_col_no();
             },
         },
         {
             accessorKey: 'tracks_balances',
-            header: 'Tracks Bal',
+            header: m.acct_col_tracks_bal(),
             cell: ({ row }) => {
                 const tracks = row.getValue('tracks_balances') as boolean;
-                return tracks ? 'Yes' : 'No';
+                return tracks ? m.acct_col_yes() : m.acct_col_no();
             },
         },
         {
             accessorKey: 'active',
-            header: 'Status',
+            header: m.acct_col_status(),
             cell: ({ row }) => {
                 const isActive = row.getValue('active') as boolean;
-                return isActive ? 'Active' : 'Inactive';
+                return isActive ? m.acct_col_status_active() : m.acct_col_status_inactive();
             },
         },
         {
             accessorKey: 'created_at',
-            header: 'Created',
+            header: m.acct_col_created(),
             cell: ({ row }) => {
-                const date = new Date(row.getValue('created_at') as string);
-                return date.toLocaleDateString();
+                return formatDate(row.getValue('created_at') as string);
             },
         },
         {
             id: 'actions',
-            header: 'Actions',
+            header: m.acct_col_actions(),
             cell: ({ row }) => {
                 return renderComponent(AccountsTableActions, {
                     account: row.original,

@@ -7,6 +7,7 @@
     } from '$lib/components/ui/data-table';
     import { getCoreRowModel } from '@tanstack/table-core';
     import * as Table from '$lib/components/ui/table';
+    import * as m from '$lib/paraglide/messages';
 
     interface Props {
         data: Category[];
@@ -76,7 +77,7 @@
                         colspan={columns.length}
                         class="h-24 text-center"
                     >
-                        No results.
+                        {m.cat_table_empty()}
                     </Table.Cell>
                 </Table.Row>
             {/if}

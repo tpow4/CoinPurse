@@ -11,6 +11,7 @@
 	import { createColumns } from '../../pages/transactions/columns';
 	import { Button } from '$lib/components/ui/button';
 	import { Upload } from '@lucide/svelte';
+	import * as m from '$lib/paraglide/messages';
 
 	// Data state
 	let transactions = $state<TransactionWithNames[]>([]);
@@ -119,7 +120,7 @@
 			updateAmountRange();
 			applyClientFilters();
 		} catch (e) {
-			error = e instanceof Error ? e.message : 'Failed to load transactions';
+			error = e instanceof Error ? e.message : m.txn_error_load();
 			console.error('Failed to load transactions:', e);
 		} finally {
 			loading = false;
@@ -209,12 +210,12 @@
 	});
 </script>
 
-<div class="mx-auto max-w-[1400px] p-8">
+<div class="mx-auto max-w-350 p-8">
 	<div class="mb-6 flex items-center justify-between">
-		<h1 class="text-3xl font-bold">Transactions</h1>
+		<h1 class="text-3xl font-bold">{m.txn_title()}</h1>
 		<Button href="/import">
 			<Upload class="mr-2 size-4" />
-			Import
+			{m.txn_btn_import()}
 		</Button>
 	</div>
 
@@ -255,7 +256,7 @@
 	</div>
 
 	{#if loading}
-		<div class="py-8 text-center text-gray-600">Loading transactions...</div>
+		<div class="py-8 text-center text-gray-600">{m.txn_loading()}</div>
 	{:else}
 		<TransactionsDataTable data={filteredTransactions} {columns} />
 	{/if}

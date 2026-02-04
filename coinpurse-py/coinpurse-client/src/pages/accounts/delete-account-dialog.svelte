@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as Dialog from "$lib/components/ui/dialog";
 	import { Button } from "$lib/components/ui/button";
+	import * as m from '$lib/paraglide/messages';
 
 	interface Props {
 		open: boolean;
@@ -15,22 +16,22 @@
 <Dialog.Root {open} {onOpenChange}>
 	<Dialog.Content class="sm:max-w-[425px]">
 		<Dialog.Header>
-			<Dialog.Title>Delete Account</Dialog.Title>
+			<Dialog.Title>{m.acct_delete_title()}</Dialog.Title>
 			<Dialog.Description>
-				Are you sure you want to delete this account?
+				{m.acct_delete_confirm()}
 			</Dialog.Description>
 		</Dialog.Header>
 
 		<p class="text-yellow-800 bg-yellow-50 p-2 rounded text-sm">
-			This will perform a soft delete (set to inactive). Transactions and balances associated with this account will remain in the system.
+			{m.acct_delete_warning()}
 		</p>
 
 		<Dialog.Footer>
 			<Button type="button" variant="outline" onclick={() => onOpenChange(false)}>
-				Cancel
+				{m.btn_cancel()}
 			</Button>
 			<Button variant="destructive" onclick={onConfirm} disabled={loading}>
-				{loading ? "Deleting..." : "Delete"}
+				{loading ? m.btn_deleting() : m.btn_delete()}
 			</Button>
 		</Dialog.Footer>
 	</Dialog.Content>

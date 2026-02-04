@@ -15,6 +15,13 @@
     } from '$lib/components/ui/card';
     import { ButtonGroup } from '$lib/components/ui/button-group';
     import { Button } from '$lib/components/ui/button';
+    import {
+        formatCompactCurrency,
+        formatPercent,
+        formatDate,
+        formatDateCompact,
+    } from '$lib/format';
+    import * as m from '$lib/paraglide/messages';
 
     type DateRange = 'ytd' | '1y' | 'max';
 
@@ -41,23 +48,6 @@
     let response = $state<MonthlyBalanceAggregateResponse | null>(null);
     let selectedRange = $state<DateRange>('ytd');
 
-    const compactCurrency = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        notation: 'compact',
-        compactDisplay: 'short',
-        maximumFractionDigits: 1,
-    });
-
-    const percent = new Intl.NumberFormat(undefined, {
-        style: 'percent',
-        maximumFractionDigits: 1,
-    });
-    const dateFmt = new Intl.DateTimeFormat(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
     const changeIsPositive = $derived(netWorthChange >= 0);
     const changeClass = $derived(
         changeIsPositive ? 'text-emerald-600' : 'text-red-600'
@@ -155,7 +145,7 @@
             if (e instanceof ApiException) {
                 error = e.detail;
             } else {
-                error = 'Failed to load portfolio chart';
+                error = m.portfolio_error();
             }
         } finally {
             loading = false;
@@ -174,7 +164,7 @@
 
 {#if error}
     <div class="bg-red-50 text-red-700 p-4 rounded">
-        Failed to load portfolio chart: {error}
+        {m.portfolio_error_detail({ error })}
     </div>
 {:else}
     <Card class="h-full flex flex-col">
@@ -186,31 +176,29 @@
                     <CardTitle
                         class="text-xs uppercase tracking-wide text-muted-foreground"
                     >
-                        Net worth
+                        {m.portfolio_net_worth()}
                     </CardTitle>
                     <div class="flex flex-row items-center gap-3">
                         <div class="text-3xl font-semibold tracking-tight">
-                            {compactCurrency.format(netWorthTotal / 100)}
+                            {formatCompactCurrency(netWorthTotal / 100)}
                         </div>
                         <div class="flex flex-col pl-8 items-center text-xs">
                             <span
                                 class="text-muted-foreground uppercase tracking-wide"
                             >
                                 {#if lastUpdatedDate}
-                                    {dateFmt.format(
-                                        parseIsoDate(lastUpdatedDate)
-                                    )}
+                                    {formatDate(parseIsoDate(lastUpdatedDate))}
                                 {:else}
-                                    No balances yet
+                                    {m.portfolio_no_balances()}
                                 {/if}
                             </span>
                             {#if hasPreviousBalances}
                                 <span class={changeClass}>
                                     {changeIsPositive ? '▲' : '▼'}
-                                    {compactCurrency.format(
+                                    {formatCompactCurrency(
                                         Math.abs(netWorthChange) / 100
                                     )}
-                                    ({percent.format(
+                                    ({formatPercent(
                                         Math.abs(netWorthChangePercent)
                                     )})
                                 </span>
@@ -223,10 +211,10 @@
                         <div
                             class="text-xs uppercase tracking-wide text-muted-foreground"
                         >
-                            Liquid total
+                            {m.portfolio_liquid_total()}
                         </div>
                         <div class="text-lg font-semibold">
-                            {compactCurrency.format(liquidTotal / 100)}
+                            {formatCompactCurrency(liquidTotal / 100)}
                         </div>
                     </div>
                 </div>
@@ -235,18 +223,18 @@
         <CardContent class="flex-1">
             {#if loading}
                 <div
-                    class="h-[360px] flex items-center justify-center text-sm text-muted-foreground"
+                    class="h-90 flex items-center justify-center text-sm text-muted-foreground"
                 >
-                    Loading portfolio chart...
+                    {m.portfolio_loading()}
                 </div>
             {:else if !hasData}
                 <div
-                    class="h-[360px] flex items-center justify-center text-sm text-muted-foreground border border-dashed rounded-md"
+                    class="h-90 flex items-center justify-center text-sm text-muted-foreground border border-dashed rounded-md"
                 >
-                    Add balance data to your accounts to see portfolio trends.
+                    {m.portfolio_empty()}
                 </div>
             {:else}
-                <Chart.Container config={chartConfig} class="h-[360px] w-full">
+                <Chart.Container config={chartConfig} class="h-90 w-full">
                     <AreaChart
                         data={chartData}
                         x="date"
@@ -261,16 +249,12 @@
                                 motion: 'tween',
                             },
                             xAxis: {
-                                format: (v: Date) =>
-                                    v.toLocaleDateString(undefined, {
-                                        month: 'short',
-                                        year: 'numeric',
-                                    }),
+                                format: (v: Date) => formatDateCompact(v),
                             },
                             yAxis: {
                                 format: (v) =>
                                     typeof v === 'number'
-                                        ? compactCurrency.format(v)
+                                        ? formatCompactCurrency(v)
                                         : String(v),
                             },
                         }}
@@ -278,10 +262,7 @@
                         {#snippet tooltip()}
                             <Chart.Tooltip
                                 labelFormatter={(v: Date) =>
-                                    v.toLocaleDateString(undefined, {
-                                        year: 'numeric',
-                                        month: 'long',
-                                    })}
+                                    formatDateCompact(v)}
                                 indicator="line"
                             />
                         {/snippet}
@@ -297,14 +278,14 @@
                         size="sm"
                         onclick={() => handleRangeChange('ytd')}
                     >
-                        YTD
+                        {m.portfolio_range_ytd()}
                     </Button>
                     <Button
                         variant={selectedRange === '1y' ? 'default' : 'outline'}
                         size="sm"
                         onclick={() => handleRangeChange('1y')}
                     >
-                        1Y
+                        {m.portfolio_range_1y()}
                     </Button>
                     <Button
                         variant={selectedRange === 'max'
@@ -313,7 +294,7 @@
                         size="sm"
                         onclick={() => handleRangeChange('max')}
                     >
-                        Max
+                        {m.portfolio_range_max()}
                     </Button>
                 </ButtonGroup>
             </div>

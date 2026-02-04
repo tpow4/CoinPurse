@@ -4,6 +4,7 @@
     import { Button } from '$lib/components/ui/button';
     import * as Card from '$lib/components/ui/card';
     import { CircleCheck, CircleX, Upload, ArrowRight } from '@lucide/svelte';
+    import * as m from '$lib/paraglide/messages';
 
     interface Props {
         confirmResponse: ImportConfirmResponse;
@@ -25,9 +26,9 @@
             >
                 <CircleCheck class="size-8 text-green-500" />
             </div>
-            <Card.Title class="text-2xl">Import Successful</Card.Title>
+            <Card.Title class="text-2xl">{m.imp_result_success_title()}</Card.Title>
             <Card.Description
-                >Your transactions have been imported.</Card.Description
+                >{m.imp_result_success_desc()}</Card.Description
             >
         {:else}
             <div
@@ -35,9 +36,9 @@
             >
                 <CircleX class="size-8 text-red-500" />
             </div>
-            <Card.Title class="text-2xl">Import Failed</Card.Title>
+            <Card.Title class="text-2xl">{m.imp_result_fail_title()}</Card.Title>
             <Card.Description
-                >There was a problem importing your transactions.</Card.Description
+                >{m.imp_result_fail_desc()}</Card.Description
             >
         {/if}
     </Card.Header>
@@ -45,19 +46,19 @@
     <Card.Content>
         <div class="space-y-3 rounded-lg border p-4">
             <div class="flex justify-between">
-                <span class="text-muted-foreground">Imported</span>
+                <span class="text-muted-foreground">{m.imp_result_imported()}</span>
                 <span class="font-medium text-green-600"
                     >{confirmResponse.imported_count}</span
                 >
             </div>
             <div class="flex justify-between">
-                <span class="text-muted-foreground">Skipped</span>
+                <span class="text-muted-foreground">{m.imp_result_skipped()}</span>
                 <span class="font-medium">{confirmResponse.skipped_count}</span>
             </div>
             {#if confirmResponse.duplicate_count > 0}
                 <div class="flex justify-between">
                     <span class="text-muted-foreground"
-                        >Duplicates Imported</span
+                        >{m.imp_result_duplicates()}</span
                     >
                     <span class="font-medium text-amber-600"
                         >{confirmResponse.duplicate_count}</span
@@ -75,10 +76,10 @@
             class="w-full"
         >
             <Upload class="mr-2 size-4" />
-            Import Another File
+            {m.imp_result_import_another()}
         </Button>
         <Button href="/transactions" class="w-full">
-            <span>View Transactions</span>
+            <span>{m.imp_result_view_transactions()}</span>
             <ArrowRight class="ml-2 size-4" />
         </Button>
     </Card.Footer>
