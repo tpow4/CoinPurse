@@ -215,7 +215,7 @@
             {#if loading}
                 {m.imp_categorize_importing()}
             {:else}
-                {m.imp_categorize_import_count({ count: totalSelectedCount, suffix: totalSelectedCount !== 1 ? 's' : '' })}
+                {m.imp_categorize_import_count({ count: totalSelectedCount })}
             {/if}
         </Button>
     </div>

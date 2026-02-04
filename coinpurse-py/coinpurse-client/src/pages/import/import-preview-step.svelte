@@ -108,7 +108,7 @@
                 >
                 {#if selectedDuplicateCount > 0}
                     <span class="ml-2 text-amber-600">
-                        {m.imp_preview_includes_duplicates({ count: selectedDuplicateCount, suffix: selectedDuplicateCount !== 1 ? 's' : '' })}
+                        {m.imp_preview_includes_duplicates({ count: selectedDuplicateCount })}
                     </span>
                 {/if}
             </div>
