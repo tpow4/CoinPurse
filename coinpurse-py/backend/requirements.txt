@@ -41,7 +41,7 @@ rich-toolkit==0.18.1
 rignore==0.7.6
 ruff==0.14.14
 scalar_fastapi==1.6.1
-sentry-sdk==2.50.0
+sentry-sdk==2.51.0
 shellingham==1.5.4
 six==1.17.0
 sniffio==1.3.1
