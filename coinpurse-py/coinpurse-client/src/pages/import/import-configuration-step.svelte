@@ -5,6 +5,7 @@
     import * as Card from '$lib/components/ui/card';
     import * as Select from '$lib/components/ui/select';
     import { Upload } from '@lucide/svelte';
+    import * as m from '$lib/paraglide/messages';
 
     interface Props {
         accounts: Account[];
@@ -70,16 +71,16 @@
 
 <Card.Root>
     <Card.Header>
-        <Card.Title>Configure Import</Card.Title>
+        <Card.Title>{m.imp_config_title()}</Card.Title>
         <Card.Description
-            >Select an account and upload your file.</Card.Description
+            >{m.imp_config_description()}</Card.Description
         >
     </Card.Header>
 
     <Card.Content class="space-y-6">
         <!-- Account Selection -->
         <div class="space-y-2">
-            <Label for="account-select">Account</Label>
+            <Label for="account-select">{m.imp_config_account()}</Label>
             <Select.Root
                 type="single"
                 value={accountValue}
@@ -88,9 +89,9 @@
                 <Select.Trigger id="account-select" class="w-full">
                     {#if accountId}
                         {accounts.find((a) => a.account_id === accountId)
-                            ?.account_name ?? 'Select account'}
+                            ?.account_name ?? m.imp_config_select_account()}
                     {:else}
-                        Select account
+                        {m.imp_config_select_account()}
                     {/if}
                 </Select.Trigger>
                 <Select.Content>
@@ -103,15 +104,14 @@
             </Select.Root>
             {#if selectedAccount && !hasTemplate}
                 <p class="text-destructive text-sm">
-                    This account has no import template configured. Please
-                    configure a template for this account before importing.
+                    {m.imp_config_no_template()}
                 </p>
             {/if}
         </div>
 
         <!-- File Upload -->
         <div class="space-y-2">
-            <Label>File</Label>
+            <Label>{m.imp_config_file()}</Label>
             <input
                 bind:this={fileInput}
                 type="file"
@@ -144,16 +144,16 @@
                                 onFileChange(null);
                             }}
                         >
-                            Remove
+                            {m.imp_config_file_remove()}
                         </Button>
                     </div>
                 {:else}
                     <Upload class="text-muted-foreground mb-4 size-10" />
                     <p class="mb-1 font-medium">
-                        Drop your file here or click to browse
+                        {m.imp_config_file_drop()}
                     </p>
                     <p class="text-muted-foreground text-sm">
-                        Accepts CSV and Excel files
+                        {m.imp_config_file_accepts()}
                     </p>
                 {/if}
             </div>
@@ -168,9 +168,9 @@
             class="w-full"
         >
             {#if loading}
-                Uploading...
+                {m.imp_config_uploading()}
             {:else}
-                Upload and Preview
+                {m.imp_config_upload_preview()}
             {/if}
         </Button>
     </Card.Footer>

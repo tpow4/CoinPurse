@@ -2,6 +2,7 @@ import type { ColumnDef } from '@tanstack/table-core';
 import type { Category } from '$lib/types';
 import { renderComponent } from '$lib/components/ui/data-table/render-helpers.js';
 import CategoriesTableActions from './categories-table-actions.svelte';
+import * as m from '$lib/paraglide/messages';
 
 interface ColumnsOptions {
     onEdit: (category: Category) => void;
@@ -12,19 +13,19 @@ export function createColumns(options: ColumnsOptions): ColumnDef<Category>[] {
     return [
         {
             accessorKey: 'name',
-            header: 'Name',
+            header: m.cat_col_name(),
         },
         {
             accessorKey: 'is_active',
-            header: 'Status',
+            header: m.cat_col_status(),
             cell: ({ row }) => {
                 const isActive = row.getValue('is_active') as boolean;
-                return isActive ? 'Active' : 'Inactive';
+                return isActive ? m.cat_col_status_active() : m.cat_col_status_inactive();
             },
         },
         {
             accessorKey: 'created_at',
-            header: 'Created',
+            header: m.cat_col_created(),
             cell: ({ row }) => {
                 const date = new Date(row.getValue('created_at') as string);
                 return date.toLocaleDateString();
@@ -32,7 +33,7 @@ export function createColumns(options: ColumnsOptions): ColumnDef<Category>[] {
         },
         {
             id: 'actions',
-            header: 'Actions',
+            header: m.cat_col_actions(),
             cell: ({ row }) => {
                 return renderComponent(CategoriesTableActions, {
                     category: row.original,

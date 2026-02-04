@@ -7,6 +7,7 @@
 	import { Combobox } from '$lib/components/ui/combobox';
 	import * as Select from '$lib/components/ui/select';
 	import AmountRangeSlider from './amount-range-slider.svelte';
+	import * as m from '$lib/paraglide/messages';
 
 	export type DatePreset = 'last30' | 'thisMonth' | 'ytd' | 'thisYear' | 'custom';
 	export type TransactionFilter = 'all' | 'credits' | 'debits';
@@ -108,22 +109,22 @@
 	function getDatePresetLabel(preset: DatePreset): string {
 		switch (preset) {
 			case 'last30':
-				return 'Last 30 Days';
+				return m.txn_filter_last30();
 			case 'thisMonth':
-				return 'This Month';
+				return m.txn_filter_this_month();
 			case 'ytd':
-				return 'Year to Date';
+				return m.txn_filter_ytd();
 			case 'thisYear':
-				return 'This Year';
+				return m.txn_filter_this_year();
 			case 'custom':
-				return 'Custom';
+				return m.txn_filter_custom();
 		}
 	}
 
 	const datePresetLabel = $derived(getDatePresetLabel(localDatePreset as DatePreset));
 
 	const accountItems = $derived([
-		{ value: '', label: 'All Accounts' },
+		{ value: '', label: m.txn_filter_all_accounts() },
 		...accounts.map((a) => ({
 			value: String(a.account_id),
 			label: a.account_name,
@@ -131,20 +132,20 @@
 	]);
 
 	const categoryItems = $derived([
-		{ value: '', label: 'All Categories' },
+		{ value: '', label: m.txn_filter_all_categories() },
 		...categories.map((c) => ({
 			value: String(c.category_id),
 			label: c.name,
 		})),
 	]);
 
-	const datePresets: { value: DatePreset; label: string }[] = [
-		{ value: 'last30', label: 'Last 30 Days' },
-		{ value: 'thisMonth', label: 'This Month' },
-		{ value: 'ytd', label: 'Year to Date' },
-		{ value: 'thisYear', label: 'This Year' },
-		{ value: 'custom', label: 'Custom' },
-	];
+	const datePresets: { value: DatePreset; label: string }[] = $derived([
+		{ value: 'last30', label: m.txn_filter_last30() },
+		{ value: 'thisMonth', label: m.txn_filter_this_month() },
+		{ value: 'ytd', label: m.txn_filter_ytd() },
+		{ value: 'thisYear', label: m.txn_filter_this_year() },
+		{ value: 'custom', label: m.txn_filter_custom() },
+	]);
 
 	let debounceTimer: ReturnType<typeof setTimeout>;
 	function handleSearchInput(e: Event) {
@@ -159,37 +160,37 @@
 <div class="space-y-2 rounded-lg border p-3">
 	<!-- Row 1: Search, Account, Category, Date Range -->
 	<div class="flex flex-wrap items-center gap-3">
-		<div class="min-w-[180px] flex-1">
+		<div class="min-w-45 flex-1">
 			<Input
 				type="text"
 				id="search"
-				placeholder="Search description..."
+				placeholder={m.txn_search_placeholder()}
 				value={searchTerm}
 				oninput={handleSearchInput}
 			/>
 		</div>
 
-		<div class="min-w-[160px]">
+		<div class="min-w-40">
 			<Combobox
 				id="account"
 				items={accountItems}
 				bind:value={localAccountId}
-				placeholder="All Accounts"
-				searchPlaceholder="Search accounts..."
+				placeholder={m.txn_filter_all_accounts()}
+				searchPlaceholder={m.txn_filter_search_accounts()}
 			/>
 		</div>
 
-		<div class="min-w-[160px]">
+		<div class="min-w-40">
 			<Combobox
 				id="category"
 				items={categoryItems}
 				bind:value={localCategoryId}
-				placeholder="All Categories"
-				searchPlaceholder="Search categories..."
+				placeholder={m.txn_filter_all_categories()}
+				searchPlaceholder={m.txn_filter_search_categories()}
 			/>
 		</div>
 
-		<div class="min-w-[140px]">
+		<div class="min-w-35">
 			<Select.Root type="single" bind:value={localDatePreset}>
 				<Select.Trigger id="date-preset" class="w-full">
 					{datePresetLabel}
@@ -203,7 +204,7 @@
 		</div>
 
 		{#if datePreset === 'custom'}
-			<div class="min-w-[130px]">
+			<div class="min-w-32.5">
 				<Input
 					type="date"
 					id="start-date"
@@ -212,7 +213,7 @@
 				/>
 			</div>
 
-			<div class="min-w-[130px]">
+			<div class="min-w-32.5">
 				<Input
 					type="date"
 					id="end-date"
@@ -234,7 +235,7 @@
 				class="rounded-r-none"
 				onclick={() => onTransactionFilterChange('all')}
 			>
-				All
+				{m.txn_filter_all()}
 			</Button>
 			<Button
 				type="button"
@@ -243,7 +244,7 @@
 				class="rounded-none border-x"
 				onclick={() => onTransactionFilterChange('credits')}
 			>
-				Credits
+				{m.txn_filter_credits()}
 			</Button>
 			<Button
 				type="button"
@@ -252,13 +253,13 @@
 				class="rounded-l-none"
 				onclick={() => onTransactionFilterChange('debits')}
 			>
-				Debits
+				{m.txn_filter_debits()}
 			</Button>
 		</div>
 
 		<!-- Amount Range -->
-		<div class="flex min-w-[220px] max-w-[350px] flex-1 items-center gap-2">
-			<Label class="shrink-0 text-sm">Amount:</Label>
+		<div class="flex min-w-55 max-w-87.5 flex-1 items-center gap-2">
+			<Label class="shrink-0 text-sm">{m.txn_filter_amount()}</Label>
 			<AmountRangeSlider
 				min={amountRangeMin}
 				max={amountRangeMax}
@@ -279,12 +280,12 @@
 				for="include-inactive"
 				class="cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 			>
-				Include inactive
+				{m.txn_filter_include_inactive()}
 			</Label>
 		</div>
 
 		<Button type="button" variant="outline" size="sm" onclick={onClearFilters}>
-			Clear Filters
+			{m.txn_filter_clear()}
 		</Button>
 	</div>
 </div>

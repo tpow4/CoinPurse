@@ -15,7 +15,13 @@
     } from '$lib/components/ui/card';
     import { ButtonGroup } from '$lib/components/ui/button-group';
     import { Button } from '$lib/components/ui/button';
-    import { formatCompactCurrency, formatPercent, formatDate, formatDateCompact } from '$lib/format';
+    import {
+        formatCompactCurrency,
+        formatPercent,
+        formatDate,
+        formatDateCompact,
+    } from '$lib/format';
+    import * as m from '$lib/paraglide/messages';
 
     type DateRange = 'ytd' | '1y' | 'max';
 
@@ -139,7 +145,7 @@
             if (e instanceof ApiException) {
                 error = e.detail;
             } else {
-                error = 'Failed to load portfolio chart';
+                error = m.portfolio_error();
             }
         } finally {
             loading = false;
@@ -158,7 +164,7 @@
 
 {#if error}
     <div class="bg-red-50 text-red-700 p-4 rounded">
-        Failed to load portfolio chart: {error}
+        {m.portfolio_error_detail({ error })}
     </div>
 {:else}
     <Card class="h-full flex flex-col">
@@ -170,7 +176,7 @@
                     <CardTitle
                         class="text-xs uppercase tracking-wide text-muted-foreground"
                     >
-                        Net worth
+                        {m.portfolio_net_worth()}
                     </CardTitle>
                     <div class="flex flex-row items-center gap-3">
                         <div class="text-3xl font-semibold tracking-tight">
@@ -181,11 +187,9 @@
                                 class="text-muted-foreground uppercase tracking-wide"
                             >
                                 {#if lastUpdatedDate}
-                                    {formatDate(
-                                        parseIsoDate(lastUpdatedDate)
-                                    )}
+                                    {formatDate(parseIsoDate(lastUpdatedDate))}
                                 {:else}
-                                    No balances yet
+                                    {m.portfolio_no_balances()}
                                 {/if}
                             </span>
                             {#if hasPreviousBalances}
@@ -207,7 +211,7 @@
                         <div
                             class="text-xs uppercase tracking-wide text-muted-foreground"
                         >
-                            Liquid total
+                            {m.portfolio_liquid_total()}
                         </div>
                         <div class="text-lg font-semibold">
                             {formatCompactCurrency(liquidTotal / 100)}
@@ -219,18 +223,18 @@
         <CardContent class="flex-1">
             {#if loading}
                 <div
-                    class="h-[360px] flex items-center justify-center text-sm text-muted-foreground"
+                    class="h-90 flex items-center justify-center text-sm text-muted-foreground"
                 >
-                    Loading portfolio chart...
+                    {m.portfolio_loading()}
                 </div>
             {:else if !hasData}
                 <div
-                    class="h-[360px] flex items-center justify-center text-sm text-muted-foreground border border-dashed rounded-md"
+                    class="h-90 flex items-center justify-center text-sm text-muted-foreground border border-dashed rounded-md"
                 >
-                    Add balance data to your accounts to see portfolio trends.
+                    {m.portfolio_empty()}
                 </div>
             {:else}
-                <Chart.Container config={chartConfig} class="h-[360px] w-full">
+                <Chart.Container config={chartConfig} class="h-90 w-full">
                     <AreaChart
                         data={chartData}
                         x="date"
@@ -245,8 +249,7 @@
                                 motion: 'tween',
                             },
                             xAxis: {
-                                format: (v: Date) =>
-                                    formatDateCompact(v),
+                                format: (v: Date) => formatDateCompact(v),
                             },
                             yAxis: {
                                 format: (v) =>
@@ -275,14 +278,14 @@
                         size="sm"
                         onclick={() => handleRangeChange('ytd')}
                     >
-                        YTD
+                        {m.portfolio_range_ytd()}
                     </Button>
                     <Button
                         variant={selectedRange === '1y' ? 'default' : 'outline'}
                         size="sm"
                         onclick={() => handleRangeChange('1y')}
                     >
-                        1Y
+                        {m.portfolio_range_1y()}
                     </Button>
                     <Button
                         variant={selectedRange === 'max'
@@ -291,7 +294,7 @@
                         size="sm"
                         onclick={() => handleRangeChange('max')}
                     >
-                        Max
+                        {m.portfolio_range_max()}
                     </Button>
                 </ButtonGroup>
             </div>

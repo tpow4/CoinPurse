@@ -15,6 +15,7 @@
     import TrashIcon from '@lucide/svelte/icons/trash-2';
     import CheckIcon from '@lucide/svelte/icons/check';
     import XIcon from '@lucide/svelte/icons/x';
+    import * as m from '$lib/paraglide/messages';
 
     // --- Data state ---
     let institutions = $state<Institution[]>([]);
@@ -84,7 +85,7 @@
             if (e instanceof ApiException) {
                 error = e.detail;
             } else {
-                error = 'Failed to load data';
+                error = m.map_error_load();
             }
         }
     }
@@ -105,7 +106,7 @@
             if (e instanceof ApiException) {
                 error = e.detail;
             } else {
-                error = 'Failed to load mappings';
+                error = m.map_error_load_mappings();
             }
         } finally {
             if (version === loadMappingsVersion) {
@@ -177,12 +178,12 @@
 
     async function saveRow(row: MappingRow) {
         if (!row.editName.trim()) {
-            error = 'Bank category name is required';
+            error = m.map_error_name_required();
             return;
         }
 
         if (row.editCategoryIds.length === 0) {
-            error = 'At least one CoinPurse category is required';
+            error = m.map_error_category_required();
             return;
         }
 
@@ -209,7 +210,7 @@
             if (e instanceof ApiException) {
                 error = e.detail;
             } else {
-                error = 'Failed to save mapping';
+                error = m.map_error_save();
             }
         } finally {
             loading = false;
@@ -232,7 +233,7 @@
             if (e instanceof ApiException) {
                 error = e.detail;
             } else {
-                error = 'Failed to delete mapping';
+                error = m.map_error_delete();
             }
         } finally {
             deleteLoading = false;
@@ -245,17 +246,17 @@
     }
 
     function formatCategoryLabels(catIds: string[]): string {
-        if (catIds.length === 0) return 'None';
+        if (catIds.length === 0) return m.map_categories_none();
         if (catIds.length <= 2) return catIds.map(getCategoryLabel).join(', ');
-        return `${catIds.length} categories`;
+        return m.map_categories_count({ count: catIds.length });
     }
 </script>
 
 <div>
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-semibold">Category Mappings</h2>
+        <h2 class="text-xl font-semibold">{m.map_heading()}</h2>
         <Button onclick={addNewRow} disabled={!selectedInstitutionId}
-            >+ Add Mapping</Button
+            >{m.map_btn_add()}</Button
         >
     </div>
 
@@ -264,9 +265,9 @@
         <Combobox
             items={institutionItems}
             bind:value={selectedInstitutionId}
-            placeholder="Select institution..."
-            searchPlaceholder="Search institutions..."
-            emptyText="No institutions found."
+            placeholder={m.map_select_institution()}
+            searchPlaceholder={m.map_search_institution()}
+            emptyText={m.map_no_institutions()}
         />
     </div>
 
@@ -277,28 +278,28 @@
 
     {#if !selectedInstitutionId}
         <div class="text-center py-8 text-muted-foreground">
-            Select an institution to view and manage its category mappings.
+            {m.map_select_prompt()}
         </div>
     {:else if loading}
-        <div class="text-center py-8 text-gray-600">Loading mappings...</div>
+        <div class="text-center py-8 text-gray-600">{m.map_loading()}</div>
     {:else}
         <div class="rounded-md border">
             <Table.Root>
                 <Table.Header>
                     <Table.Row>
-                        <Table.Head class="w-[35%]">Bank Category</Table.Head>
+                        <Table.Head class="w-[35%]">{m.map_col_bank_category()}</Table.Head>
                         <Table.Head class="w-12.5 text-center"></Table.Head>
                         <Table.Head class="w-[40%]"
-                            >CoinPurse Categories</Table.Head
+                            >{m.map_col_coinpurse_categories()}</Table.Head
                         >
-                        <Table.Head class="text-right">Actions</Table.Head>
+                        <Table.Head class="text-right">{m.map_col_actions()}</Table.Head>
                     </Table.Row>
                 </Table.Header>
                 <Table.Body>
                     {#if rows.length === 0}
                         <Table.Row>
                             <Table.Cell colspan={4} class="h-24 text-center">
-                                No mappings for this institution.
+                                {m.map_table_empty()}
                             </Table.Cell>
                         </Table.Row>
                     {:else}
@@ -310,7 +311,7 @@
                                         <Input
                                             type="text"
                                             bind:value={row.editName}
-                                            placeholder="Bank category name"
+                                            placeholder={m.map_bank_name_placeholder()}
                                             class="h-9"
                                         />
                                     {:else}
@@ -331,9 +332,9 @@
                                         <MultiCombobox
                                             items={categoryItems}
                                             bind:values={row.editCategoryIds}
-                                            placeholder="Select categories..."
-                                            searchPlaceholder="Search categories..."
-                                            emptyText="No categories found."
+                                            placeholder={m.map_select_categories()}
+                                            searchPlaceholder={m.map_search_categories()}
+                                            emptyText={m.map_no_categories()}
                                         />
                                     {:else}
                                         {formatCategoryLabels(row.categoryIds)}
@@ -348,7 +349,7 @@
                                                 variant="ghost"
                                                 size="sm"
                                                 onclick={() => saveRow(row)}
-                                                title="Save"
+                                                title={m.map_action_save()}
                                             >
                                                 <CheckIcon class="size-4" />
                                             </Button>
@@ -356,7 +357,7 @@
                                                 variant="ghost"
                                                 size="sm"
                                                 onclick={() => cancelEdit(row)}
-                                                title="Cancel"
+                                                title={m.map_action_cancel()}
                                             >
                                                 <XIcon class="size-4" />
                                             </Button>
@@ -367,7 +368,7 @@
                                                 variant="ghost"
                                                 size="sm"
                                                 onclick={() => startEdit(row)}
-                                                title="Edit"
+                                                title={m.map_action_edit()}
                                             >
                                                 <PencilIcon class="size-4" />
                                             </Button>
@@ -376,7 +377,7 @@
                                                 size="sm"
                                                 onclick={() =>
                                                     (deleteRow = row)}
-                                                title="Delete"
+                                                title={m.map_action_delete()}
                                             >
                                                 <TrashIcon class="size-4" />
                                             </Button>
@@ -401,15 +402,14 @@
 >
     <Dialog.Content class="sm:max-w-106.25">
         <Dialog.Header>
-            <Dialog.Title>Delete Mapping</Dialog.Title>
+            <Dialog.Title>{m.map_delete_title()}</Dialog.Title>
             <Dialog.Description>
-                Are you sure you want to delete the mapping for "{deleteRow?.bankCategoryName}"?
+                {m.map_delete_confirm({ name: deleteRow?.bankCategoryName ?? '' })}
             </Dialog.Description>
         </Dialog.Header>
 
         <p class="text-yellow-800 bg-yellow-50 p-2 rounded text-sm">
-            This will permanently delete all category mappings for this bank
-            category name.
+            {m.map_delete_warning()}
         </p>
 
         <Dialog.Footer>
@@ -418,14 +418,14 @@
                 variant="outline"
                 onclick={() => (deleteRow = null)}
             >
-                Cancel
+                {m.btn_cancel()}
             </Button>
             <Button
                 variant="destructive"
                 onclick={confirmDelete}
                 disabled={deleteLoading}
             >
-                {deleteLoading ? 'Deleting...' : 'Delete'}
+                {deleteLoading ? m.btn_deleting() : m.btn_delete()}
             </Button>
         </Dialog.Footer>
     </Dialog.Content>

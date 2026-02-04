@@ -14,6 +14,7 @@
     import { Checkbox } from '$lib/components/ui/checkbox';
     import { Label } from '$lib/components/ui/label';
     import { institutionsApi } from '$lib/api/institutions';
+    import * as m from '$lib/paraglide/messages';
 
     interface Props {
         open: boolean;
@@ -96,20 +97,20 @@
     }
 
     // Account type options
-    const accountTypes = [
-        { value: AccountTypeEnum.BANKING, label: 'Banking' },
-        { value: AccountTypeEnum.TREASURY, label: 'Treasury' },
-        { value: AccountTypeEnum.CREDIT_CARD, label: 'Credit Card' },
-        { value: AccountTypeEnum.INVESTMENT, label: 'Investment' },
-    ];
+    const accountTypes = $derived([
+        { value: AccountTypeEnum.BANKING, label: m.account_type_banking() },
+        { value: AccountTypeEnum.TREASURY, label: m.account_type_treasury() },
+        { value: AccountTypeEnum.CREDIT_CARD, label: m.account_type_credit_card() },
+        { value: AccountTypeEnum.INVESTMENT, label: m.account_type_investment() },
+    ]);
 
-    const taxTreatments = [
-        { value: TaxTreatmentType.TAXABLE, label: 'Taxable' },
-        { value: TaxTreatmentType.TAX_DEFERRED, label: 'Tax-Deferred' },
-        { value: TaxTreatmentType.TAX_FREE, label: 'Tax-Free' },
-        { value: TaxTreatmentType.TRIPLE_TAX_FREE, label: 'Triple Tax-Free' },
-        { value: TaxTreatmentType.NOT_APPLICABLE, label: 'Not Applicable' },
-    ];
+    const taxTreatments = $derived([
+        { value: TaxTreatmentType.TAXABLE, label: m.tax_taxable() },
+        { value: TaxTreatmentType.TAX_DEFERRED, label: m.tax_deferred() },
+        { value: TaxTreatmentType.TAX_FREE, label: m.tax_free() },
+        { value: TaxTreatmentType.TRIPLE_TAX_FREE, label: m.tax_triple_free() },
+        { value: TaxTreatmentType.NOT_APPLICABLE, label: m.tax_not_applicable() },
+    ]);
 
     // Lazy-load institutions when dialog opens
     $effect(() => {
@@ -170,12 +171,12 @@
     <Dialog.Content class="sm:max-w-125 max-h-[90vh] overflow-y-auto">
         <Dialog.Header>
             <Dialog.Title>
-                {editingAccount !== null ? 'Edit Account' : 'Add Account'}
+                {editingAccount !== null ? m.acct_dialog_title_edit() : m.acct_dialog_title_add()}
             </Dialog.Title>
             <Dialog.Description>
                 {editingAccount !== null
-                    ? 'Update the account details below.'
-                    : 'Add a new account to track transactions and balances.'}
+                    ? m.acct_dialog_desc_edit()
+                    : m.acct_dialog_desc_add()}
             </Dialog.Description>
         </Dialog.Header>
 
@@ -191,12 +192,12 @@
                 <Field.Field
                     data-invalid={fieldErrors.account_name ? true : undefined}
                 >
-                    <Field.Label for="account_name">Account Name</Field.Label>
+                    <Field.Label for="account_name">{m.acct_field_name()}</Field.Label>
                     <Input
                         type="text"
                         id="account_name"
                         bind:value={formData.account_name}
-                        placeholder="e.g., Primary Checking"
+                        placeholder={m.acct_field_name_placeholder()}
                         aria-invalid={fieldErrors.account_name
                             ? true
                             : undefined}
@@ -210,13 +211,13 @@
                 <Field.Field
                     data-invalid={fieldErrors.institution_id ? true : undefined}
                 >
-                    <Field.Label for="institution_id">Institution</Field.Label>
+                    <Field.Label for="institution_id">{m.acct_field_institution()}</Field.Label>
                     <Combobox
                         id="institution"
                         items={institutionItems}
                         bind:value={formData.institution_id}
-                        placeholder="Select institution"
-                        searchPlaceholder="Search institutions..."
+                        placeholder={m.acct_field_institution_placeholder()}
+                        searchPlaceholder={m.acct_field_institution_search()}
                         ariaInvalid={fieldErrors.institution_id ? true : false}
                     />
                     {#if fieldErrors.institution_id}
@@ -228,13 +229,13 @@
                 <Field.Field
                     data-invalid={fieldErrors.account_type ? true : undefined}
                 >
-                    <Field.Label for="account_type">Account Type</Field.Label>
+                    <Field.Label for="account_type">{m.acct_field_type()}</Field.Label>
                     <Combobox
                         id="account_type"
                         items={accountTypes}
                         bind:value={formData.account_type}
-                        placeholder="Select account type"
-                        searchPlaceholder="Search account types..."
+                        placeholder={m.acct_field_type_placeholder()}
+                        searchPlaceholder={m.acct_field_type_search()}
                         ariaInvalid={fieldErrors.account_type ? true : false}
                     />
                     {#if fieldErrors.account_type}
@@ -244,13 +245,13 @@
 
                 <!-- Tax Treatment -->
                 <Field.Field>
-                    <Field.Label for="tax_treatment">Tax Treatment</Field.Label>
+                    <Field.Label for="tax_treatment">{m.acct_field_tax()}</Field.Label>
                     <Combobox
                         id="tax_treatment"
                         items={taxTreatments}
                         bind:value={formData.tax_treatment}
-                        placeholder="Select tax treatment"
-                        searchPlaceholder="Search tax treatments..."
+                        placeholder={m.acct_field_tax_placeholder()}
+                        searchPlaceholder={m.acct_field_tax_search()}
                     />
                     {#if fieldErrors.tax_treatment}
                         <Field.Error>{fieldErrors.tax_treatment}</Field.Error>
@@ -261,12 +262,12 @@
                 <Field.Field
                     data-invalid={fieldErrors.last_4_digits ? true : undefined}
                 >
-                    <Field.Label for="last_4_digits">Last 4 Digits</Field.Label>
+                    <Field.Label for="last_4_digits">{m.acct_field_last4()}</Field.Label>
                     <Input
                         type="text"
                         id="last_4_digits"
                         bind:value={formData.last_4_digits}
-                        placeholder="1234"
+                        placeholder={m.acct_field_last4_placeholder()}
                         maxlength={4}
                         aria-invalid={fieldErrors.last_4_digits
                             ? true
@@ -279,7 +280,7 @@
 
                 <!-- Display Order -->
                 <Field.Field>
-                    <Field.Label for="display_order">Display Order</Field.Label>
+                    <Field.Label for="display_order">{m.acct_field_display_order()}</Field.Label>
                     <Input
                         type="number"
                         id="display_order"
@@ -301,7 +302,7 @@
                         for="tracks_transactions"
                         class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                     >
-                        Track Transactions
+                        {m.acct_field_tracks_transactions()}
                     </Label>
                 </div>
 
@@ -318,7 +319,7 @@
                         for="tracks_balances"
                         class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                     >
-                        Track Balances
+                        {m.acct_field_tracks_balances()}
                     </Label>
                 </div>
             </div>
@@ -329,14 +330,14 @@
                     variant="outline"
                     onclick={() => onOpenChange(false)}
                 >
-                    Cancel
+                    {m.btn_cancel()}
                 </Button>
                 <Button type="submit" disabled={loading}>
                     {loading
-                        ? 'Saving...'
+                        ? m.btn_saving()
                         : editingAccount !== null
-                          ? 'Update'
-                          : 'Create'}
+                          ? m.btn_update()
+                          : m.btn_create()}
                 </Button>
             </Dialog.Footer>
         </form>

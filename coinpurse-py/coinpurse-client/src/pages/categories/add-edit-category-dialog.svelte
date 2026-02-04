@@ -4,6 +4,7 @@
     import * as Field from '$lib/components/ui/field';
     import { Input } from '$lib/components/ui/input';
     import { Button } from '$lib/components/ui/button';
+    import * as m from '$lib/paraglide/messages';
 
     interface Props {
         open: boolean;
@@ -49,12 +50,12 @@
     <Dialog.Content class="sm:max-w-106.25">
         <Dialog.Header>
             <Dialog.Title>
-                {editingCategory !== null ? 'Edit Category' : 'Add Category'}
+                {editingCategory !== null ? m.cat_dialog_title_edit() : m.cat_dialog_title_add()}
             </Dialog.Title>
             <Dialog.Description>
                 {editingCategory !== null
-                    ? 'Update the category details below.'
-                    : 'Add a new category to organize your transactions.'}
+                    ? m.cat_dialog_desc_edit()
+                    : m.cat_dialog_desc_add()}
             </Dialog.Description>
         </Dialog.Header>
 
@@ -67,12 +68,12 @@
                 {/if}
 
                 <Field.Field data-invalid={fieldErrors.name ? true : undefined}>
-                    <Field.Label for="category_name">Category Name</Field.Label>
+                    <Field.Label for="category_name">{m.cat_field_name()}</Field.Label>
                     <Input
                         type="text"
                         id="category_name"
                         bind:value={formData.name}
-                        placeholder="e.g., Groceries"
+                        placeholder={m.cat_field_name_placeholder()}
                         aria-invalid={fieldErrors.name ? true : undefined}
                     />
                     {#if fieldErrors.name}
@@ -87,14 +88,14 @@
                     variant="outline"
                     onclick={() => onOpenChange(false)}
                 >
-                    Cancel
+                    {m.btn_cancel()}
                 </Button>
                 <Button type="submit" disabled={loading}>
                     {loading
-                        ? 'Saving...'
+                        ? m.btn_saving()
                         : editingCategory !== null
-                          ? 'Update'
-                          : 'Create'}
+                          ? m.btn_update()
+                          : m.btn_create()}
                 </Button>
             </Dialog.Footer>
         </form>

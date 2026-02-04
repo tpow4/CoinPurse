@@ -69,7 +69,7 @@
                     <MoonIcon
                         class="transition-all! absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 dark:rotate-0 dark:scale-100"
                     />
-                    <span class="sr-only">Toggle theme</span>
+                    <span class="sr-only">{m.layout_toggle_theme()}</span>
                 </Button>
             </div>
         </Sidebar.SidebarHeader>

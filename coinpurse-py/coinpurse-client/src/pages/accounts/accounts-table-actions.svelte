@@ -3,6 +3,7 @@
     import { Button } from '$lib/components/ui/button';
     import PencilIcon from '@lucide/svelte/icons/pencil';
     import TrashIcon from '@lucide/svelte/icons/trash-2';
+    import * as m from '$lib/paraglide/messages';
 
     interface Props {
         account: Account;
@@ -19,8 +20,8 @@
         size="sm"
         disabled={!account.active}
         onclick={() => onEdit?.(account)}
-        title="Edit"
-        aria-label="Edit"
+        title={m.acct_action_edit()}
+        aria-label={m.acct_action_edit()}
     >
         <PencilIcon class="size-4" />
     </Button>
@@ -29,8 +30,8 @@
         size="sm"
         disabled={!account.active}
         onclick={() => onDelete?.(account)}
-        title="Delete"
-        aria-label="Delete"
+        title={m.acct_action_delete()}
+        aria-label={m.acct_action_delete()}
     >
         <TrashIcon class="size-4" />
     </Button>

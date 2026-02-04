@@ -10,6 +10,7 @@
     import AddEditCategoryDialog from './add-edit-category-dialog.svelte';
     import { createColumns } from './categories-columns';
     import { categoriesApi } from '$lib/api/categories';
+    import * as m from '$lib/paraglide/messages';
 
     // State
     let categories = $state<Category[]>([]);
@@ -54,7 +55,7 @@
             if (e instanceof ApiException) {
                 error = e.detail;
             } else {
-                error = 'Failed to load categories';
+                error = m.cat_error_load();
             }
         } finally {
             loading = false;
@@ -78,7 +79,7 @@
             if (e instanceof ApiException) {
                 error = e.detail;
             } else {
-                error = 'Search failed';
+                error = m.cat_error_search();
             }
         } finally {
             loading = false;
@@ -89,12 +90,12 @@
         formErrors.name = '';
 
         if (!name.trim()) {
-            formErrors.name = 'Category name is required';
+            formErrors.name = m.cat_validation_name_required();
             return false;
         }
 
         if (name.length > 100) {
-            formErrors.name = 'Name is too long (max 100 characters)';
+            formErrors.name = m.cat_validation_name_too_long();
             return false;
         }
 
@@ -152,7 +153,7 @@
             if (e instanceof ApiException) {
                 formError = e.detail;
             } else {
-                formError = 'Failed to save category';
+                formError = m.cat_error_save();
             }
         } finally {
             formLoading = false;
@@ -170,7 +171,7 @@
             if (e instanceof ApiException) {
                 error = e.detail;
             } else {
-                error = 'Failed to delete category';
+                error = m.cat_error_delete();
             }
         } finally {
             deleteLoading = false;
@@ -180,8 +181,8 @@
 
 <div>
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-semibold">Categories</h2>
-        <Button onclick={openCreateForm}>+ Add Category</Button>
+        <h2 class="text-xl font-semibold">{m.cat_heading()}</h2>
+        <Button onclick={openCreateForm}>{m.cat_btn_add()}</Button>
     </div>
 
     <!-- Search and filters -->
@@ -189,10 +190,10 @@
         <div class="flex-1 max-w-100">
             <Input
                 type="text"
-                placeholder="Search categories..."
+                placeholder={m.cat_search_placeholder()}
                 bind:value={searchTerm}
                 oninput={handleSearch}
-                aria-label="Search categories"
+                aria-label={m.cat_search_placeholder()}
             />
         </div>
         <div class="flex items-center gap-2">
@@ -207,7 +208,7 @@
                 for="include-inactive-categories"
                 class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
             >
-                Include inactive
+                {m.cat_include_inactive()}
             </Label>
         </div>
     </div>
@@ -219,7 +220,7 @@
 
     <!-- Loading state -->
     {#if loading}
-        <div class="text-center py-8 text-gray-600">Loading categories...</div>
+        <div class="text-center py-8 text-gray-600">{m.cat_loading()}</div>
     {:else}
         <CategoriesDataTable data={categories} {columns} />
     {/if}
