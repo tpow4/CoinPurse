@@ -71,6 +71,30 @@ export function formatDateCompact(date: Date | string): string {
     }).format(d);
 }
 
+export function parseCentsCurrency(input: string): number | null {
+    const symbol = getCurrencySymbol();
+    let trimmed = input.trim();
+    if (symbol) trimmed = trimmed.replaceAll(symbol, '');
+    trimmed = trimmed.replaceAll(/[^\d.,-]/g, '').replaceAll(',', '');
+    if (!trimmed) return null;
+
+    const match = trimmed.match(/^(-)?(\d+)(?:\.(\d{0,2}))?$/);
+    if (!match) return null;
+
+    const sign = match[1] ? -1 : 1;
+    const dollarsPart = match[2] ?? '0';
+    const centsPart = (match[3] ?? '').padEnd(2, '0');
+    const dollars = Number(dollarsPart);
+    const cents = Number(centsPart || '0');
+
+    if (!Number.isFinite(dollars) || !Number.isFinite(cents)) return null;
+    return sign * (dollars * 100 + cents);
+}
+
+export function formatCentsCurrency(cents: number): string {
+    return formatCurrency(cents / 100);
+}
+
 export function getCurrencySymbol(): string {
     const formatted = new Intl.NumberFormat(getLocale(), {
         style: 'currency',

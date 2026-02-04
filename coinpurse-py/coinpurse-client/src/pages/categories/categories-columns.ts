@@ -3,6 +3,7 @@ import type { Category } from '$lib/types';
 import { renderComponent } from '$lib/components/ui/data-table/render-helpers.js';
 import CategoriesTableActions from './categories-table-actions.svelte';
 import * as m from '$lib/paraglide/messages';
+import { formatDate } from '$lib/format';
 
 interface ColumnsOptions {
     onEdit: (category: Category) => void;
@@ -27,8 +28,7 @@ export function createColumns(options: ColumnsOptions): ColumnDef<Category>[] {
             accessorKey: 'created_at',
             header: m.cat_col_created(),
             cell: ({ row }) => {
-                const date = new Date(row.getValue('created_at') as string);
-                return date.toLocaleDateString();
+                return formatDate(row.getValue('created_at') as string);
             },
         },
         {

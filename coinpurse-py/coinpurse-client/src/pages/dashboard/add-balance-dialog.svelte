@@ -12,7 +12,7 @@
     import { Button } from '$lib/components/ui/button';
     import { TriangleAlert } from '@lucide/svelte';
     import * as m from '$lib/paraglide/messages';
-    import { formatDate } from '$lib/format';
+    import { formatDate, formatCentsCurrency, parseCentsCurrency } from '$lib/format';
 
     interface Props {
         open: boolean;
@@ -89,35 +89,6 @@
         return defaultBalanceDate ?? todayIsoDate();
     }
 
-    function parseMoneyToCents(input: string): number | null {
-        const trimmed = input.trim().replaceAll(',', '');
-        if (!trimmed) return null;
-
-        const match = trimmed.match(/^(-)?(\d+)(?:\.(\d{0,2}))?$/);
-        if (!match) return null;
-
-        const sign = match[1] ? -1 : 1;
-        const dollarsPart = match[2] ?? '0';
-        const centsPart = (match[3] ?? '').padEnd(2, '0');
-        const dollars = Number(dollarsPart);
-        const cents = Number(centsPart || '0');
-
-        if (!Number.isFinite(dollars) || !Number.isFinite(cents)) return null;
-        return sign * (dollars * 100 + cents);
-    }
-
-    function formatCentsToMoney(cents: number): string {
-        const dollars = Math.abs(cents) / 100;
-        const sign = cents < 0 ? '-' : '';
-        return (
-            sign +
-            dollars.toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-            })
-        );
-    }
-
     function getDateForMonth(month: number): string {
         // month is 1-12
         const paddedMonth = String(month).padStart(2, '0');
@@ -161,7 +132,7 @@
         for (let month = 1; month <= 12; month++) {
             const existing = getExistingBalanceForMonth(month);
             if (existing) {
-                newValues[month] = formatCentsToMoney(existing.balance);
+                newValues[month] = formatCentsCurrency(existing.balance);
             }
         }
         monthValues = newValues;
@@ -170,7 +141,7 @@
 
     async function handleSingleSubmit(e: SubmitEvent) {
         e.preventDefault();
-        const cents = parseMoneyToCents(formData.balance);
+        const cents = parseCentsCurrency(formData.balance);
         if (cents === null) {
             localFieldErrors = {
                 balance: m.balance_validation_number(),
@@ -195,7 +166,7 @@
             const value = monthValues[month]?.trim();
             if (!value) continue;
 
-            const cents = parseMoneyToCents(value);
+            const cents = parseCentsCurrency(value);
             if (cents === null) {
                 newErrors[month] = m.balance_validation_invalid();
             } else {

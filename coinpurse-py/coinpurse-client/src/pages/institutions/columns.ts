@@ -3,6 +3,7 @@ import type { Institution } from '$lib/types';
 import { renderComponent } from '$lib/components/ui/data-table/render-helpers.js';
 import InstitutionsTableActions from './institutions-table-actions.svelte';
 import * as m from '$lib/paraglide/messages';
+import { formatDate } from '$lib/format';
 
 interface ColumnsOptions {
     onEdit: (institution: Institution) => void;
@@ -31,8 +32,7 @@ export function createColumns(
             accessorKey: 'created_at',
             header: m.inst_col_created(),
             cell: ({ row }) => {
-                const date = new Date(row.getValue('created_at') as string);
-                return date.toLocaleDateString();
+                return formatDate(row.getValue('created_at') as string);
             },
         },
         {

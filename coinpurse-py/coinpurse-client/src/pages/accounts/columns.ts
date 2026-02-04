@@ -3,6 +3,7 @@ import type { Account } from '$lib/types';
 import { renderComponent } from '$lib/components/ui/data-table/render-helpers.js';
 import AccountsTableActions from './accounts-table-actions.svelte';
 import * as m from '$lib/paraglide/messages';
+import { formatDate } from '$lib/format';
 
 // Extended account type with institution name for display
 export interface AccountWithInstitution extends Account {
@@ -86,8 +87,7 @@ export function createColumns(
             accessorKey: 'created_at',
             header: m.acct_col_created(),
             cell: ({ row }) => {
-                const date = new Date(row.getValue('created_at') as string);
-                return date.toLocaleDateString();
+                return formatDate(row.getValue('created_at') as string);
             },
         },
         {
