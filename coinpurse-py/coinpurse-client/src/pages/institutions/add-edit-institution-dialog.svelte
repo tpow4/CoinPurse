@@ -4,6 +4,7 @@
     import * as Field from '$lib/components/ui/field';
     import { Input } from '$lib/components/ui/input';
     import { Button } from '$lib/components/ui/button';
+    import * as m from '$lib/paraglide/messages';
 
     interface Props {
         open: boolean;
@@ -50,13 +51,13 @@
         <Dialog.Header>
             <Dialog.Title>
                 {editingInstitution !== null
-                    ? 'Edit Institution'
-                    : 'Add Institution'}
+                    ? m.inst_dialog_title_edit()
+                    : m.inst_dialog_title_add()}
             </Dialog.Title>
             <Dialog.Description>
                 {editingInstitution !== null
-                    ? 'Update the institution details below.'
-                    : 'Add a new financial institution to track your accounts.'}
+                    ? m.inst_dialog_desc_edit()
+                    : m.inst_dialog_desc_add()}
             </Dialog.Description>
         </Dialog.Header>
 
@@ -70,13 +71,13 @@
 
                 <Field.Field data-invalid={fieldErrors.name ? true : undefined}>
                     <Field.Label for="institution_name"
-                        >Institution Name</Field.Label
+                        >{m.inst_field_name()}</Field.Label
                     >
                     <Input
                         type="text"
                         id="institution_name"
                         bind:value={formData.name}
-                        placeholder="e.g., Chase Bank"
+                        placeholder={m.inst_field_name_placeholder()}
                         aria-invalid={fieldErrors.name ? true : undefined}
                     />
                     {#if fieldErrors.name}
@@ -91,14 +92,14 @@
                     variant="outline"
                     onclick={() => onOpenChange(false)}
                 >
-                    Cancel
+                    {m.btn_cancel()}
                 </Button>
                 <Button type="submit" disabled={loading}>
                     {loading
-                        ? 'Saving...'
+                        ? m.btn_saving()
                         : editingInstitution !== null
-                          ? 'Update'
-                          : 'Create'}
+                          ? m.btn_update()
+                          : m.btn_create()}
                 </Button>
             </Dialog.Footer>
         </form>

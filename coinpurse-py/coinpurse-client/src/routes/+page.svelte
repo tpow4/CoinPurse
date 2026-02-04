@@ -19,6 +19,7 @@
     import { accountsApi } from '$lib/api/accounts';
     import { institutionsApi } from '$lib/api/institutions';
     import { balancesApi } from '$lib/api/balances';
+    import * as m from '$lib/paraglide/messages';
 
     type AccountWithInstitutionName = Account & { institution_name?: string };
 
@@ -172,7 +173,7 @@
             if (e instanceof ApiException) {
                 error = e.detail;
             } else {
-                error = 'Failed to load dashboard';
+                error = m.dashboard_error_load();
             }
         } finally {
             loading = false;
@@ -249,32 +250,30 @@
         let isValid = true;
 
         if (!data.account_name.trim()) {
-            accountFieldErrors.account_name = 'Account name is required';
+            accountFieldErrors.account_name = m.acct_validation_name_required();
             isValid = false;
         } else if (data.account_name.length > 100) {
-            accountFieldErrors.account_name =
-                'Name is too long (max 100 characters)';
+            accountFieldErrors.account_name = m.acct_validation_name_too_long();
             isValid = false;
         }
 
         if (!data.institution_id || data.institution_id === 0) {
-            accountFieldErrors.institution_id = 'Institution is required';
+            accountFieldErrors.institution_id = m.acct_validation_institution_required();
             isValid = false;
         }
 
         if (!data.account_type) {
-            accountFieldErrors.account_type = 'Account type is required';
+            accountFieldErrors.account_type = m.acct_validation_type_required();
             isValid = false;
         }
 
         if (!data.tax_treatment) {
-            accountFieldErrors.tax_treatment = 'Tax treatment is required';
+            accountFieldErrors.tax_treatment = m.acct_validation_tax_required();
             isValid = false;
         }
 
         if (data.last_4_digits && data.last_4_digits.length > 4) {
-            accountFieldErrors.last_4_digits =
-                'Last 4 digits must be 4 characters or less';
+            accountFieldErrors.last_4_digits = m.acct_validation_last4_too_long();
             isValid = false;
         }
 
@@ -314,7 +313,7 @@
             if (e instanceof ApiException) {
                 accountFormError = e.detail;
             } else {
-                accountFormError = 'Failed to create account';
+                accountFormError = m.dashboard_error_create_account();
             }
         } finally {
             accountFormLoading = false;
@@ -324,12 +323,11 @@
     function validateInstitutionForm(name: string): boolean {
         institutionFieldErrors = { name: '' };
         if (!name.trim()) {
-            institutionFieldErrors.name = 'Institution name is required';
+            institutionFieldErrors.name = m.inst_validation_name_required();
             return false;
         }
         if (name.length > 100) {
-            institutionFieldErrors.name =
-                'Name is too long (max 100 characters)';
+            institutionFieldErrors.name = m.inst_validation_name_too_long();
             return false;
         }
         return true;
@@ -349,7 +347,7 @@
             if (e instanceof ApiException) {
                 institutionFormError = e.detail;
             } else {
-                institutionFormError = 'Failed to create institution';
+                institutionFormError = m.dashboard_error_create_institution();
             }
         } finally {
             institutionFormLoading = false;
@@ -374,19 +372,19 @@
     }
 </script>
 
-<div class="p-8 max-w-[1400px] mx-auto">
+<div class="p-8 max-w-350 mx-auto">
     <div class="flex items-start justify-between gap-4 mb-8">
         <div>
-            <h1 class="text-3xl font-bold mb-2">Dashboard</h1>
+            <h1 class="text-3xl font-bold mb-2">{m.dashboard_title()}</h1>
             <p class="text-muted-foreground">
-                Your accounts and latest balances
+                {m.dashboard_description()}
             </p>
         </div>
         <div class="flex gap-2">
             <Button variant="outline" onclick={openAddInstitution}
-                >+ Add Institution</Button
+                >{m.inst_btn_add()}</Button
             >
-            <Button onclick={openAddAccount}>+ Add Account</Button>
+            <Button onclick={openAddAccount}>{m.acct_btn_add()}</Button>
         </div>
     </div>
 
@@ -410,10 +408,10 @@
     {/if}
 
     {#if loading}
-        <div class="text-center py-12 text-gray-600">Loading dashboard...</div>
+        <div class="text-center py-12 text-gray-600">{m.dashboard_loading()}</div>
     {:else if accountsWithInstitutionName.length === 0}
         <div class="text-center py-12 text-muted-foreground">
-            No accounts yet. Add an institution and account to get started.
+            {m.dashboard_empty()}
         </div>
     {:else}
         <div

@@ -18,6 +18,7 @@
     import AccountBalanceChart from './account-balance-chart.svelte';
     import AddBalanceDialog from './add-balance-dialog.svelte';
     import { formatCurrency, formatDate } from '$lib/format';
+    import * as m from '$lib/paraglide/messages';
 
     interface Props {
         account: (Account & { institution_name?: string }) | Account;
@@ -36,10 +37,10 @@
     }: Props = $props();
 
     const accountTypeLabelByValue: Record<string, string> = {
-        [AccountType.BANKING]: 'Banking',
-        [AccountType.TREASURY]: 'Treasury',
-        [AccountType.CREDIT_CARD]: 'Credit Card',
-        [AccountType.INVESTMENT]: 'Investment',
+        [AccountType.BANKING]: m.account_type_banking(),
+        [AccountType.TREASURY]: m.account_type_treasury(),
+        [AccountType.CREDIT_CARD]: m.account_type_credit_card(),
+        [AccountType.INVESTMENT]: m.account_type_investment(),
     };
 
     const institutionName = $derived(
@@ -52,12 +53,12 @@
     );
 
     const balanceText = $derived(
-        latestBalance ? formatCurrency(latestBalance.balance / 100) : 'No data'
+        latestBalance ? formatCurrency(latestBalance.balance / 100) : m.balance_no_data()
     );
 
     const updatedText = $derived(
         latestBalance
-            ? `Updated ${formatDate(new Date(latestBalance.balance_date))}`
+            ? m.balance_updated({ date: formatDate(new Date(latestBalance.balance_date)) })
             : ''
     );
 
@@ -79,11 +80,11 @@
         addBalanceFieldErrors = {};
         let valid = true;
         if (!data.balance_date) {
-            addBalanceFieldErrors.balance_date = 'Date is required';
+            addBalanceFieldErrors.balance_date = m.balance_validation_date_required();
             valid = false;
         }
         if (!Number.isFinite(data.balance)) {
-            addBalanceFieldErrors.balance = 'Balance is required';
+            addBalanceFieldErrors.balance = m.balance_validation_balance_required();
             valid = false;
         }
         return valid;
@@ -99,7 +100,7 @@
             addBalanceOpen = false;
         } catch (e) {
             addBalanceError =
-                e instanceof Error ? e.message : 'Failed to add balance';
+                e instanceof Error ? e.message : m.balance_error_add();
         } finally {
             addBalanceLoading = false;
         }
@@ -113,7 +114,7 @@
             addBalanceOpen = false;
         } catch (e) {
             addBalanceError =
-                e instanceof Error ? e.message : 'Failed to add balances';
+                e instanceof Error ? e.message : m.balance_error_add_batch();
         } finally {
             addBalanceLoading = false;
         }
@@ -124,7 +125,7 @@
     <CardHeader class="pb-3">
         <CardTitle class="text-lg">{account.account_name}</CardTitle>
         <CardDescription class="flex flex-col gap-0.5">
-            <span>{institutionName ?? 'Unknown institution'}</span>
+            <span>{institutionName ?? m.balance_unknown_institution()}</span>
             <span>{accountTypeLabel}</span>
         </CardDescription>
     </CardHeader>
@@ -137,7 +138,7 @@
             <div class="text-sm text-muted-foreground mt-1">{updatedText}</div>
         {:else}
             <div class="text-sm text-muted-foreground mt-1">
-                Add a balance to see trends.
+                {m.balance_add_hint()}
             </div>
         {/if}
 
@@ -147,13 +148,13 @@
     </CardContent>
 
     <CardFooter class="justify-end gap-2">
-        <Button variant="outline" size="sm" disabled title="Coming soon"
-            >Edit</Button
+        <Button variant="outline" size="sm" disabled title={m.balance_coming_soon()}
+            >{m.balance_edit()}</Button
         >
         <Button
             size="sm"
             onclick={openAddBalance}
-            disabled={!account.tracks_balances}>Add Balance</Button
+            disabled={!account.tracks_balances}>{m.balance_add()}</Button
         >
     </CardFooter>
 </Card>

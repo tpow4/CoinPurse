@@ -18,6 +18,7 @@
     import ArrowUpDown from '@lucide/svelte/icons/arrow-up-down';
     import ChevronLeft from '@lucide/svelte/icons/chevron-left';
     import ChevronRight from '@lucide/svelte/icons/chevron-right';
+    import * as m from '$lib/paraglide/messages';
 
     interface Props {
         data: TransactionWithNames[];
@@ -140,7 +141,7 @@
                             colspan={columns.length}
                             class="h-24 text-center"
                         >
-                            No transactions found.
+                            {m.txn_table_empty()}
                         </Table.Cell>
                     </Table.Row>
                 {/if}
@@ -152,15 +153,18 @@
     <div class="flex items-center justify-between">
         <span class="text-sm text-gray-600">
             {#if table.getFilteredRowModel().rows.length > 0}
-                Showing {table.getState().pagination.pageIndex *
-                    table.getState().pagination.pageSize +
-                    1}–{Math.min(
-                    (table.getState().pagination.pageIndex + 1) *
-                        table.getState().pagination.pageSize,
-                    table.getFilteredRowModel().rows.length
-                )} of {table.getFilteredRowModel().rows.length}
+                {m.txn_table_showing({
+                    start: table.getState().pagination.pageIndex *
+                        table.getState().pagination.pageSize + 1,
+                    end: Math.min(
+                        (table.getState().pagination.pageIndex + 1) *
+                            table.getState().pagination.pageSize,
+                        table.getFilteredRowModel().rows.length
+                    ),
+                    total: table.getFilteredRowModel().rows.length
+                })}
             {:else}
-                No results
+                {m.txn_table_no_results()}
             {/if}
         </span>
 
@@ -172,10 +176,10 @@
                 onclick={() => table.previousPage()}
             >
                 <ChevronLeft class="h-4 w-4" />
-                Previous
+                {m.txn_table_previous()}
             </Button>
             <span class="text-sm">
-                Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+                {m.txn_table_page({ current: table.getState().pagination.pageIndex + 1, total: table.getPageCount() })}
             </span>
             <Button
                 variant="outline"
@@ -183,7 +187,7 @@
                 disabled={!table.getCanNextPage()}
                 onclick={() => table.nextPage()}
             >
-                Next
+                {m.txn_table_next()}
                 <ChevronRight class="h-4 w-4" />
             </Button>
         </div>

@@ -5,11 +5,10 @@
     import GeneralTab from '../../pages/admin/general-tab.svelte';
     import * as m from '$lib/paraglide/messages';
 
-    // State
     let activeTab = $state('general');
 </script>
 
-<div class="p-8 max-w-[1400px] mx-auto">
+<div class="p-8 max-w-350 mx-auto">
     <div class="mb-8">
         <h1 class="text-3xl font-bold mb-2">{m.admin_title()}</h1>
         <p class="text-muted-foreground">{m.admin_description()}</p>

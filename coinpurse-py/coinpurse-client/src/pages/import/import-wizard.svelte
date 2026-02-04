@@ -12,6 +12,7 @@
     import ImportPreviewStep from './import-preview-step.svelte';
     import ImportCategorizeStep from './import-categorize-step.svelte';
     import ImportResultStep from './import-result-step.svelte';
+    import * as m from '$lib/paraglide/messages';
 
     // Wizard state
     type WizardStep = 'config' | 'preview' | 'categorize' | 'result';
@@ -51,7 +52,7 @@
             categories = categoriesRes;
         } catch (e) {
             console.error('Failed to load reference data:', e);
-            error = 'Failed to load reference data';
+            error = m.imp_error_ref_data();
         }
     }
 
@@ -67,7 +68,7 @@
     // Handle file upload and preview
     async function handleUploadAndPreview() {
         if (!accountId || !file) {
-            error = 'Please select an account and file';
+            error = m.imp_error_select_account_file();
             return;
         }
 
@@ -89,7 +90,7 @@
 
             currentStep = 'preview';
         } catch (e) {
-            error = e instanceof Error ? e.message : 'Failed to upload file';
+            error = e instanceof Error ? e.message : m.imp_error_upload();
         } finally {
             loading = false;
         }
@@ -120,7 +121,7 @@
     // Handle confirm import
     async function handleConfirmImport() {
         if (!previewResponse || selectedRows.size === 0) {
-            error = 'No rows selected for import';
+            error = m.imp_error_no_rows();
             return;
         }
 
@@ -146,7 +147,7 @@
 
             currentStep = 'result';
         } catch (e) {
-            error = e instanceof Error ? e.message : 'Failed to confirm import';
+            error = e instanceof Error ? e.message : m.imp_error_confirm();
         } finally {
             loading = false;
         }
@@ -203,7 +204,7 @@
             >
                 1
             </div>
-            <span class="font-medium">Configure</span>
+            <span class="font-medium">{m.imp_step_configure()}</span>
         </div>
 
         <div class="h-px w-12 bg-border"></div>
@@ -221,7 +222,7 @@
             >
                 2
             </div>
-            <span class="font-medium">Preview</span>
+            <span class="font-medium">{m.imp_step_preview()}</span>
         </div>
 
         <div class="h-px w-12 bg-border"></div>
@@ -239,7 +240,7 @@
             >
                 3
             </div>
-            <span class="font-medium">Categorize</span>
+            <span class="font-medium">{m.imp_step_categorize()}</span>
         </div>
 
         <div class="h-px w-12 bg-border"></div>
@@ -257,7 +258,7 @@
             >
                 4
             </div>
-            <span class="font-medium">Result</span>
+            <span class="font-medium">{m.imp_step_result()}</span>
         </div>
     </div>
 </div>

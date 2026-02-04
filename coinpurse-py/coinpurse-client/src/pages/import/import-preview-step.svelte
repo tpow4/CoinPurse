@@ -5,6 +5,7 @@
     import PreviewSummaryCards from './preview-summary-cards.svelte';
     import PreviewTransactionSection from './preview-transaction-section.svelte';
     import PreviewTransactionTable from './preview-transaction-table.svelte';
+    import * as m from '$lib/paraglide/messages';
 
     interface Props {
         previewResponse: ImportPreviewResponse;
@@ -102,16 +103,12 @@
     <Card.Root class="py-4">
         <Card.Content class="flex items-center justify-between px-4 py-0">
             <div>
-                <span class="font-medium">{totalSelected}</span>
                 <span class="text-muted-foreground">
-                    transactions selected for import</span
+                    {m.imp_preview_selected({ count: totalSelected })}</span
                 >
                 {#if selectedDuplicateCount > 0}
                     <span class="ml-2 text-amber-600">
-                        (includes {selectedDuplicateCount} duplicate{selectedDuplicateCount !==
-                        1
-                            ? 's'
-                            : ''})
+                        {m.imp_preview_includes_duplicates({ count: selectedDuplicateCount })}
                     </span>
                 {/if}
             </div>
@@ -121,7 +118,7 @@
     <!-- Valid Transactions -->
     {#if validTransactions.length > 0}
         <PreviewTransactionSection
-            title="Valid Transactions"
+            title={m.imp_preview_valid()}
             count={validTransactions.length}
             variant="default"
             defaultOpen={true}
@@ -138,14 +135,13 @@
     <!-- Duplicate Transactions -->
     {#if duplicateTransactions.length > 0}
         <PreviewTransactionSection
-            title="Duplicate Transactions"
+            title={m.imp_preview_duplicate()}
             count={duplicateTransactions.length}
             variant="warning"
             defaultOpen={true}
         >
             <div class="bg-amber-500/10 p-3 text-sm text-amber-700">
-                These transactions appear to already exist in the database. You
-                can still select them for import if needed.
+                {m.imp_preview_duplicate_warning()}
             </div>
             <PreviewTransactionTable
                 transactions={duplicateTransactions}
@@ -159,14 +155,13 @@
     <!-- Error Transactions -->
     {#if errorTransactions.length > 0}
         <PreviewTransactionSection
-            title="Validation Errors"
+            title={m.imp_preview_validation_errors()}
             count={errorTransactions.length}
             variant="error"
             defaultOpen={errorTransactions.length <= 10}
         >
             <div class="bg-red-500/10 p-3 text-sm text-red-700">
-                These transactions have validation errors and cannot be
-                imported.
+                {m.imp_preview_validation_warning()}
             </div>
             <PreviewTransactionTable
                 transactions={errorTransactions}
@@ -183,7 +178,7 @@
             type="button"
             variant="outline"
             onclick={onBack}
-            disabled={loading}>Back</Button
+            disabled={loading}>{m.imp_btn_back()}</Button
         >
 
         <Button
@@ -191,7 +186,7 @@
             onclick={onConfirm}
             disabled={loading || totalSelected === 0}
         >
-            Next: Review Categories
+            {m.imp_btn_next_categories()}
         </Button>
     </div>
 </div>

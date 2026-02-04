@@ -13,6 +13,7 @@
     }
 
     let { summary }: Props = $props();
+    import * as m from '$lib/paraglide/messages';
 </script>
 
 <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -24,7 +25,7 @@
                 <FileText class="text-muted-foreground size-5" />
             </div>
             <div>
-                <p class="text-muted-foreground text-sm">Total Rows</p>
+                <p class="text-muted-foreground text-sm">{m.imp_summary_total_rows()}</p>
                 <p class="text-2xl font-bold">{summary.total_rows}</p>
             </div>
         </Card.Content>
@@ -38,7 +39,7 @@
                 <CircleArrowUp class="size-5 text-green-500" />
             </div>
             <div>
-                <p class="text-muted-foreground text-sm">New</p>
+                <p class="text-muted-foreground text-sm">{m.imp_summary_new()}</p>
                 <p class="text-2xl font-bold text-green-600">
                     {summary.valid_rows}
                 </p>
@@ -54,7 +55,7 @@
                 <Copy class="size-5 text-amber-500" />
             </div>
             <div>
-                <p class="text-muted-foreground text-sm">Duplicates</p>
+                <p class="text-muted-foreground text-sm">{m.imp_summary_duplicates()}</p>
                 <p class="text-2xl font-bold text-amber-600">
                     {summary.duplicate_count}
                 </p>
@@ -70,7 +71,7 @@
                 <TriangleAlert class="size-5 text-red-500" />
             </div>
             <div>
-                <p class="text-muted-foreground text-sm">Errors</p>
+                <p class="text-muted-foreground text-sm">{m.imp_summary_errors()}</p>
                 <p class="text-2xl font-bold text-red-600">
                     {summary.validation_errors}
                 </p>

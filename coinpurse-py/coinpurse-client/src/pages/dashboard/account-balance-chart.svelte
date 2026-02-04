@@ -5,6 +5,7 @@
     import { scaleUtc } from 'd3-scale';
     import * as Chart from '$lib/components/ui/chart/index.js';
     import { formatCompactCurrency, formatDate, formatDateCompact } from '$lib/format';
+    import * as m from '$lib/paraglide/messages';
 
     interface Props {
         balances: AccountBalance[];
@@ -46,14 +47,14 @@
     );
 
     const chartConfig = {
-        balance: { label: 'Balance', color: 'var(--chart-1)' },
+        balance: { label: m.balance_chart_label(), color: 'var(--chart-1)' },
     } satisfies Chart.ChartConfig;
 
     const hasData = $derived(chartData.length >= 2);
 </script>
 
 {#if hasData}
-    <Chart.Container config={chartConfig} class="min-h-[180px] w-full">
+    <Chart.Container config={chartConfig} class="min-h-45 w-full">
         <AreaChart
             data={chartData}
             x="date"
@@ -95,8 +96,8 @@
     </Chart.Container>
 {:else}
     <div
-        class="min-h-[180px] w-full flex items-center justify-center text-sm text-muted-foreground bg-muted/30 border border-dashed rounded-md"
+        class="min-h-45 w-full flex items-center justify-center text-sm text-muted-foreground bg-muted/30 border border-dashed rounded-md"
     >
-        Add at least two balances to see a trend.
+        {m.balance_chart_empty()}
     </div>
 {/if}

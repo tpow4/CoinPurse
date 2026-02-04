@@ -3,6 +3,7 @@
     import * as Table from '$lib/components/ui/table';
     import { Checkbox } from '$lib/components/ui/checkbox';
     import { formatCurrency, formatDate } from '$lib/format';
+    import * as m from '$lib/paraglide/messages';
 
     interface Props {
         transactions: ParsedTransaction[];
@@ -75,7 +76,7 @@
 
 {#if transactions.length === 0}
     <div class="text-muted-foreground p-8 text-center">
-        No transactions in this section.
+        {m.imp_preview_no_transactions()}
     </div>
 {:else}
     <div class="max-h-100 overflow-auto">
@@ -92,13 +93,13 @@
                             />
                         </Table.Head>
                     {/if}
-                    <Table.Head class="w-15">Row</Table.Head>
-                    <Table.Head class="w-25">Date</Table.Head>
-                    <Table.Head>Description</Table.Head>
-                    <Table.Head class="w-30 text-right">Amount</Table.Head>
-                    <Table.Head class="w-25">Category</Table.Head>
+                    <Table.Head class="w-15">{m.imp_col_row()}</Table.Head>
+                    <Table.Head class="w-25">{m.imp_col_date()}</Table.Head>
+                    <Table.Head>{m.imp_col_description()}</Table.Head>
+                    <Table.Head class="w-30 text-right">{m.imp_col_amount()}</Table.Head>
+                    <Table.Head class="w-25">{m.imp_col_category()}</Table.Head>
                     {#if showErrors}
-                        <Table.Head>Errors</Table.Head>
+                        <Table.Head>{m.imp_col_errors()}</Table.Head>
                     {/if}
                 </Table.Row>
             </Table.Header>

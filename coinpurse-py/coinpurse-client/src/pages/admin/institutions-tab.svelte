@@ -14,6 +14,7 @@
   import AddEditInstitutionDialog from "../institutions/add-edit-institution-dialog.svelte";
   import { createColumns } from "../institutions/columns";
   import { institutionsApi } from "$lib/api/institutions";
+  import * as m from '$lib/paraglide/messages';
 
   // State
   let institutions = $state<Institution[]>([]);
@@ -58,7 +59,7 @@
       if (e instanceof ApiException) {
         error = e.detail;
       } else {
-        error = "Failed to load institutions";
+        error = m.inst_error_load();
       }
     } finally {
       loading = false;
@@ -79,7 +80,7 @@
       if (e instanceof ApiException) {
         error = e.detail;
       } else {
-        error = "Search failed";
+        error = m.inst_error_search();
       }
     } finally {
       loading = false;
@@ -90,12 +91,12 @@
     formErrors.name = "";
 
     if (!name.trim()) {
-      formErrors.name = "Institution name is required";
+      formErrors.name = m.inst_validation_name_required();
       return false;
     }
 
     if (name.length > 100) {
-      formErrors.name = "Name is too long (max 100 characters)";
+      formErrors.name = m.inst_validation_name_too_long();
       return false;
     }
 
@@ -152,7 +153,7 @@
       if (e instanceof ApiException) {
         formError = e.detail;
       } else {
-        formError = "Failed to save institution";
+        formError = m.inst_error_save();
       }
     } finally {
       formLoading = false;
@@ -170,7 +171,7 @@
       if (e instanceof ApiException) {
         error = e.detail;
       } else {
-        error = "Failed to delete institution";
+        error = m.inst_error_delete();
       }
     } finally {
       deleteLoading = false;
@@ -180,16 +181,16 @@
 
 <div>
   <div class="flex justify-between items-center mb-6">
-    <h2 class="text-xl font-semibold">Institutions</h2>
-    <Button onclick={openCreateForm}>+ Add Institution</Button>
+    <h2 class="text-xl font-semibold">{m.inst_title()}</h2>
+    <Button onclick={openCreateForm}>{m.inst_btn_add()}</Button>
   </div>
 
   <!-- Search and filters -->
   <div class="flex gap-4 mb-6 items-center">
-    <div class="flex-1 max-w-[400px]">
+    <div class="flex-1 max-w-100">
       <Input
         type="text"
-        placeholder="Search institutions..."
+        placeholder={m.inst_search_placeholder()}
         bind:value={searchTerm}
         oninput={handleSearch}
       />
@@ -206,7 +207,7 @@
         for="include-inactive"
         class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
       >
-        Include inactive
+        {m.inst_include_inactive()}
       </Label>
     </div>
   </div>
@@ -218,7 +219,7 @@
 
   <!-- Loading state -->
   {#if loading}
-    <div class="text-center py-8 text-gray-600">Loading institutions...</div>
+    <div class="text-center py-8 text-gray-600">{m.inst_loading()}</div>
   {:else}
     <!-- Institutions data table -->
     <InstitutionsDataTable data={institutions} {columns} />

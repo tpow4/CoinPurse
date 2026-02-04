@@ -21,6 +21,7 @@
     } from '../accounts/columns';
     import { accountsApi } from '$lib/api/accounts';
     import { institutionsApi } from '$lib/api/institutions';
+    import * as m from '$lib/paraglide/messages';
 
     // State
     let accounts = $state<Account[]>([]);
@@ -79,7 +80,7 @@
             if (e instanceof ApiException) {
                 error = e.detail;
             } else {
-                error = 'Failed to load accounts';
+                error = m.acct_error_load();
             }
         } finally {
             loading = false;
@@ -121,7 +122,7 @@
             if (e instanceof ApiException) {
                 error = e.detail;
             } else {
-                error = 'Search failed';
+                error = m.acct_error_search();
             }
         } finally {
             loading = false;
@@ -146,31 +147,30 @@
         let isValid = true;
 
         if (!data.account_name.trim()) {
-            formErrors.account_name = 'Account name is required';
+            formErrors.account_name = m.acct_validation_name_required();
             isValid = false;
         } else if (data.account_name.length > 100) {
-            formErrors.account_name = 'Name is too long (max 100 characters)';
+            formErrors.account_name = m.acct_validation_name_too_long();
             isValid = false;
         }
 
         if (!data.institution_id || data.institution_id === 0) {
-            formErrors.institution_id = 'Institution is required';
+            formErrors.institution_id = m.acct_validation_institution_required();
             isValid = false;
         }
 
         if (!data.account_type) {
-            formErrors.account_type = 'Account type is required';
+            formErrors.account_type = m.acct_validation_type_required();
             isValid = false;
         }
 
         if (!data.tax_treatment) {
-            formErrors.tax_treatment = 'Tax treatment is required';
+            formErrors.tax_treatment = m.acct_validation_tax_required();
             isValid = false;
         }
 
         if (data.last_4_digits && data.last_4_digits.length > 4) {
-            formErrors.last_4_digits =
-                'Last 4 digits must be 4 characters or less';
+            formErrors.last_4_digits = m.acct_validation_last4_too_long();
             isValid = false;
         }
 
@@ -268,7 +268,7 @@
             if (e instanceof ApiException) {
                 formError = e.detail;
             } else {
-                formError = 'Failed to save account';
+                formError = m.acct_error_save();
             }
         } finally {
             formLoading = false;
@@ -286,7 +286,7 @@
             if (e instanceof ApiException) {
                 error = e.detail;
             } else {
-                error = 'Failed to delete account';
+                error = m.acct_error_delete();
             }
         } finally {
             deleteLoading = false;
@@ -296,8 +296,8 @@
 
 <div>
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-semibold">Accounts</h2>
-        <Button onclick={openCreateForm}>+ Add Account</Button>
+        <h2 class="text-xl font-semibold">{m.acct_title()}</h2>
+        <Button onclick={openCreateForm}>{m.acct_btn_add()}</Button>
     </div>
 
     <!-- Search and filters -->
@@ -305,7 +305,7 @@
         <div class="flex-1 max-w-100">
             <Input
                 type="text"
-                placeholder="Search accounts..."
+                placeholder={m.acct_search_placeholder()}
                 bind:value={searchTerm}
                 oninput={handleSearch}
             />
@@ -322,7 +322,7 @@
                 for="include-inactive-accounts"
                 class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
             >
-                Include inactive
+                {m.acct_include_inactive()}
             </Label>
         </div>
     </div>
@@ -334,7 +334,7 @@
 
     <!-- Loading state -->
     {#if loading}
-        <div class="text-center py-8 text-gray-600">Loading accounts...</div>
+        <div class="text-center py-8 text-gray-600">{m.acct_loading()}</div>
     {:else}
         <!-- Accounts data table -->
         <AccountsDataTable data={accountsWithInstitutions} {columns} />

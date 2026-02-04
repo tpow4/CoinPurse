@@ -11,6 +11,8 @@
     import { Input } from '$lib/components/ui/input';
     import { Button } from '$lib/components/ui/button';
     import { TriangleAlert } from '@lucide/svelte';
+    import * as m from '$lib/paraglide/messages';
+    import { formatDate, formatCentsCurrency, parseCentsCurrency } from '$lib/format';
 
     interface Props {
         open: boolean;
@@ -64,20 +66,11 @@
     let monthValues = $state<Record<number, string>>({});
     let monthErrors = $state<Record<number, string>>({});
 
-    const MONTHS = [
-        'January',
-        'February',
-        'March',
-        'April',
-        'May',
-        'June',
-        'July',
-        'August',
-        'September',
-        'October',
-        'November',
-        'December',
-    ];
+    // Month names derived from locale-aware formatting
+    function getMonthName(month: number): string {
+        const date = new Date(2000, month - 1, 1);
+        return formatDate(date, { month: 'long', year: undefined, day: undefined });
+    }
 
     // Generate year options (current year +/- 10 years)
     const yearOptions = Array.from(
@@ -94,35 +87,6 @@
 
     function initialBalanceDate(): string {
         return defaultBalanceDate ?? todayIsoDate();
-    }
-
-    function parseMoneyToCents(input: string): number | null {
-        const trimmed = input.trim().replaceAll(',', '');
-        if (!trimmed) return null;
-
-        const match = trimmed.match(/^(-)?(\d+)(?:\.(\d{0,2}))?$/);
-        if (!match) return null;
-
-        const sign = match[1] ? -1 : 1;
-        const dollarsPart = match[2] ?? '0';
-        const centsPart = (match[3] ?? '').padEnd(2, '0');
-        const dollars = Number(dollarsPart);
-        const cents = Number(centsPart || '0');
-
-        if (!Number.isFinite(dollars) || !Number.isFinite(cents)) return null;
-        return sign * (dollars * 100 + cents);
-    }
-
-    function formatCentsToMoney(cents: number): string {
-        const dollars = Math.abs(cents) / 100;
-        const sign = cents < 0 ? '-' : '';
-        return (
-            sign +
-            dollars.toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-            })
-        );
     }
 
     function getDateForMonth(month: number): string {
@@ -168,7 +132,7 @@
         for (let month = 1; month <= 12; month++) {
             const existing = getExistingBalanceForMonth(month);
             if (existing) {
-                newValues[month] = formatCentsToMoney(existing.balance);
+                newValues[month] = formatCentsCurrency(existing.balance);
             }
         }
         monthValues = newValues;
@@ -177,10 +141,10 @@
 
     async function handleSingleSubmit(e: SubmitEvent) {
         e.preventDefault();
-        const cents = parseMoneyToCents(formData.balance);
+        const cents = parseCentsCurrency(formData.balance);
         if (cents === null) {
             localFieldErrors = {
-                balance: 'Enter a valid number (e.g., 1234.56)',
+                balance: m.balance_validation_number(),
             };
             return;
         }
@@ -202,9 +166,9 @@
             const value = monthValues[month]?.trim();
             if (!value) continue;
 
-            const cents = parseMoneyToCents(value);
+            const cents = parseCentsCurrency(value);
             if (cents === null) {
-                newErrors[month] = 'Invalid number';
+                newErrors[month] = m.balance_validation_invalid();
             } else {
                 entries.push({
                     balance_date: getDateForMonth(month),
@@ -230,11 +194,11 @@
 </script>
 
 <Dialog.Root {open} {onOpenChange}>
-    <Dialog.Content class="sm:max-w-[540px]">
+    <Dialog.Content class="sm:max-w-135">
         <Dialog.Header>
-            <Dialog.Title>Add Balance</Dialog.Title>
+            <Dialog.Title>{m.balance_dialog_title()}</Dialog.Title>
             <Dialog.Description
-                >Record a balance for {accountName}.</Dialog.Description
+                >{m.balance_dialog_description({ accountName })}</Dialog.Description
             >
         </Dialog.Header>
 
@@ -243,8 +207,8 @@
             onValueChange={(v) => (activeTab = v ?? 'single')}
         >
             <Tabs.List class="mb-4">
-                <Tabs.Trigger value="single">Single Entry</Tabs.Trigger>
-                <Tabs.Trigger value="yearly">Yearly Entry</Tabs.Trigger>
+                <Tabs.Trigger value="single">{m.balance_tab_single()}</Tabs.Trigger>
+                <Tabs.Trigger value="yearly">{m.balance_tab_yearly()}</Tabs.Trigger>
             </Tabs.List>
 
             <Tabs.Content value="single">
@@ -262,11 +226,11 @@
                                 ? true
                                 : undefined}
                         >
-                            <Field.Label for="balance">Balance</Field.Label>
+                            <Field.Label for="balance">{m.balance_field_balance()}</Field.Label>
                             <Input
                                 id="balance"
                                 inputmode="decimal"
-                                placeholder="e.g., 1234.56"
+                                placeholder={m.balance_field_balance_placeholder()}
                                 bind:value={formData.balance}
                                 aria-invalid={fieldErrors.balance ||
                                 localFieldErrors.balance
@@ -289,7 +253,7 @@
                                 ? true
                                 : undefined}
                         >
-                            <Field.Label for="balance_date">Date</Field.Label>
+                            <Field.Label for="balance_date">{m.balance_field_date()}</Field.Label>
                             <Input
                                 id="balance_date"
                                 type="date"
@@ -312,10 +276,10 @@
                                 onclick={() => onOpenChange(false)}
                                 disabled={loading}
                             >
-                                Cancel
+                                {m.balance_btn_cancel()}
                             </Button>
                             <Button type="submit" disabled={loading}>
-                                {loading ? 'Saving...' : 'Save'}
+                                {loading ? m.balance_btn_saving() : m.balance_btn_save()}
                             </Button>
                         </div>
                     </div>
@@ -333,7 +297,7 @@
 
                         <div class="flex gap-4">
                             <Field.Field class="flex-1">
-                                <Field.Label for="year">Year</Field.Label>
+                                <Field.Label for="year">{m.balance_field_year()}</Field.Label>
                                 <Select.Root
                                     type="single"
                                     value={String(selectedYear)}
@@ -354,7 +318,7 @@
                             </Field.Field>
 
                             <Field.Field class="flex-1">
-                                <Field.Label for="day">Day of Month</Field.Label
+                                <Field.Label for="day">{m.balance_field_day()}</Field.Label
                                 >
                                 <Select.Root
                                     type="single"
@@ -377,10 +341,11 @@
                         </div>
 
                         <div
-                            class="grid grid-cols-2 gap-x-4 gap-y-2 max-h-[300px] overflow-y-auto pr-2"
+                            class="grid grid-cols-2 gap-x-4 gap-y-2 max-h-75 overflow-y-auto pr-2"
                         >
-                            {#each MONTHS as monthName, index}
+                            {#each { length: 12 } as _, index}
                                 {@const month = index + 1}
+                                {@const monthName = getMonthName(month)}
                                 {@const existing =
                                     getExistingBalanceForMonth(month)}
                                 {@const hasError = monthErrors[month]}
@@ -426,19 +391,18 @@
                                 onclick={() => onOpenChange(false)}
                                 disabled={loading}
                             >
-                                Cancel
+                                {m.balance_btn_cancel()}
                             </Button>
                             <Button
                                 type="submit"
                                 disabled={loading || entryCount === 0}
                             >
                                 {#if loading}
-                                    Saving...
+                                    {m.balance_btn_saving()}
                                 {:else if entryCount === 0}
-                                    Save
+                                    {m.balance_btn_save()}
                                 {:else}
-                                    Save {entryCount}
-                                    {entryCount === 1 ? 'entry' : 'entries'}
+                                    {m.balance_btn_save_count({ count: entryCount })}
                                 {/if}
                             </Button>
                         </div>

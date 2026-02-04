@@ -5,6 +5,7 @@
     import * as Card from '$lib/components/ui/card';
     import * as Table from '$lib/components/ui/table';
     import { formatCurrency, formatDate } from '$lib/format';
+    import * as m from '$lib/paraglide/messages';
 
     interface Props {
         transactions: ParsedTransaction[];
@@ -108,19 +109,17 @@
 <div class="space-y-6">
     <!-- Header -->
     <div>
-        <h2 class="text-lg font-semibold">Review Categories</h2>
+        <h2 class="text-lg font-semibold">{m.imp_categorize_title()}</h2>
         <p class="text-muted-foreground text-sm">
-            These transactions need a category assigned. You can skip any —
-            they'll use defaults.
+            {m.imp_categorize_description()}
         </p>
     </div>
 
     <!-- Summary Card -->
     <Card.Root class="py-4">
         <Card.Content class="px-4 py-0">
-            <span class="font-medium">{categorizedCount}</span>
             <span class="text-muted-foreground">
-                of {transactions.length} transactions categorized
+                {m.imp_categorize_count({ categorized: categorizedCount, total: transactions.length })}
             </span>
         </Card.Content>
     </Card.Root>
@@ -128,21 +127,21 @@
     <!-- Transaction Table -->
     {#if transactions.length === 0}
         <div class="text-muted-foreground p-8 text-center">
-            No transactions need category review.
+            {m.imp_categorize_empty()}
         </div>
     {:else}
         <div class="max-h-125 overflow-auto">
             <Table.Root>
                 <Table.Header>
                     <Table.Row>
-                        <Table.Head class="w-15">Row</Table.Head>
-                        <Table.Head class="w-25">Date</Table.Head>
-                        <Table.Head>Description</Table.Head>
+                        <Table.Head class="w-15">{m.imp_col_row()}</Table.Head>
+                        <Table.Head class="w-25">{m.imp_col_date()}</Table.Head>
+                        <Table.Head>{m.imp_col_description()}</Table.Head>
                         <Table.Head class="w-30 text-right"
-                            >Amount</Table.Head
+                            >{m.imp_col_amount()}</Table.Head
                         >
-                        <Table.Head class="w-30">Bank Category</Table.Head>
-                        <Table.Head class="w-55">Category</Table.Head>
+                        <Table.Head class="w-30">{m.imp_col_bank_category()}</Table.Head>
+                        <Table.Head class="w-55">{m.imp_col_category()}</Table.Head>
                     </Table.Row>
                 </Table.Header>
                 <Table.Body>
@@ -176,14 +175,14 @@
                                     <Combobox
                                         items={categoryItems}
                                         bind:value={rowValues[tx.row_number]}
-                                        placeholder="Select category..."
-                                        searchPlaceholder="Search categories..."
+                                        placeholder={m.imp_categorize_select()}
+                                        searchPlaceholder={m.imp_categorize_search()}
                                     />
                                     {#if candidateNames.length >= 2}
                                         <div
                                             class="text-muted-foreground flex flex-wrap gap-1 text-xs"
                                         >
-                                            <span>Candidates:</span>
+                                            <span>{m.imp_categorize_candidates()}</span>
                                             {#each candidateNames as name}
                                                 <span
                                                     class="bg-muted rounded px-1.5 py-0.5"
@@ -209,16 +208,14 @@
             onclick={onBack}
             disabled={loading}
         >
-            Back
+            {m.imp_btn_back()}
         </Button>
 
         <Button type="button" onclick={onConfirm} disabled={loading}>
             {#if loading}
-                Importing...
+                {m.imp_categorize_importing()}
             {:else}
-                Import {totalSelectedCount} Transaction{totalSelectedCount !== 1
-                    ? 's'
-                    : ''}
+                {m.imp_categorize_import_count({ count: totalSelectedCount })}
             {/if}
         </Button>
     </div>
