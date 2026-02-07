@@ -16,6 +16,22 @@
     "general_currency_label": "Moneda",
     "general_currency_description": "Elige la moneda predeterminada para mostrar importes.",
     "general_saved": "Configuración guardada",
+    "general_frequency_label": "Frecuencia de recordatorio de saldos",
+    "general_frequency_description": "¿Con qué frecuencia deseas recibir recordatorios para actualizar los saldos de las cuentas?",
+    "general_frequency_weekly": "Semanal",
+    "general_frequency_biweekly": "Quincenal",
+    "general_frequency_monthly": "Mensual",
+    "general_frequency_quarterly": "Trimestral",
+    "reminder_title": [{
+        "declarations": ["input count", "local countPlural = count: plural"],
+        "selectors": ["countPlural"],
+        "match": {
+            "countPlural=one": "{count} cuenta necesita actualización de saldo",
+            "countPlural=*": "{count} cuentas necesitan actualización de saldo"
+        }
+    }],
+    "reminder_account_last_updated": "{name} — última actualización {date}",
+    "reminder_account_never_updated": "{name} — nunca actualizada",
     "account_type_banking": "Banca",
     "account_type_treasury": "Tesorería",
     "account_type_credit_card": "Tarjeta de crédito",

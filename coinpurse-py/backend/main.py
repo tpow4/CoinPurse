@@ -12,6 +12,7 @@ from routers.balances_router import router as balances_router
 from routers.categories_router import router as categories_router
 from routers.import_router import router as import_router
 from routers.institutions_router import router as institutions_router
+from routers.settings_router import router as settings_router
 from routers.transactions_router import router as transactions_router
 
 # FastAPI application instance
@@ -37,6 +38,7 @@ app.include_router(balances_router, prefix="/api")
 app.include_router(categories_router, prefix="/api")
 app.include_router(transactions_router, prefix="/api")
 app.include_router(import_router, prefix="/api")
+app.include_router(settings_router, prefix="/api")
 
 
 @app.get("/")

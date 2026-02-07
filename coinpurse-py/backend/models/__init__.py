@@ -6,6 +6,7 @@ This file makes 'models' a package and exposes all models for easy import.
 from .base import AccountType, Base, FileFormat, ImportStatus, TaxTreatmentType, TransactionType
 
 # import models with no foreign keys first
+from .app_setting import AppSetting
 from .category import Category
 from .import_template import ImportTemplate
 from .institution import Institution
@@ -29,6 +30,7 @@ __all__ = [
     "TransactionType",
     "FileFormat",
     "ImportStatus",
+    "AppSetting",
     "Institution",
     "Account",
     "Category",
