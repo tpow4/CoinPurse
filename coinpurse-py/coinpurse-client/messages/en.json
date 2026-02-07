@@ -32,6 +32,19 @@
     }],
     "reminder_account_last_updated": "{name} — last updated {date}",
     "reminder_account_never_updated": "{name} — never updated",
+    "reminder_action": "Update now",
+    "checkin_dialog_title": "Balance Check-In",
+    "checkin_dialog_description": "Enter current balances for your accounts.",
+    "checkin_btn_save_count": [{
+        "declarations": ["input count", "local countPlural = count: plural"],
+        "selectors": ["countPlural"],
+        "match": {
+            "countPlural=one": "Save {count} balance",
+            "countPlural=*": "Save {count} balances"
+        }
+    }],
+    "checkin_success": "Balances updated successfully",
+    "checkin_error": "Failed to save some balances",
     "account_type_banking": "Banking",
     "account_type_treasury": "Treasury",
     "account_type_credit_card": "Credit Card",

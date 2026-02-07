@@ -32,6 +32,19 @@
     }],
     "reminder_account_last_updated": "{name} — última actualización {date}",
     "reminder_account_never_updated": "{name} — nunca actualizada",
+    "reminder_action": "Actualizar ahora",
+    "checkin_dialog_title": "Revisión de saldos",
+    "checkin_dialog_description": "Introduce los saldos actuales de tus cuentas.",
+    "checkin_btn_save_count": [{
+        "declarations": ["input count", "local countPlural = count: plural"],
+        "selectors": ["countPlural"],
+        "match": {
+            "countPlural=one": "Guardar {count} saldo",
+            "countPlural=*": "Guardar {count} saldos"
+        }
+    }],
+    "checkin_success": "Saldos actualizados correctamente",
+    "checkin_error": "Error al guardar algunos saldos",
     "account_type_banking": "Banca",
     "account_type_treasury": "Tesorería",
     "account_type_credit_card": "Tarjeta de crédito",
