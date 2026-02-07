@@ -14,7 +14,7 @@
     },
     "devDependencies": {
         "@inlang/paraglide-js": "^2.10.0",
-        "@internationalized/date": "^3.10.1",
+        "@internationalized/date": "^3.11.0",
         "@lucide/svelte": "^0.563.1",
         "@sveltejs/adapter-static": "^3.0.10",
         "@sveltejs/kit": "^2.50.2",
