@@ -92,6 +92,7 @@ export interface Account {
 export interface AccountCreate {
     account_name: string;
     institution_id: number;
+    template_id?: number | null;
     account_type: AccountType;
     tax_treatment: TaxTreatmentType;
     last_4_digits: string;
@@ -104,6 +105,7 @@ export interface AccountCreate {
 export interface AccountUpdate {
     account_name?: string;
     institution_id?: number;
+    template_id?: number | null;
     account_type?: AccountType;
     tax_treatment?: TaxTreatmentType;
     last_4_digits?: string;

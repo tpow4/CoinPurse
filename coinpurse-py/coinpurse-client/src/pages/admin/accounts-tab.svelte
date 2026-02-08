@@ -40,6 +40,7 @@
     let formErrors = $state({
         account_name: '',
         institution_id: '',
+        template_id: '',
         account_type: '',
         tax_treatment: '',
         last_4_digits: '',
@@ -132,6 +133,7 @@
     function validateForm(data: {
         account_name: string;
         institution_id: number;
+        template_id?: number | null;
         account_type: AccountType;
         tax_treatment: TaxTreatmentType;
         last_4_digits: string;
@@ -139,6 +141,7 @@
         formErrors = {
             account_name: '',
             institution_id: '',
+            template_id: '',
             account_type: '',
             tax_treatment: '',
             last_4_digits: '',
@@ -182,6 +185,7 @@
         formErrors = {
             account_name: '',
             institution_id: '',
+            template_id: '',
             account_type: '',
             tax_treatment: '',
             last_4_digits: '',
@@ -195,6 +199,7 @@
         formErrors = {
             account_name: '',
             institution_id: '',
+            template_id: '',
             account_type: '',
             tax_treatment: '',
             last_4_digits: '',
@@ -209,6 +214,7 @@
         formErrors = {
             account_name: '',
             institution_id: '',
+            template_id: '',
             account_type: '',
             tax_treatment: '',
             last_4_digits: '',
@@ -219,6 +225,7 @@
     async function handleFormSubmit(data: {
         account_name: string;
         institution_id: number;
+        template_id?: number | null;
         account_type: AccountType;
         tax_treatment: TaxTreatmentType;
         last_4_digits: string;
@@ -239,6 +246,7 @@
                 const updateData: AccountUpdate = {
                     account_name: data.account_name,
                     institution_id: data.institution_id,
+                    template_id: data.template_id,
                     account_type: data.account_type,
                     tax_treatment: data.tax_treatment,
                     last_4_digits: data.last_4_digits,
@@ -252,6 +260,7 @@
                 const createData: AccountCreate = {
                     account_name: data.account_name,
                     institution_id: data.institution_id,
+                    template_id: data.template_id,
                     account_type: data.account_type,
                     tax_treatment: data.tax_treatment,
                     last_4_digits: data.last_4_digits,
