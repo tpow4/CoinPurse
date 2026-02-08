@@ -4,129 +4,94 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CoinPurse is a personal finance tracking application with a Python FastAPI backend and (presumably) a Svelte frontend. The backend uses SQLAlchemy ORM with SQLite database and follows a clean layered architecture pattern.
+CoinPurse is a personal finance tracking application with a Python 3.13+ FastAPI backend and a Svelte frontend (`coinpurse-client/`). The backend uses SQLAlchemy ORM with SQLite and follows a layered architecture.
 
 ## Development Commands
 
 ### Environment Setup
 ```bash
-# Activate virtual environment
 source backend/venv/bin/activate
-
-# Install dependencies
-cd backend
-pip install -r requirements.txt
-
-# Initialize database
-python database.py
+cd backend && pip install -r requirements.txt
+python database.py  # creates tables AND seeds default data (categories, institutions, import templates, category mappings, app settings)
 ```
 
-### Running the Application
+### Running
 ```bash
-# Run development server
-cd backend
-uvicorn main:app --reload --port 8000
-
-# Alternative: Use VS Code debugger configuration
-# The launch.json is configured for FastAPI debugging
+cd backend && uvicorn main:app --reload --port 8000
 ```
 
-### API Documentation
+### Testing
+```bash
+cd backend && pytest                # all tests
+pytest tests/unit                   # unit only
+pytest tests/integration            # integration only
+pytest --cov                        # with coverage
+```
+Tests use in-memory SQLite with per-test transaction rollback for isolation.
+
+### Linting/Formatting
+```bash
+cd backend && ruff check .          # lint
+ruff check --fix .                  # lint + autofix
+ruff format .                       # format
+```
+Config in `pyproject.toml`: line-length 88, double quotes, LF endings, B008 ignored (FastAPI `Depends`).
+
+### API Docs
 - Swagger UI: `http://localhost:8000/docs`
-- Scalar API Reference: `http://localhost:8000/scalar`
-- Health check: `http://localhost:8000/health`
+- Scalar: `http://localhost:8000/scalar`
+- Health: `http://localhost:8000/health`
 
 ## Architecture
 
-### Layered Architecture Pattern
-The backend follows a strict 3-layer architecture:
-
-1. **Routers** (`routers/`) - HTTP endpoints and request handling
-   - Handle HTTP requests/responses
-   - Use FastAPI dependency injection for database sessions
-   - Validate input using Pydantic schemas
-   - Delegate business logic to repositories
-
-2. **Repositories** (`repositories/`) - Data access layer
-   - Encapsulate all database operations
-   - Use SQLAlchemy ORM for queries
-   - Each repository class takes a `Session` in `__init__`
-
-3. **Models** (`models/`) - SQLAlchemy ORM models
-   - Define database schema using SQLAlchemy 2.0 mapped columns
-   - Use `Mapped[]` type hints with `mapped_column()`
-   - Relationships defined using `relationship()` with `back_populates`
-
-4. **Schemas** (`schemas/`) - Pydantic DTOs
-   - Define request/response validation models
-   - Separate schemas for Create, Update, and Response operations
-   - Use `from_attributes = True` for SQLAlchemy compatibility
+### Layers
+1. **Routers** (`routers/`) — HTTP endpoints, FastAPI dependency injection, Pydantic validation. Some delegate to services, others go directly to repositories.
+2. **Services** (`services/`) — Business logic orchestration (see Import System below).
+3. **Repositories** (`repositories/`) — Data access via SQLAlchemy ORM. Each takes a `Session` in `__init__`.
+4. **Models** (`models/`) — SQLAlchemy 2.0 models using `Mapped[]` + `mapped_column()`. Relationships use `relationship()` with `back_populates`.
+5. **Schemas** (`schemas/`) — Pydantic DTOs with separate Create/Update/Response variants. Use `from_attributes = True`.
 
 ### Database Models
+Entities in dependency order:
+- No FK: `AppSetting`, `Category`, `ImportTemplate`, `Institution`
+- Depends on Institution: `CategoryMapping`
+- Depends on Institution + ImportTemplate: `Account`, `AccountBalance`, `Transaction`
+- Depends on Account + ImportTemplate: `ImportBatch`
 
-Core entities in order of dependency:
-- `Institution` - Financial institutions (no dependencies)
-- `Category` - Transaction categories (no dependencies)
-- `Account` - User accounts (depends on Institution)
-- `Transaction` - Financial transactions (depends on Account, Category)
-- `AccountBalance` - Account balance snapshots (depends on Account)
+Enums: `AccountType`, `TaxTreatmentType`, `TransactionType`, `FileFormat`, `ImportStatus`
 
-### Import Order
-Due to circular dependency concerns, models are imported in a specific order in `models/__init__.py`:
-1. Base classes and enums (`Base`, `AccountType`, `TransactionType`)
-2. Models with no foreign keys (`Institution`, `Category`)
-3. Models with dependencies (`Account`)
-4. Models with nested dependencies (`Transaction`, `AccountBalance`)
+### Model Import Order (`models/__init__.py`)
+1. `Base` + all enums
+2. No-FK models: `AppSetting`, `Category`, `ImportTemplate`, `Institution`
+3. `CategoryMapping` (depends on Institution)
+4. `Account`, `AccountBalance`, `Transaction` (depend on Institution + ImportTemplate)
+5. `ImportBatch` (depends on Account + ImportTemplate)
 
-### Soft Delete Pattern
-- Most models use soft deletion via `is_active` boolean field
-- Repository methods support both soft delete (default) and hard delete
-- `get_all()` methods typically have `include_inactive` parameter
-- Search operations default to excluding inactive records
+### Import System
+Services in `services/`:
+- `ImportService` — orchestrates file import (parse, deduplicate, map categories, create transactions)
+- `BalanceAggregationService` — monthly balance snapshots with forward-fill
+- `CategoryMapper` — maps bank categories to CoinPurse categories via `CategoryMapping`
+- `DuplicateDetector` — hash-based duplicate transaction detection
+- `parsers/` — `CsvParser`, `ExcelParser` extending `BaseParser` (uses pandas)
 
-### Common Patterns
+Workflow: Upload CSV/Excel → parse with `ImportTemplate` → detect duplicates → map categories → preview → confirm → create transactions.
 
-**Router Pattern:**
-```python
-from database import get_db
-from repositories.foo_repository import FooRepository
+### Soft Delete
+- Most models use `is_active` boolean field for soft deletion
+- Repository `get_all()` methods have `include_inactive` parameter
+- Repositories support both soft delete (default) and hard delete
 
-@router.get("/")
-def list_foos(db: Session = Depends(get_db)):
-    repo = FooRepository(db)
-    return repo.get_all()
-```
-
-**Repository Pattern:**
-```python
-class FooRepository:
-    def __init__(self, db: Session):
-        self.db = db
-
-    def get_all(self):
-        stmt = select(Foo).order_by(Foo.name)
-        return list(self.db.scalars(stmt))
-```
-
-**Model Pattern:**
-```python
-class Foo(Base):
-    __tablename__ = 'foos'
-
-    foo_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(50))
-    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc))
-```
+### Conventions
+- Schema module name matches model name (e.g., `schemas/account.py` for `Account` model)
+- All models use `created_at` and `modified_at` timestamps (UTC)
+- Primary keys: `{table_name}_id` (e.g., `institution_id`, `account_id`)
+- Routers instantiate repositories per-request: `repo = FooRepository(db)`
 
 ## Key Configuration
 
+- **Python:** 3.13+ (from `pyproject.toml`)
 - **Database:** SQLite at `backend/coinpurse.db`
-- **CORS:** Configured for Svelte dev server at `http://localhost:5173`
-- **API Prefix:** All routers use `/api` prefix
-- **Echo SQL:** Database has `echo=True` - disable in production
-
-## Important Notes
-
-- Schema field should be the same as the model name.
-- All models use `created_at` and `modified_at` timestamps with UTC timezone
-- Primary keys follow pattern: `{table_name}_id` (e.g., `institution_id`, `account_id`)
+- **CORS:** Svelte dev server at `http://localhost:5173`
+- **API Prefix:** All routers use `/api`
+- **Echo SQL:** `echo=True` in database.py — disable in production
