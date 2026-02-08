@@ -337,6 +337,27 @@ export interface ImportConfirmResponse {
     status: ImportStatus;
 }
 
+// App Setting types
+
+export interface AppSetting {
+    setting_key: string;
+    setting_value: string;
+    created_at: string;
+    modified_at: string;
+}
+
+export interface AppSettingUpdate {
+    setting_value: string;
+}
+
+export interface AccountDueForCheckin {
+    account_id: number;
+    account_name: string;
+    institution_name: string;
+    last_balance_date: string | null;
+    days_since_last: number | null;
+}
+
 // Helper types
 
 export interface ApiError {

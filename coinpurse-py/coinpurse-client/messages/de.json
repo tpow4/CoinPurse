@@ -16,6 +16,36 @@
     "general_currency_label": "Währung",
     "general_currency_description": "Wähle die Standardwährung für die Betragsanzeige.",
     "general_saved": "Einstellungen gespeichert",
+    "general_frequency_label": "Erinnerungsfrequenz für Salden",
+    "general_frequency_description": "Wie oft möchtest du an die Aktualisierung der Kontosalden erinnert werden?",
+    "general_frequency_weekly": "Wöchentlich",
+    "general_frequency_biweekly": "Zweiwöchentlich",
+    "general_frequency_monthly": "Monatlich",
+    "general_frequency_quarterly": "Vierteljährlich",
+    "reminder_title": [{
+        "declarations": ["input count", "local countPlural = count: plural"],
+        "selectors": ["countPlural"],
+        "match": {
+            "countPlural=one": "{count} Konto benötigt eine Saldoaktualisierung",
+            "countPlural=*": "{count} Konten benötigen eine Saldoaktualisierung"
+        }
+    }],
+    "reminder_account_last_updated": "{name} — zuletzt aktualisiert {date}",
+    "reminder_account_never_updated": "{name} — nie aktualisiert",
+    "reminder_action": "Jetzt aktualisieren",
+    "checkin_dialog_title": "Salden-Check-in",
+    "checkin_dialog_description": "Gib die aktuellen Salden deiner Konten ein.",
+    "checkin_btn_save_count": [{
+        "declarations": ["input count", "local countPlural = count: plural"],
+        "selectors": ["countPlural"],
+        "match": {
+            "countPlural=one": "{count} Saldo speichern",
+            "countPlural=*": "{count} Salden speichern"
+        }
+    }],
+    "checkin_btn": "Salden eintragen",
+    "checkin_success": "Salden erfolgreich aktualisiert",
+    "checkin_error": "Einige Salden konnten nicht gespeichert werden",
     "account_type_banking": "Bankwesen",
     "account_type_treasury": "Finanzen",
     "account_type_credit_card": "Kreditkarte",

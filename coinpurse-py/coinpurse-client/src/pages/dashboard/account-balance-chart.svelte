@@ -4,7 +4,11 @@
     import { curveLinear } from 'd3-shape';
     import { scaleUtc } from 'd3-scale';
     import * as Chart from '$lib/components/ui/chart/index.js';
-    import { formatCompactCurrency, formatDate, formatDateCompact } from '$lib/format';
+    import {
+        formatCompactCurrency,
+        formatDate,
+        formatDateCompact,
+    } from '$lib/format';
     import * as m from '$lib/paraglide/messages';
 
     interface Props {
@@ -74,8 +78,7 @@
                     motion: 'tween',
                 },
                 xAxis: {
-                    format: (v: Date) =>
-                        formatDateCompact(v),
+                    format: (v: Date) => formatDateCompact(v),
                 },
                 yAxis: {
                     format: (v) =>
@@ -87,8 +90,7 @@
         >
             {#snippet tooltip()}
                 <Chart.Tooltip
-                    labelFormatter={(v: Date) =>
-                        formatDate(v)}
+                    labelFormatter={(v: Date) => formatDate(v)}
                     indicator="line"
                 />
             {/snippet}
@@ -96,7 +98,7 @@
     </Chart.Container>
 {:else}
     <div
-        class="min-h-45 w-full flex items-center justify-center text-sm text-muted-foreground bg-muted/30 border border-dashed rounded-md"
+        class="p-2 min-h-45 w-full flex items-center justify-center text-sm text-muted-foreground bg-muted/30 border border-dashed rounded-md text-center"
     >
         {m.balance_chart_empty()}
     </div>

@@ -9,6 +9,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
 from models import (
+    AppSetting,
     Base,
     Category,
     CategoryMapping,
@@ -46,6 +47,7 @@ def seed_data():
         _seed_institutions(db)
         _seed_import_templates(db)
         _seed_category_mappings(db)
+        _seed_settings(db)
     finally:
         db.close()
 
@@ -281,6 +283,24 @@ def _seed_category_mappings(db):
                     )
 
         db.commit()
+
+
+def _seed_settings(db):
+    """Seed default application settings"""
+    defaults = [
+        ("balance_checkin_frequency_days", "7"),
+    ]
+
+    for key, value in defaults:
+        stmt = select(AppSetting).where(AppSetting.setting_key == key)
+        existing = db.scalar(stmt)
+        if not existing:
+            db.add(AppSetting(setting_key=key, setting_value=value))
+            print(f"Seeded '{key}' setting with value '{value}'.")
+        else:
+            print(f"'{key}' setting already exists.")
+
+    db.commit()
 
 
 def get_session():

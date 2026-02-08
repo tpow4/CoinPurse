@@ -20,11 +20,53 @@
         localizeHref,
         deLocalizeHref,
     } from '$lib/paraglide/runtime';
+    import { Toaster, toast } from 'svelte-sonner';
+    import { settingsApi } from '$lib/api/settings';
+    import type { AccountDueForCheckin } from '$lib/types';
+    import BalanceCheckinDialog from '$lib/components/balance-checkin-dialog.svelte';
 
     let { children } = $props();
 
+    let checkinAccounts: AccountDueForCheckin[] = $state([]);
+    let checkinDialogOpen = $state(false);
+
     $effect(() => {
         document.documentElement.lang = getLocale();
+    });
+
+    // Balance check-in reminder on mount
+    $effect(() => {
+        if (typeof window === 'undefined') return;
+        if (sessionStorage.getItem('balance_checkin_reminded')) return;
+
+        settingsApi.getAccountsDueForCheckin().then((accounts: AccountDueForCheckin[]) => {
+            if (accounts.length === 0) return;
+
+            checkinAccounts = accounts;
+            sessionStorage.setItem('balance_checkin_reminded', '1');
+
+            const title = m.reminder_title({ count: accounts.length });
+            const lines = accounts.map((a) => {
+                if (a.last_balance_date) {
+                    return m.reminder_account_last_updated({
+                        name: a.account_name,
+                        date: a.last_balance_date,
+                    });
+                }
+                return m.reminder_account_never_updated({ name: a.account_name });
+            });
+
+            toast.info(title, {
+                description: lines.join('\n'),
+                duration: 10000,
+                action: {
+                    label: m.reminder_action(),
+                    onClick: () => { checkinDialogOpen = true; },
+                },
+            });
+        }).catch(() => {
+            // Reminder is non-critical; silently ignore errors
+        });
     });
 
     const navItems = $derived([
@@ -51,6 +93,7 @@
 </script>
 
 <ModeWatcher />
+<Toaster />
 <Sidebar.Provider>
     <Sidebar.Sidebar>
         <Sidebar.SidebarHeader>
@@ -104,3 +147,13 @@
         </main>
     </Sidebar.SidebarInset>
 </Sidebar.Provider>
+
+<BalanceCheckinDialog
+    open={checkinDialogOpen}
+    accounts={checkinAccounts}
+    onOpenChange={(open) => { checkinDialogOpen = open; }}
+    onSuccess={() => {
+        sessionStorage.removeItem('balance_checkin_reminded');
+        toast.success(m.checkin_success());
+    }}
+/>

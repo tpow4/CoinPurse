@@ -84,11 +84,13 @@ class DuplicateDetector:
 
         stmt = select(Transaction).where(
             Transaction.account_id == account_id,
-            Transaction.is_active == True,  # noqa: E712
+            Transaction.is_active.is_(True),
         )
         transactions = list(self.db.scalars(stmt))
 
-        self._hash_cache = {TransactionHash.from_transaction(txn) for txn in transactions}
+        self._hash_cache = {
+            TransactionHash.from_transaction(txn) for txn in transactions
+        }
         self._cached_account_id = account_id
 
         return self._hash_cache

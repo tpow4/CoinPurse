@@ -16,6 +16,36 @@
     "general_currency_label": "Currency",
     "general_currency_description": "Choose the default currency for displaying amounts.",
     "general_saved": "Settings saved",
+    "general_frequency_label": "Balance Reminder Frequency",
+    "general_frequency_description": "How often should you be reminded to update account balances?",
+    "general_frequency_weekly": "Weekly",
+    "general_frequency_biweekly": "Biweekly",
+    "general_frequency_monthly": "Monthly",
+    "general_frequency_quarterly": "Quarterly",
+    "reminder_title": [{
+        "declarations": ["input count", "local countPlural = count: plural"],
+        "selectors": ["countPlural"],
+        "match": {
+            "countPlural=one": "{count} account needs a balance update",
+            "countPlural=*": "{count} accounts need a balance update"
+        }
+    }],
+    "reminder_account_last_updated": "{name} — last updated {date}",
+    "reminder_account_never_updated": "{name} — never updated",
+    "reminder_action": "Update now",
+    "checkin_dialog_title": "Balance Check-In",
+    "checkin_dialog_description": "Enter current balances for your accounts.",
+    "checkin_btn_save_count": [{
+        "declarations": ["input count", "local countPlural = count: plural"],
+        "selectors": ["countPlural"],
+        "match": {
+            "countPlural=one": "Save {count} balance",
+            "countPlural=*": "Save {count} balances"
+        }
+    }],
+    "checkin_btn": "Check-In",
+    "checkin_success": "Balances updated successfully",
+    "checkin_error": "Failed to save some balances",
     "account_type_banking": "Banking",
     "account_type_treasury": "Treasury",
     "account_type_credit_card": "Credit Card",

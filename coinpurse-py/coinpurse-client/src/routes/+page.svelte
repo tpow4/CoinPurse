@@ -4,6 +4,7 @@
         Account,
         AccountBalance,
         AccountCreate,
+        AccountDueForCheckin,
         Institution,
         BalanceCreate,
         BalanceBatchCreate,
@@ -12,13 +13,17 @@
     import { AccountType } from '$lib/types';
 
     import { Button } from '$lib/components/ui/button';
+    import { Badge } from '$lib/components/ui/badge';
     import AddEditAccountDialog from '../pages/accounts/add-edit-account-dialog.svelte';
     import AddEditInstitutionDialog from '../pages/institutions/add-edit-institution-dialog.svelte';
     import AccountBalanceCard from '../pages/dashboard/account-balance-card.svelte';
     import StackedBalanceChart from '../pages/dashboard/stacked-balance-chart.svelte';
+    import BalanceCheckinDialog from '$lib/components/balance-checkin-dialog.svelte';
     import { accountsApi } from '$lib/api/accounts';
     import { institutionsApi } from '$lib/api/institutions';
     import { balancesApi } from '$lib/api/balances';
+    import { settingsApi } from '$lib/api/settings';
+    import { toast } from 'svelte-sonner';
     import * as m from '$lib/paraglide/messages';
 
     type AccountWithInstitutionName = Account & { institution_name?: string };
@@ -26,12 +31,14 @@
     let accounts = $state<Account[]>([]);
     let institutions = $state<Institution[]>([]);
     let balances = $state<AccountBalance[]>([]);
+    let dueAccounts = $state<AccountDueForCheckin[]>([]);
 
     let loading = $state(false);
     let error = $state('');
 
     let showAddAccount = $state(false);
     let showAddInstitution = $state(false);
+    let checkinDialogOpen = $state(false);
 
     let accountFormLoading = $state(false);
     let accountFormError = $state('');
@@ -98,6 +105,18 @@
             )
     );
 
+    const allCheckinAccounts = $derived<AccountDueForCheckin[]>(
+        accountsWithInstitutionName
+            .filter((a) => a.tracks_balances)
+            .map((a) => ({
+                account_id: a.account_id,
+                account_name: a.account_name,
+                institution_name: a.institution_name ?? 'Unknown',
+                last_balance_date: latestBalanceByAccountId[a.account_id]?.balance_date ?? null,
+                days_since_last: null,
+            }))
+    );
+
     const accountById = $derived(
         accounts.reduce(
             (map, account) => {
@@ -160,15 +179,17 @@
         loading = true;
         error = '';
         try {
-            const [accountsData, institutionsData, balancesData] =
+            const [accountsData, institutionsData, balancesData, dueAccountsData] =
                 await Promise.all([
                     accountsApi.getAll(false),
                     institutionsApi.getAll(false),
                     balancesApi.getAll(),
+                    settingsApi.getAccountsDueForCheckin().catch(() => []),
                 ]);
             accounts = accountsData;
             institutions = institutionsData;
             balances = balancesData;
+            dueAccounts = dueAccountsData;
         } catch (e) {
             if (e instanceof ApiException) {
                 error = e.detail;
@@ -384,6 +405,12 @@
             <Button variant="outline" onclick={openAddInstitution}
                 >{m.inst_btn_add()}</Button
             >
+            <Button variant="outline" onclick={() => { checkinDialogOpen = true; }}>
+                {m.checkin_btn()}
+                {#if dueAccounts.length > 0}
+                    <Badge variant="destructive">{dueAccounts.length}</Badge>
+                {/if}
+            </Button>
             <Button onclick={openAddAccount}>{m.acct_btn_add()}</Button>
         </div>
     </div>
@@ -456,4 +483,15 @@
         if (!open) showAddInstitution = false;
     }}
     onSubmit={handleCreateInstitution}
+/>
+
+<BalanceCheckinDialog
+    open={checkinDialogOpen}
+    accounts={dueAccounts.length > 0 ? dueAccounts : allCheckinAccounts}
+    onOpenChange={(open) => { checkinDialogOpen = open; }}
+    onSuccess={() => {
+        loadDashboardData();
+        sessionStorage.removeItem('balance_checkin_reminded');
+        toast.success(m.checkin_success());
+    }}
 />
