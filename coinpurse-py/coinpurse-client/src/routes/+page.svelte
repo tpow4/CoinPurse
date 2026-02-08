@@ -25,6 +25,7 @@
     import { settingsApi } from '$lib/api/settings';
     import { toast } from 'svelte-sonner';
     import * as m from '$lib/paraglide/messages';
+    import { Plus } from '@lucide/svelte';
 
     type AccountWithInstitutionName = Account & { institution_name?: string };
 
@@ -112,7 +113,9 @@
                 account_id: a.account_id,
                 account_name: a.account_name,
                 institution_name: a.institution_name ?? 'Unknown',
-                last_balance_date: latestBalanceByAccountId[a.account_id]?.balance_date ?? null,
+                last_balance_date:
+                    latestBalanceByAccountId[a.account_id]?.balance_date ??
+                    null,
                 days_since_last: null,
             }))
     );
@@ -179,13 +182,17 @@
         loading = true;
         error = '';
         try {
-            const [accountsData, institutionsData, balancesData, dueAccountsData] =
-                await Promise.all([
-                    accountsApi.getAll(false),
-                    institutionsApi.getAll(false),
-                    balancesApi.getAll(),
-                    settingsApi.getAccountsDueForCheckin().catch(() => []),
-                ]);
+            const [
+                accountsData,
+                institutionsData,
+                balancesData,
+                dueAccountsData,
+            ] = await Promise.all([
+                accountsApi.getAll(false),
+                institutionsApi.getAll(false),
+                balancesApi.getAll(),
+                settingsApi.getAccountsDueForCheckin().catch(() => []),
+            ]);
             accounts = accountsData;
             institutions = institutionsData;
             balances = balancesData;
@@ -279,7 +286,8 @@
         }
 
         if (!data.institution_id || data.institution_id === 0) {
-            accountFieldErrors.institution_id = m.acct_validation_institution_required();
+            accountFieldErrors.institution_id =
+                m.acct_validation_institution_required();
             isValid = false;
         }
 
@@ -294,7 +302,8 @@
         }
 
         if (data.last_4_digits && data.last_4_digits.length > 4) {
-            accountFieldErrors.last_4_digits = m.acct_validation_last4_too_long();
+            accountFieldErrors.last_4_digits =
+                m.acct_validation_last4_too_long();
             isValid = false;
         }
 
@@ -402,16 +411,23 @@
             </p>
         </div>
         <div class="flex gap-2">
-            <Button variant="outline" onclick={openAddInstitution}
-                >{m.inst_btn_add()}</Button
+            <Button variant="outline" onclick={openAddInstitution}>
+                {m.inst_btn_add()}
+            </Button>
+            <Button variant="outline" onclick={openAddAccount}>
+                <Plus class="size-4" />
+                {m.acct_btn_add()}
+            </Button>
+            <Button
+                onclick={() => {
+                    checkinDialogOpen = true;
+                }}
             >
-            <Button variant="outline" onclick={() => { checkinDialogOpen = true; }}>
                 {m.checkin_btn()}
                 {#if dueAccounts.length > 0}
                     <Badge variant="destructive">{dueAccounts.length}</Badge>
                 {/if}
             </Button>
-            <Button onclick={openAddAccount}>{m.acct_btn_add()}</Button>
         </div>
     </div>
 
@@ -435,7 +451,9 @@
     {/if}
 
     {#if loading}
-        <div class="text-center py-12 text-gray-600">{m.dashboard_loading()}</div>
+        <div class="text-center py-12 text-gray-600">
+            {m.dashboard_loading()}
+        </div>
     {:else if accountsWithInstitutionName.length === 0}
         <div class="text-center py-12 text-muted-foreground">
             {m.dashboard_empty()}
@@ -488,7 +506,9 @@
 <BalanceCheckinDialog
     open={checkinDialogOpen}
     accounts={dueAccounts.length > 0 ? dueAccounts : allCheckinAccounts}
-    onOpenChange={(open) => { checkinDialogOpen = open; }}
+    onOpenChange={(open) => {
+        checkinDialogOpen = open;
+    }}
     onSuccess={() => {
         loadDashboardData();
         sessionStorage.removeItem('balance_checkin_reminded');

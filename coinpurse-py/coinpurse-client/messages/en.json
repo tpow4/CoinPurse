@@ -2,15 +2,15 @@
     "$schema": "https://inlang.com/schema/inlang-message-format",
     "locale_name": "English",
     "nav_home": "Home",
-    "nav_categories": "Categories",
     "nav_transactions": "Transactions",
     "nav_import": "Import",
-    "nav_admin": "Admin",
-    "admin_title": "Admin",
-    "admin_description": "Manage institutions and accounts",
-    "admin_tab_general": "General",
-    "admin_tab_institutions": "Institutions",
-    "admin_tab_accounts": "Accounts",
+    "nav_settings": "Settings",
+    "settings_title": "Settings",
+    "settings_description": "Manage your application preferences, institutions, accounts, and categories",
+    "settings_tab_general": "General",
+    "settings_tab_institutions": "Institutions",
+    "settings_tab_accounts": "Accounts",
+    "settings_tab_categories": "Categories",
     "general_locale_label": "Language",
     "general_locale_description": "Choose the display language for the application.",
     "general_currency_label": "Currency",
@@ -22,27 +22,37 @@
     "general_frequency_biweekly": "Biweekly",
     "general_frequency_monthly": "Monthly",
     "general_frequency_quarterly": "Quarterly",
-    "reminder_title": [{
-        "declarations": ["input count", "local countPlural = count: plural"],
-        "selectors": ["countPlural"],
-        "match": {
-            "countPlural=one": "{count} account needs a balance update",
-            "countPlural=*": "{count} accounts need a balance update"
+    "reminder_title": [
+        {
+            "declarations": [
+                "input count",
+                "local countPlural = count: plural"
+            ],
+            "selectors": ["countPlural"],
+            "match": {
+                "countPlural=one": "{count} account needs a balance update",
+                "countPlural=*": "{count} accounts need a balance update"
+            }
         }
-    }],
+    ],
     "reminder_account_last_updated": "{name} — last updated {date}",
     "reminder_account_never_updated": "{name} — never updated",
     "reminder_action": "Update now",
     "checkin_dialog_title": "Balance Check-In",
     "checkin_dialog_description": "Enter current balances for your accounts.",
-    "checkin_btn_save_count": [{
-        "declarations": ["input count", "local countPlural = count: plural"],
-        "selectors": ["countPlural"],
-        "match": {
-            "countPlural=one": "Save {count} balance",
-            "countPlural=*": "Save {count} balances"
+    "checkin_btn_save_count": [
+        {
+            "declarations": [
+                "input count",
+                "local countPlural = count: plural"
+            ],
+            "selectors": ["countPlural"],
+            "match": {
+                "countPlural=one": "Save {count} balance",
+                "countPlural=*": "Save {count} balances"
+            }
         }
-    }],
+    ],
     "checkin_btn": "Check-In",
     "checkin_success": "Balances updated successfully",
     "checkin_error": "Failed to save some balances",
@@ -75,14 +85,19 @@
     "balance_btn_cancel": "Cancel",
     "balance_btn_saving": "Saving...",
     "balance_btn_save": "Save",
-    "balance_btn_save_count": [{
-        "declarations": ["input count", "local countPlural = count: plural"],
-        "selectors": ["countPlural"],
-        "match": {
-            "countPlural=one": "Save {count} entry",
-            "countPlural=*": "Save {count} entries"
+    "balance_btn_save_count": [
+        {
+            "declarations": [
+                "input count",
+                "local countPlural = count: plural"
+            ],
+            "selectors": ["countPlural"],
+            "match": {
+                "countPlural=one": "Save {count} entry",
+                "countPlural=*": "Save {count} entries"
+            }
         }
-    }],
+    ],
     "balance_error_add": "Failed to add balance",
     "balance_error_add_batch": "Failed to add balances",
     "portfolio_net_worth": "Net worth",
@@ -129,7 +144,7 @@
     "inst_action_delete_label": "Delete Institution",
 
     "acct_title": "Accounts",
-    "acct_btn_add": "+ Add Account",
+    "acct_btn_add": "Add Account",
     "acct_search_placeholder": "Search accounts...",
     "acct_include_inactive": "Include inactive",
     "acct_loading": "Loading accounts...",
@@ -214,8 +229,6 @@
     "txn_col_type": "Type",
     "txn_col_amount": "Amount",
 
-    "cat_title": "Categories",
-    "cat_description": "Manage categories and bank category mappings",
     "cat_tab_categories": "Categories",
     "cat_tab_mappings": "Category Mappings",
     "cat_heading": "Categories",

@@ -1,15 +1,20 @@
 <script lang="ts">
     import '../app.css';
     import * as Sidebar from '$lib/components/ui/sidebar';
+    import * as Collapsible from '$lib/components/ui/collapsible';
     import {
         House,
-        Tag,
         ArrowLeftRight,
         Upload,
         Settings,
+        ChevronRight,
         SunIcon,
         MoonIcon,
         Wallet,
+        Landmark,
+        User,
+        SlidersHorizontal,
+        Tag,
     } from '@lucide/svelte';
     import { page } from '$app/state';
     import { Button } from '$lib/components/ui/button';
@@ -39,57 +44,90 @@
         if (typeof window === 'undefined') return;
         if (sessionStorage.getItem('balance_checkin_reminded')) return;
 
-        settingsApi.getAccountsDueForCheckin().then((accounts: AccountDueForCheckin[]) => {
-            if (accounts.length === 0) return;
+        settingsApi
+            .getAccountsDueForCheckin()
+            .then((accounts: AccountDueForCheckin[]) => {
+                if (accounts.length === 0) return;
 
-            checkinAccounts = accounts;
-            sessionStorage.setItem('balance_checkin_reminded', '1');
+                checkinAccounts = accounts;
+                sessionStorage.setItem('balance_checkin_reminded', '1');
 
-            const title = m.reminder_title({ count: accounts.length });
-            const lines = accounts.map((a) => {
-                if (a.last_balance_date) {
-                    return m.reminder_account_last_updated({
+                const title = m.reminder_title({ count: accounts.length });
+                const lines = accounts.map((a) => {
+                    if (a.last_balance_date) {
+                        return m.reminder_account_last_updated({
+                            name: a.account_name,
+                            date: a.last_balance_date,
+                        });
+                    }
+                    return m.reminder_account_never_updated({
                         name: a.account_name,
-                        date: a.last_balance_date,
                     });
-                }
-                return m.reminder_account_never_updated({ name: a.account_name });
-            });
+                });
 
-            toast.info(title, {
-                description: lines.join('\n'),
-                duration: 10000,
-                action: {
-                    label: m.reminder_action(),
-                    onClick: () => { checkinDialogOpen = true; },
-                },
+                toast.info(title, {
+                    description: lines.join('\n'),
+                    duration: 10000,
+                    action: {
+                        label: m.reminder_action(),
+                        onClick: () => {
+                            checkinDialogOpen = true;
+                        },
+                    },
+                });
+            })
+            .catch(() => {
+                // Reminder is non-critical; silently ignore errors
             });
-        }).catch(() => {
-            // Reminder is non-critical; silently ignore errors
-        });
     });
 
     const navItems = $derived([
         { href: localizeHref('/'), label: m.nav_home(), icon: House },
-        {
-            href: localizeHref('/categories'),
-            label: m.nav_categories(),
-            icon: Tag,
-        },
         {
             href: localizeHref('/transactions'),
             label: m.nav_transactions(),
             icon: ArrowLeftRight,
         },
         { href: localizeHref('/import'), label: m.nav_import(), icon: Upload },
-        { href: localizeHref('/admin'), label: m.nav_admin(), icon: Settings },
+    ]);
+
+    const settingsSubItems = $derived([
+        {
+            href: localizeHref('/settings/general'),
+            label: m.settings_tab_general(),
+            icon: SlidersHorizontal,
+        },
+        {
+            href: localizeHref('/settings/institutions'),
+            label: m.settings_tab_institutions(),
+            icon: Landmark,
+        },
+        {
+            href: localizeHref('/settings/accounts'),
+            label: m.settings_tab_accounts(),
+            icon: User,
+        },
+        {
+            href: localizeHref('/settings/categories'),
+            label: m.settings_tab_categories(),
+            icon: Tag,
+        },
     ]);
 
     const isActive = (href: string) => {
         const currentPath = deLocalizeHref(page.url.pathname);
         const itemPath = deLocalizeHref(href);
+        if (itemPath === '/') return currentPath === '/';
+        return currentPath.startsWith(itemPath);
+    };
+
+    const isExactActive = (href: string) => {
+        const currentPath = deLocalizeHref(page.url.pathname);
+        const itemPath = deLocalizeHref(href);
         return currentPath === itemPath;
     };
+
+    const settingsOpen = $derived(isActive(localizeHref('/settings')));
 </script>
 
 <ModeWatcher />
@@ -136,6 +174,55 @@
                             </Sidebar.SidebarMenuButton>
                         </Sidebar.SidebarMenuItem>
                     {/each}
+
+                    <Collapsible.Root
+                        open={settingsOpen}
+                        class="group/collapsible"
+                    >
+                        <Sidebar.SidebarMenuItem>
+                            <Collapsible.Trigger>
+                                {#snippet child({ props })}
+                                    <Sidebar.SidebarMenuButton
+                                        {...props}
+                                        isActive={settingsOpen}
+                                        tooltipContent={m.nav_settings()}
+                                    >
+                                        <Settings />
+                                        <span>{m.nav_settings()}</span>
+                                        <ChevronRight
+                                            class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+                                        />
+                                    </Sidebar.SidebarMenuButton>
+                                {/snippet}
+                            </Collapsible.Trigger>
+                            <Collapsible.Content>
+                                <Sidebar.SidebarMenuSub>
+                                    {#each settingsSubItems as subItem}
+                                        <Sidebar.SidebarMenuSubItem>
+                                            <Sidebar.SidebarMenuSubButton
+                                                isActive={isExactActive(
+                                                    subItem.href
+                                                )}
+                                            >
+                                                {#snippet child({ props })}
+                                                    {@const Icon = subItem.icon}
+                                                    <a
+                                                        href={subItem.href}
+                                                        {...props}
+                                                    >
+                                                        <Icon />
+                                                        <span
+                                                            >{subItem.label}</span
+                                                        >
+                                                    </a>
+                                                {/snippet}
+                                            </Sidebar.SidebarMenuSubButton>
+                                        </Sidebar.SidebarMenuSubItem>
+                                    {/each}
+                                </Sidebar.SidebarMenuSub>
+                            </Collapsible.Content>
+                        </Sidebar.SidebarMenuItem>
+                    </Collapsible.Root>
                 </Sidebar.SidebarMenu>
             </div>
         </Sidebar.SidebarContent>
@@ -151,7 +238,9 @@
 <BalanceCheckinDialog
     open={checkinDialogOpen}
     accounts={checkinAccounts}
-    onOpenChange={(open) => { checkinDialogOpen = open; }}
+    onOpenChange={(open) => {
+        checkinDialogOpen = open;
+    }}
     onSuccess={() => {
         sessionStorage.removeItem('balance_checkin_reminded');
         toast.success(m.checkin_success());
