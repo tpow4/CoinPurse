@@ -43,6 +43,7 @@
             "countPlural=*": "{count} Salden speichern"
         }
     }],
+    "checkin_btn": "Salden eintragen",
     "checkin_success": "Salden erfolgreich aktualisiert",
     "checkin_error": "Einige Salden konnten nicht gespeichert werden",
     "account_type_banking": "Bankwesen",

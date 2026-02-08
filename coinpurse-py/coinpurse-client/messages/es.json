@@ -43,6 +43,7 @@
             "countPlural=*": "Guardar {count} saldos"
         }
     }],
+    "checkin_btn": "Registrar saldos",
     "checkin_success": "Saldos actualizados correctamente",
     "checkin_error": "Error al guardar algunos saldos",
     "account_type_banking": "Banca",

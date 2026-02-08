@@ -43,6 +43,7 @@
             "countPlural=*": "Save {count} balances"
         }
     }],
+    "checkin_btn": "Check-In",
     "checkin_success": "Balances updated successfully",
     "checkin_error": "Failed to save some balances",
     "account_type_banking": "Banking",
