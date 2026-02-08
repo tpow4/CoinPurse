@@ -2,15 +2,15 @@
     "$schema": "https://inlang.com/schema/inlang-message-format",
     "locale_name": "Deutsch",
     "nav_home": "Startseite",
-    "nav_categories": "Kategorien",
     "nav_transactions": "Transaktionen",
     "nav_import": "Importieren",
-    "nav_admin": "Verwaltung",
-    "admin_title": "Verwaltung",
-    "admin_description": "Institutionen und Konten verwalten",
-    "admin_tab_general": "Allgemein",
-    "admin_tab_institutions": "Institutionen",
-    "admin_tab_accounts": "Konten",
+    "nav_settings": "Einstellungen",
+    "settings_title": "Einstellungen",
+    "settings_description": "Verwalte deine Anwendungseinstellungen, Institutionen, Konten und Kategorien",
+    "settings_tab_general": "Allgemein",
+    "settings_tab_institutions": "Institutionen",
+    "settings_tab_accounts": "Konten",
+    "settings_tab_categories": "Kategorien",
     "general_locale_label": "Sprache",
     "general_locale_description": "Wähle die Anzeigesprache der Anwendung.",
     "general_currency_label": "Währung",
@@ -22,27 +22,37 @@
     "general_frequency_biweekly": "Zweiwöchentlich",
     "general_frequency_monthly": "Monatlich",
     "general_frequency_quarterly": "Vierteljährlich",
-    "reminder_title": [{
-        "declarations": ["input count", "local countPlural = count: plural"],
-        "selectors": ["countPlural"],
-        "match": {
-            "countPlural=one": "{count} Konto benötigt eine Saldoaktualisierung",
-            "countPlural=*": "{count} Konten benötigen eine Saldoaktualisierung"
+    "reminder_title": [
+        {
+            "declarations": [
+                "input count",
+                "local countPlural = count: plural"
+            ],
+            "selectors": ["countPlural"],
+            "match": {
+                "countPlural=one": "{count} Konto benötigt eine Saldoaktualisierung",
+                "countPlural=*": "{count} Konten benötigen eine Saldoaktualisierung"
+            }
         }
-    }],
+    ],
     "reminder_account_last_updated": "{name} — zuletzt aktualisiert {date}",
     "reminder_account_never_updated": "{name} — nie aktualisiert",
     "reminder_action": "Jetzt aktualisieren",
     "checkin_dialog_title": "Salden-Check-in",
     "checkin_dialog_description": "Gib die aktuellen Salden deiner Konten ein.",
-    "checkin_btn_save_count": [{
-        "declarations": ["input count", "local countPlural = count: plural"],
-        "selectors": ["countPlural"],
-        "match": {
-            "countPlural=one": "{count} Saldo speichern",
-            "countPlural=*": "{count} Salden speichern"
+    "checkin_btn_save_count": [
+        {
+            "declarations": [
+                "input count",
+                "local countPlural = count: plural"
+            ],
+            "selectors": ["countPlural"],
+            "match": {
+                "countPlural=one": "{count} Saldo speichern",
+                "countPlural=*": "{count} Salden speichern"
+            }
         }
-    }],
+    ],
     "checkin_btn": "Salden eintragen",
     "checkin_success": "Salden erfolgreich aktualisiert",
     "checkin_error": "Einige Salden konnten nicht gespeichert werden",
@@ -75,14 +85,19 @@
     "balance_btn_cancel": "Abbrechen",
     "balance_btn_saving": "Speichern...",
     "balance_btn_save": "Speichern",
-    "balance_btn_save_count": [{
-        "declarations": ["input count", "local countPlural = count: plural"],
-        "selectors": ["countPlural"],
-        "match": {
-            "countPlural=one": "Speichern {count} Eintrag",
-            "countPlural=*": "Speichern {count} Einträge"
+    "balance_btn_save_count": [
+        {
+            "declarations": [
+                "input count",
+                "local countPlural = count: plural"
+            ],
+            "selectors": ["countPlural"],
+            "match": {
+                "countPlural=one": "Speichern {count} Eintrag",
+                "countPlural=*": "Speichern {count} Einträge"
+            }
         }
-    }],
+    ],
     "balance_error_add": "Fehler beim Hinzufügen des Saldos",
     "balance_error_add_batch": "Fehler beim Hinzufügen der Salden",
     "portfolio_net_worth": "Vermögen",
@@ -129,7 +144,7 @@
     "inst_action_delete_label": "Institution löschen",
 
     "acct_title": "Konten",
-    "acct_btn_add": "+ Konto hinzufügen",
+    "acct_btn_add": "Konto hinzufügen",
     "acct_search_placeholder": "Konten suchen...",
     "acct_include_inactive": "Inaktive einblenden",
     "acct_loading": "Konten werden geladen...",
@@ -214,8 +229,6 @@
     "txn_col_type": "Typ",
     "txn_col_amount": "Betrag",
 
-    "cat_title": "Kategorien",
-    "cat_description": "Kategorien und Bankkategorie-Zuordnungen verwalten",
     "cat_tab_categories": "Kategorien",
     "cat_tab_mappings": "Kategorie-Zuordnungen",
     "cat_heading": "Kategorien",
