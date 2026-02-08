@@ -50,6 +50,11 @@
         e.preventDefault();
         submitError = '';
 
+        if (!balanceDate) {
+            submitError = m.balance_validation_date_required();
+            return;
+        }
+
         // Validate each filled input
         const newErrors: Record<number, string> = {};
         const entries: {

@@ -2,7 +2,7 @@
 Router for application settings and balance check-in reminders
 """
 
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -12,7 +12,11 @@ from database import get_db
 from models.account import Account
 from repositories.app_setting_repository import AppSettingRepository
 from repositories.balance_repository import BalanceRepository
-from schemas.app_setting import AccountDueForCheckin, AppSettingResponse, AppSettingUpdate
+from schemas.app_setting import (
+    AccountDueForCheckin,
+    AppSettingResponse,
+    AppSettingUpdate,
+)
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
@@ -40,8 +44,8 @@ def get_accounts_due_for_checkin(db: Session = Depends(get_db)):
     accounts_query = (
         select(Account)
         .options(joinedload(Account.institution))
-        .where(Account.tracks_balances == True)
-        .where(Account.active == True)
+        .where(Account.tracks_balances)
+        .where(Account.active)
     )
     accounts = list(db.scalars(accounts_query))
 
@@ -50,7 +54,9 @@ def get_accounts_due_for_checkin(db: Session = Depends(get_db)):
 
     for account in accounts:
         latest_balance = balance_repo.get_latest_by_account(account.account_id)
-        institution_name = account.institution.name if account.institution else "Unknown"
+        institution_name = (
+            account.institution.name if account.institution else "Unknown"
+        )
 
         if latest_balance is None:
             # Never had a balance entered
@@ -88,7 +94,9 @@ def get_setting(setting_key: str, db: Session = Depends(get_db)):
     repo = AppSettingRepository(db)
     setting = repo.get_by_key(setting_key)
     if not setting:
-        raise HTTPException(status_code=404, detail=f"Setting '{setting_key}' not found")
+        raise HTTPException(
+            status_code=404, detail=f"Setting '{setting_key}' not found"
+        )
     return setting
 
 

@@ -20,22 +20,27 @@
     ];
 
     function localeLabel(locale: Locale): string {
-        return m.locale_name({}, { locale })
+        return m.locale_name({}, { locale });
     }
 
     let currentLocale: Locale = $state(getLocale());
     let currentCurrency = $state(getCurrency());
     let currentFrequency = $state('7');
-    let savedMessage = $state('');
-    let savedTimeout: ReturnType<typeof setTimeout> | undefined;
+    let currencySaved = $state('');
+    let currencyTimeout: ReturnType<typeof setTimeout> | undefined;
+    let frequencySaved = $state('');
+    let frequencyTimeout: ReturnType<typeof setTimeout> | undefined;
 
     // Load current frequency setting on mount
     $effect(() => {
-        settingsApi.getByKey('balance_checkin_frequency_days').then((setting) => {
-            currentFrequency = setting.setting_value;
-        }).catch(() => {
-            // Use default if setting doesn't exist yet
-        });
+        settingsApi
+            .getByKey('balance_checkin_frequency_days')
+            .then((setting) => {
+                currentFrequency = setting.setting_value;
+            })
+            .catch(() => {
+                // Use default if setting doesn't exist yet
+            });
     });
 
     function handleLocaleChange(value: string | undefined) {
@@ -49,27 +54,38 @@
         if (!value || value === currentCurrency) return;
         currentCurrency = value;
         setCurrency(value);
-        showSaved();
+        showCurrencySaved();
     }
 
     function handleFrequencyChange(value: string | undefined) {
         if (!value || value === currentFrequency) return;
+        const previousFrequency = currentFrequency;
         currentFrequency = value;
-        settingsApi.upsert('balance_checkin_frequency_days', { setting_value: value }).then(() => {
-            showSaved();
-        });
+        settingsApi
+            .upsert('balance_checkin_frequency_days', { setting_value: value })
+            .then(() => {
+                showFrequencySaved();
+            })
+            .catch(() => {
+                currentFrequency = previousFrequency;
+            });
     }
 
-    function showSaved() {
-        savedMessage = m.general_saved();
-        if (savedTimeout) clearTimeout(savedTimeout);
-        savedTimeout = setTimeout(() => {
-            savedMessage = '';
-        }, 2000);
+    function showCurrencySaved() {
+        currencySaved = m.general_saved();
+        if (currencyTimeout) clearTimeout(currencyTimeout);
+        currencyTimeout = setTimeout(() => { currencySaved = ''; }, 2000);
+    }
+
+    function showFrequencySaved() {
+        frequencySaved = m.general_saved();
+        if (frequencyTimeout) clearTimeout(frequencyTimeout);
+        frequencyTimeout = setTimeout(() => { frequencySaved = ''; }, 2000);
     }
 
     onDestroy(() => {
-        if (savedTimeout) clearTimeout(savedTimeout);
+        if (currencyTimeout) clearTimeout(currencyTimeout);
+        if (frequencyTimeout) clearTimeout(frequencyTimeout);
     });
 </script>
 
@@ -129,10 +145,10 @@
                         {/each}
                     </Select.Content>
                 </Select.Root>
-                {#if savedMessage}
+                {#if currencySaved}
                     <span
                         class="text-sm text-muted-foreground animate-in fade-in"
-                        >{savedMessage}</span
+                        >{currencySaved}</span
                     >
                 {/if}
             </div>
@@ -167,10 +183,10 @@
                         {/each}
                     </Select.Content>
                 </Select.Root>
-                {#if savedMessage}
+                {#if frequencySaved}
                     <span
                         class="text-sm text-muted-foreground animate-in fade-in"
-                        >{savedMessage}</span
+                        >{frequencySaved}</span
                     >
                 {/if}
             </div>

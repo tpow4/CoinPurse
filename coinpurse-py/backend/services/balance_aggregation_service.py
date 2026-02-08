@@ -136,10 +136,10 @@ def get_aggregated_monthly_data(
     accounts_query = (
         select(Account)
         .options(joinedload(Account.institution))
-        .where(Account.tracks_balances == True)
+        .where(Account.tracks_balances)
     )
     if not include_inactive_accounts:
-        accounts_query = accounts_query.where(Account.active == True)
+        accounts_query = accounts_query.where(Account.active)
     accounts = list(db.scalars(accounts_query))
 
     if not accounts:

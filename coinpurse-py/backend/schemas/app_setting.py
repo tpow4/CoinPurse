@@ -7,6 +7,13 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class AppSettingCreate(BaseModel):
+    """Schema for creating a setting"""
+
+    setting_key: str = Field(..., min_length=1, max_length=100)
+    setting_value: str = Field(..., min_length=1, max_length=500)
+
+
 class AppSettingUpdate(BaseModel):
     """Schema for updating a setting value"""
 

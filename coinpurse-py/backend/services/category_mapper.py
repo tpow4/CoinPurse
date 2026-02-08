@@ -31,7 +31,7 @@ class CategoryMapper:
 
         stmt = select(Category).where(
             Category.name == "Uncategorized",
-            Category.is_active == True,  # noqa: E712
+            Category.is_active.is_(True),
         )
         category = self.db.scalar(stmt)
 
@@ -63,7 +63,7 @@ class CategoryMapper:
             select(CategoryMapping)
             .where(
                 CategoryMapping.institution_id == institution_id,
-                CategoryMapping.is_active == True,  # noqa: E712
+                CategoryMapping.is_active.is_(True),
             )
             .order_by(CategoryMapping.priority.desc())
         )
