@@ -8,6 +8,8 @@
 	import TransactionsBreakdownCharts, {
 		type BreakdownDatum,
 	} from '../../pages/transactions/transactions-breakdown-charts.svelte';
+	import TransactionsCashFlowChart from '../../pages/transactions/transactions-cash-flow-chart.svelte';
+	import TransactionsCashFlowRatioChart from '../../pages/transactions/transactions-cash-flow-ratio-chart.svelte';
 	import TransactionsFilters, {
 		type DatePreset,
 		type TransactionFilter,
@@ -70,13 +72,15 @@
 		return value.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/^-|-$/g, '');
 	}
 
-	function buildDebitBreakdown(
+	function buildAmountBreakdown(
 		items: TransactionWithNames[],
-		getLabel: (tx: TransactionWithNames) => string
+		getLabel: (tx: TransactionWithNames) => string,
+		type: 'credits' | 'debits'
 	): BreakdownDatum[] {
 		const byLabel = new Map<string, number>();
 		for (const tx of items) {
-			if (tx.amount >= 0) continue;
+			if (type === 'credits' && tx.amount <= 0) continue;
+			if (type === 'debits' && tx.amount >= 0) continue;
 			const label = getLabel(tx);
 			byLabel.set(label, (byLabel.get(label) ?? 0) + Math.abs(tx.amount));
 		}
@@ -91,11 +95,14 @@
 			}));
 	}
 
+	const breakdownType = $derived(transactionFilter === 'credits' ? 'credits' : 'debits');
+	const showBreakdownCharts = $derived(transactionFilter !== 'all');
+
 	const accountBreakdownData = $derived(
-		buildDebitBreakdown(filteredTransactions, (tx) => tx.account_name)
+		buildAmountBreakdown(filteredTransactions, (tx) => tx.account_name, breakdownType)
 	);
 	const categoryBreakdownData = $derived(
-		buildDebitBreakdown(filteredTransactions, (tx) => tx.category_name)
+		buildAmountBreakdown(filteredTransactions, (tx) => tx.category_name, breakdownType)
 	);
 
 	// Calculate date range from preset
@@ -324,10 +331,18 @@
 		</div>
 
 		<div class="mb-6">
-			<TransactionsBreakdownCharts
-				accountData={accountBreakdownData}
-				categoryData={categoryBreakdownData}
-			/>
+			{#if showBreakdownCharts}
+				<TransactionsBreakdownCharts
+					accountData={accountBreakdownData}
+					categoryData={categoryBreakdownData}
+					type={breakdownType}
+				/>
+			{:else}
+				<div class="grid gap-4 lg:grid-cols-2">
+					<TransactionsCashFlowChart transactions={filteredTransactions} />
+					<TransactionsCashFlowRatioChart transactions={filteredTransactions} />
+				</div>
+			{/if}
 		</div>
 
 		<TransactionsDataTable

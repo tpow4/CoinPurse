@@ -14,9 +14,10 @@
 	interface Props {
 		accountData: BreakdownDatum[];
 		categoryData: BreakdownDatum[];
+		type: 'credits' | 'debits';
 	}
 
-	let { accountData, categoryData }: Props = $props();
+	let { accountData, categoryData, type }: Props = $props();
 
 	function createChartConfig(data: BreakdownDatum[]): Chart.ChartConfig {
 		return data.reduce((config, item) => {
@@ -39,13 +40,29 @@
 	const categoryMaxValue = $derived(
 		categoryData.reduce((sum, item) => sum + item.value, 0)
 	);
+	const accountTitle = $derived(
+		type === 'credits' ? 'Credits by Account' : m.txn_chart_by_account()
+	);
+	const categoryTitle = $derived(
+		type === 'credits' ? 'Credits by Category' : m.txn_chart_by_category()
+	);
+	const emptyMessage = $derived(
+		type === 'credits'
+			? 'No credit transactions in the current filtered results.'
+			: m.txn_chart_empty()
+	);
+	const hintMessage = $derived(
+		type === 'credits'
+			? 'Donut charts show credit transactions only.'
+			: m.txn_chart_debits_only_hint()
+	);
 </script>
 
 <div class="grid gap-4 lg:grid-cols-2">
 	<Card>
 		<CardHeader class="pb-2">
-			<CardTitle>{m.txn_chart_by_account()}</CardTitle>
-			<p class="text-muted-foreground text-xs">{m.txn_chart_debits_only_hint()}</p>
+			<CardTitle>{accountTitle}</CardTitle>
+			<p class="text-muted-foreground text-xs">{hintMessage}</p>
 		</CardHeader>
 		<CardContent>
 			{#if hasAccountData}
@@ -70,7 +87,7 @@
 				<div
 					class="text-muted-foreground bg-muted/30 border-border/70 flex min-h-70 items-center justify-center rounded-md border border-dashed text-sm"
 				>
-					{m.txn_chart_empty()}
+					{emptyMessage}
 				</div>
 			{/if}
 		</CardContent>
@@ -78,8 +95,8 @@
 
 	<Card>
 		<CardHeader class="pb-2">
-			<CardTitle>{m.txn_chart_by_category()}</CardTitle>
-			<p class="text-muted-foreground text-xs">{m.txn_chart_debits_only_hint()}</p>
+			<CardTitle>{categoryTitle}</CardTitle>
+			<p class="text-muted-foreground text-xs">{hintMessage}</p>
 		</CardHeader>
 		<CardContent>
 			{#if hasCategoryData}
@@ -104,7 +121,7 @@
 				<div
 					class="text-muted-foreground bg-muted/30 border-border/70 flex min-h-70 items-center justify-center rounded-md border border-dashed text-sm"
 				>
-					{m.txn_chart_empty()}
+					{emptyMessage}
 				</div>
 			{/if}
 		</CardContent>
