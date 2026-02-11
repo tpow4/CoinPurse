@@ -106,6 +106,10 @@ def _seed_institutions(db):
 
 def _seed_import_templates(db):
     """Seed the default import templates"""
+
+    def _normalize_date_format(fmt: str) -> str:
+        return str(fmt).strip().strip("\"'")
+
     templates = [
         # Chase Credit Card - bank_standard (signs already correct)
         {
@@ -163,7 +167,7 @@ def _seed_import_templates(db):
                 "credit_column": "Credit",
                 "decimal_places": 2,
             },
-            "date_format": "%y/%m/%d",
+            "date_format": "%Y-%m-%d",
             "header_row": 1,
             "skip_rows": 0,
         },
@@ -179,6 +183,12 @@ def _seed_import_templates(db):
             db.add(template)
             print(f"Seeded '{template_data['template_name']}' template.")
         else:
+            normalized = _normalize_date_format(existing.date_format)
+            if existing.date_format != normalized:
+                existing.date_format = normalized
+                print(
+                    f"Normalized date_format for '{template_data['template_name']}' template."
+                )
             print(f"'{template_data['template_name']}' template already exists.")
 
     db.commit()

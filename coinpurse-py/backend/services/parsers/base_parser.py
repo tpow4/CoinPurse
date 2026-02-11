@@ -52,7 +52,9 @@ class BaseParser(ABC):
         """
         self.column_mappings = column_mappings
         self.amount_config = amount_config
-        self.date_format = date_format
+        # Normalize accidental JSON/string wrapping like "\"%Y-%m-%d\""
+        # so parser behavior remains stable even with slightly malformed template data.
+        self.date_format = str(date_format).strip().strip("\"'")
         self.header_row = header_row
         self.skip_rows = skip_rows
 
