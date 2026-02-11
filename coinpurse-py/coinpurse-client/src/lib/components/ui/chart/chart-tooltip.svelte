@@ -99,7 +99,8 @@
 			{#each tooltipCtx.payload as item, i (item.key + i)}
 				{@const key = `${nameKey || item.key || item.name || "value"}`}
 				{@const itemConfig = getPayloadConfigFromPayload(chart.config, item, key)}
-				{@const indicatorColor = color || item.payload?.color || item.color}
+				{@const indicatorColor =
+					color || item.payload?.color || item.color || itemConfig?.color}
 				<div
 					class={cn(
 						"[&>svg]:text-muted-foreground flex w-full flex-wrap items-stretch gap-2 [&>svg]:size-2.5",

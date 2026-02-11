@@ -4,6 +4,10 @@
 	import { accountsApi } from '$lib/api/accounts';
 	import { categoriesApi } from '$lib/api/categories';
 	import TransactionsDataTable from '../../pages/transactions/transactions-data-table.svelte';
+	import SelectedTransactionsSummary from '../../pages/transactions/selected-transactions-summary.svelte';
+	import TransactionsBreakdownCharts, {
+		type BreakdownDatum,
+	} from '../../pages/transactions/transactions-breakdown-charts.svelte';
 	import TransactionsFilters, {
 		type DatePreset,
 		type TransactionFilter,
@@ -38,9 +42,61 @@
 	// Dynamic amount range bounds
 	let amountRangeMin = $state(0);
 	let amountRangeMax = $state(0);
+	let selectedTransactionIds = $state<Set<number>>(new Set());
 
 	// Columns
 	const columns = createColumns();
+	const chartColors = [
+		'var(--chart-1)',
+		'var(--chart-2)',
+		'var(--chart-3)',
+		'var(--chart-4)',
+		'var(--chart-5)',
+	];
+
+	const selectedTransactions = $derived(
+		filteredTransactions.filter((tx) => selectedTransactionIds.has(tx.transaction_id))
+	);
+
+	const selectedTotalCents = $derived(
+		selectedTransactions.reduce((sum, tx) => sum + tx.amount, 0)
+	);
+	const filteredTotalCents = $derived(
+		filteredTransactions.reduce((sum, tx) => sum + tx.amount, 0)
+	);
+	const hasSelection = $derived(selectedTransactions.length > 0);
+
+	function slugify(value: string): string {
+		return value.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/^-|-$/g, '');
+	}
+
+	function buildDebitBreakdown(
+		items: TransactionWithNames[],
+		getLabel: (tx: TransactionWithNames) => string
+	): BreakdownDatum[] {
+		const byLabel = new Map<string, number>();
+		for (const tx of items) {
+			if (tx.amount >= 0) continue;
+			const label = getLabel(tx);
+			byLabel.set(label, (byLabel.get(label) ?? 0) + Math.abs(tx.amount));
+		}
+
+		return [...byLabel.entries()]
+			.sort((a, b) => b[1] - a[1])
+			.map(([label, cents], index) => ({
+				key: `${slugify(label) || 'group'}-${index}`,
+				label,
+				value: cents / 100,
+				color: chartColors[index % chartColors.length],
+			}));
+	}
+
+	const accountBreakdownData = $derived(
+		buildDebitBreakdown(filteredTransactions, (tx) => tx.account_name)
+	);
+	const categoryBreakdownData = $derived(
+		buildDebitBreakdown(filteredTransactions, (tx) => tx.category_name)
+	);
 
 	// Calculate date range from preset
 	function getDateRange(preset: DatePreset): { start: string; end: string } {
@@ -258,6 +314,26 @@
 	{#if loading}
 		<div class="py-8 text-center text-gray-600">{m.txn_loading()}</div>
 	{:else}
-		<TransactionsDataTable data={filteredTransactions} {columns} />
+		<div class="mb-6">
+			<SelectedTransactionsSummary
+				selectedCount={selectedTransactions.length}
+				filteredCount={filteredTransactions.length}
+				totalCents={hasSelection ? selectedTotalCents : filteredTotalCents}
+				showSelection={hasSelection}
+			/>
+		</div>
+
+		<div class="mb-6">
+			<TransactionsBreakdownCharts
+				accountData={accountBreakdownData}
+				categoryData={categoryBreakdownData}
+			/>
+		</div>
+
+		<TransactionsDataTable
+			data={filteredTransactions}
+			{columns}
+			onSelectionChange={(ids) => (selectedTransactionIds = ids)}
+		/>
 	{/if}
 </div>

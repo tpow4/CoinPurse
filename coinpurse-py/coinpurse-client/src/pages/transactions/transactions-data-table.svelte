@@ -12,9 +12,11 @@
         getFilteredRowModel,
         type SortingState,
         type ColumnFiltersState,
+        type RowSelectionState,
     } from '@tanstack/table-core';
     import * as Table from '$lib/components/ui/table';
     import { Button } from '$lib/components/ui/button';
+    import { Checkbox } from '$lib/components/ui/checkbox';
     import ArrowUpDown from '@lucide/svelte/icons/arrow-up-down';
     import ChevronLeft from '@lucide/svelte/icons/chevron-left';
     import ChevronRight from '@lucide/svelte/icons/chevron-right';
@@ -23,14 +25,16 @@
     interface Props {
         data: TransactionWithNames[];
         columns: ColumnDef<TransactionWithNames>[];
+        onSelectionChange?: (selectedIds: Set<number>) => void;
     }
 
-    let { data, columns }: Props = $props();
+    let { data, columns, onSelectionChange }: Props = $props();
 
     let sorting = $state<SortingState>([
         { id: 'transaction_date', desc: true },
     ]);
     let columnFilters = $state<ColumnFiltersState>([]);
+    let rowSelection = $state<RowSelectionState>({});
 
     const table = createSvelteTable({
         get data() {
@@ -45,6 +49,9 @@
             },
             get columnFilters() {
                 return columnFilters;
+            },
+            get rowSelection() {
+                return rowSelection;
             },
         },
         onSortingChange: (updater) => {
@@ -61,6 +68,15 @@
                 columnFilters = updater;
             }
         },
+        onRowSelectionChange: (updater) => {
+            if (typeof updater === 'function') {
+                rowSelection = updater(rowSelection);
+            } else {
+                rowSelection = updater;
+            }
+        },
+        enableRowSelection: true,
+        getRowId: (row) => String(row.transaction_id),
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
@@ -68,6 +84,32 @@
         initialState: {
             pagination: { pageSize: 50 },
         },
+    });
+
+    const pageRows = $derived(table.getPaginationRowModel().rows);
+    const pageAllSelected = $derived(
+        pageRows.length > 0 && pageRows.every((row) => row.getIsSelected())
+    );
+    const pageSomeSelected = $derived(
+        pageRows.some((row) => row.getIsSelected()) && !pageAllSelected
+    );
+
+    function toggleCurrentPageRows(checked: boolean) {
+        for (const row of pageRows) {
+            row.toggleSelected(checked);
+        }
+    }
+
+    $effect(() => {
+        if (!onSelectionChange) return;
+        rowSelection;
+        const selectedIds = new Set(
+            Object.entries(rowSelection)
+                .filter(([, isSelected]) => isSelected)
+                .map(([id]) => Number(id))
+                .filter((id) => Number.isInteger(id))
+        );
+        onSelectionChange(selectedIds);
     });
 
     // Expose table for parent components to set filters
@@ -82,6 +124,14 @@
             <Table.Header>
                 {#each table.getHeaderGroups() as headerGroup}
                     <Table.Row>
+                        <Table.Head class="w-10">
+                            <Checkbox
+                                checked={pageAllSelected}
+                                indeterminate={pageSomeSelected}
+                                onCheckedChange={(checked) =>
+                                    toggleCurrentPageRows(checked === true)}
+                            />
+                        </Table.Head>
                         {#each headerGroup.headers as header}
                             <Table.Head>
                                 {#if !header.isPlaceholder}
@@ -119,6 +169,13 @@
                             data-state={row.getIsSelected() && 'selected'}
                             class={!row.original.is_active ? 'opacity-60' : ''}
                         >
+                            <Table.Cell class="w-10">
+                                <Checkbox
+                                    checked={row.getIsSelected()}
+                                    onCheckedChange={(checked) =>
+                                        row.toggleSelected(checked === true)}
+                                />
+                            </Table.Cell>
                             {#each row.getVisibleCells() as cell}
                                 <Table.Cell
                                     class={cell.column.id === 'amount'
@@ -138,7 +195,7 @@
                 {:else}
                     <Table.Row>
                         <Table.Cell
-                            colspan={columns.length}
+                            colspan={columns.length + 1}
                             class="h-24 text-center"
                         >
                             {m.txn_table_empty()}
