@@ -28,8 +28,8 @@ importers:
         version: 1.1.0(svelte@5.50.1)
     devDependencies:
       '@inlang/cli':
-        specifier: ^3.0.0
-        version: 3.1.4
+        specifier: ^3.1.6
+        version: 3.1.6
       '@inlang/paraglide-js':
         specifier: ^2.11.0
         version: 2.11.0
@@ -289,8 +289,8 @@ packages:
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
-  '@inlang/cli@3.1.4':
-    resolution: {integrity: sha512-nVW1fzJVoNNX1EdBcfrg7TO7kpzKgo+lxWBwSPBNUrU3Z9Yv4QXeJCpEYJ5spR69L2O7jujMMQkxbYaOVEldZA==}
+  '@inlang/cli@3.1.6':
+    resolution: {integrity: sha512-fJG2E/DB4b31/Z8ie4rdfJaO9zK+aUcE90DNn1YoRxiaZ/nxk7cgYdh9Yd6tcZKQjHxH0V6fF6R+bGDxr/3Enw==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
@@ -300,10 +300,6 @@ packages:
 
   '@inlang/recommend-sherlock@0.2.1':
     resolution: {integrity: sha512-ckv8HvHy/iTqaVAEKrr+gnl+p3XFNwe5D2+6w6wJk2ORV2XkcRkKOJ/XsTUJbPSiyi4PI+p+T3bqbmNx/rDUlg==}
-
-  '@inlang/sdk@2.6.2':
-    resolution: {integrity: sha512-eOgAX+eQpHvD/H4BMILc4tZ85XviTlwr/51RKkKUHozVVthj5avUPKP+4N4vcTUrqSscl2atTh9NbNTuvoBN0A==}
-    engines: {node: '>=18.0.0'}
 
   '@inlang/sdk@2.7.0':
     resolution: {integrity: sha512-yJNBD0o8i29TTJqWX5uDRHxnalDGcsUDctxepzFXsUfkzqGWfiFBxODdxvReqvM2CuKAAOo/kib/F1UcgdYFNQ==}
@@ -1516,9 +1512,9 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@inlang/cli@3.1.4':
+  '@inlang/cli@3.1.6':
     dependencies:
-      '@inlang/sdk': 2.6.2
+      '@inlang/sdk': 2.7.0
       esbuild-wasm: 0.19.12
     transitivePeerDependencies:
       - babel-plugin-macros
@@ -1538,16 +1534,6 @@ snapshots:
   '@inlang/recommend-sherlock@0.2.1':
     dependencies:
       comment-json: 4.5.1
-
-  '@inlang/sdk@2.6.2':
-    dependencies:
-      '@lix-js/sdk': 0.4.7
-      '@sinclair/typebox': 0.31.28
-      kysely: 0.27.6
-      sqlite-wasm-kysely: 0.3.0(kysely@0.27.6)
-      uuid: 13.0.0
-    transitivePeerDependencies:
-      - babel-plugin-macros
 
   '@inlang/sdk@2.7.0':
     dependencies:
