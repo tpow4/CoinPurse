@@ -13,6 +13,7 @@
         type SortingState,
         type ColumnFiltersState,
         type RowSelectionState,
+        type PaginationState,
     } from '@tanstack/table-core';
     import * as Table from '$lib/components/ui/table';
     import { Button } from '$lib/components/ui/button';
@@ -35,6 +36,10 @@
     ]);
     let columnFilters = $state<ColumnFiltersState>([]);
     let rowSelection = $state<RowSelectionState>({});
+    let pagination = $state<PaginationState>({
+        pageIndex: 0,
+        pageSize: 50,
+    });
 
     const table = createSvelteTable({
         get data() {
@@ -52,6 +57,9 @@
             },
             get rowSelection() {
                 return rowSelection;
+            },
+            get pagination() {
+                return pagination;
             },
         },
         onSortingChange: (updater) => {
@@ -75,15 +83,19 @@
                 rowSelection = updater;
             }
         },
+        onPaginationChange: (updater) => {
+            if (typeof updater === 'function') {
+                pagination = updater(pagination);
+            } else {
+                pagination = updater;
+            }
+        },
         enableRowSelection: true,
         getRowId: (row) => String(row.transaction_id),
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
-        initialState: {
-            pagination: { pageSize: 50 },
-        },
     });
 
     const pageRows = $derived(table.getPaginationRowModel().rows);
@@ -163,8 +175,8 @@
                 {/each}
             </Table.Header>
             <Table.Body>
-                {#if table.getRowModel().rows?.length}
-                    {#each table.getRowModel().rows as row}
+                {#if pageRows.length}
+                    {#each pageRows as row}
                         <Table.Row
                             data-state={row.getIsSelected() && 'selected'}
                             class={!row.original.is_active ? 'opacity-60' : ''}
