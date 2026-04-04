@@ -62,14 +62,14 @@
     // Local state for per-row combobox values (string for combobox binding).
     // Initialize eagerly so bind targets are never undefined.
     let rowValues = $state<Record<number, string>>(
+        // svelte-ignore state_referenced_locally
         buildRowValues(transactions, categoryOverrides)
     );
 
     // Count how many have a category selected
     const categorizedCount = $derived(
-        transactions.filter(
-            (t) => (rowValues[t.row_number] ?? '') !== ''
-        ).length
+        transactions.filter((t) => (rowValues[t.row_number] ?? '') !== '')
+            .length
     );
 
     // Propagate changes to parent whenever rowValues changes
@@ -119,7 +119,10 @@
     <Card.Root class="py-4">
         <Card.Content class="px-4 py-0">
             <span class="text-muted-foreground">
-                {m.imp_categorize_count({ categorized: categorizedCount, total: transactions.length })}
+                {m.imp_categorize_count({
+                    categorized: categorizedCount,
+                    total: transactions.length,
+                })}
             </span>
         </Card.Content>
     </Card.Root>
@@ -140,17 +143,19 @@
                         <Table.Head class="w-30 text-right"
                             >{m.imp_col_amount()}</Table.Head
                         >
-                        <Table.Head class="w-30">{m.imp_col_bank_category()}</Table.Head>
-                        <Table.Head class="w-55">{m.imp_col_category()}</Table.Head>
+                        <Table.Head class="w-30"
+                            >{m.imp_col_bank_category()}</Table.Head
+                        >
+                        <Table.Head class="w-55"
+                            >{m.imp_col_category()}</Table.Head
+                        >
                     </Table.Row>
                 </Table.Header>
                 <Table.Body>
                     {#each transactions as tx (tx.row_number)}
                         {@const candidateNames = getCandidateNames(tx)}
                         <Table.Row>
-                            <Table.Cell
-                                class="text-muted-foreground text-sm"
-                            >
+                            <Table.Cell class="text-muted-foreground text-sm">
                                 {tx.row_number}
                             </Table.Cell>
                             <Table.Cell class="text-sm">
@@ -165,9 +170,7 @@
                             <Table.Cell class={getAmountClass(tx.amount)}>
                                 {formatAmount(tx.amount)}
                             </Table.Cell>
-                            <Table.Cell
-                                class="text-muted-foreground text-sm"
-                            >
+                            <Table.Cell class="text-muted-foreground text-sm">
                                 {tx.category_name ?? '-'}
                             </Table.Cell>
                             <Table.Cell>
@@ -182,7 +185,9 @@
                                         <div
                                             class="text-muted-foreground flex flex-wrap gap-1 text-xs"
                                         >
-                                            <span>{m.imp_categorize_candidates()}</span>
+                                            <span
+                                                >{m.imp_categorize_candidates()}</span
+                                            >
                                             {#each candidateNames as name}
                                                 <span
                                                     class="bg-muted rounded px-1.5 py-0.5"
