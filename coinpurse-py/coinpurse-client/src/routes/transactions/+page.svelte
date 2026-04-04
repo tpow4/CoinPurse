@@ -28,8 +28,8 @@
 	let error = $state('');
 
 	// Filter state - backend filters
-	let selectedAccountId = $state('');
-	let selectedCategoryId = $state('');
+	let selectedAccountIds = $state<string[]>([]);
+	let selectedCategoryIds = $state<string[]>([]);
 	let datePreset = $state<DatePreset>('last30');
 	let customStartDate = $state('');
 	let customEndDate = $state('');
@@ -172,8 +172,10 @@
 		try {
 			const dateRange = getDateRange(datePreset);
 			const filters = {
-				account_id: selectedAccountId ? Number(selectedAccountId) : undefined,
-				category_id: selectedCategoryId ? Number(selectedCategoryId) : undefined,
+				account_ids:
+					selectedAccountIds.length > 0 ? selectedAccountIds.map(Number) : undefined,
+				category_ids:
+					selectedCategoryIds.length > 0 ? selectedCategoryIds.map(Number) : undefined,
 				start_date: dateRange.start || undefined,
 				end_date: dateRange.end || undefined,
 				include_inactive: includeInactive,
@@ -232,8 +234,8 @@
 
 	// Clear all filters
 	function clearFilters() {
-		selectedAccountId = '';
-		selectedCategoryId = '';
+		selectedAccountIds = [];
+		selectedCategoryIds = [];
 		datePreset = 'last30';
 		customStartDate = '';
 		customEndDate = '';
@@ -251,8 +253,8 @@
 	// Reload when backend filters change
 	$effect(() => {
 		// Track backend filter dependencies
-		selectedAccountId;
-		selectedCategoryId;
+		selectedAccountIds;
+		selectedCategoryIds;
 		datePreset;
 		customStartDate;
 		customEndDate;
@@ -291,8 +293,8 @@
 	<div class="mb-6">
 		<TransactionsFilters
 			{searchTerm}
-			{selectedAccountId}
-			{selectedCategoryId}
+			{selectedAccountIds}
+			{selectedCategoryIds}
 			{datePreset}
 			{customStartDate}
 			{customEndDate}
@@ -305,8 +307,8 @@
 			{accounts}
 			{categories}
 			onSearchChange={(v) => (searchTerm = v)}
-			onAccountChange={(v) => (selectedAccountId = v)}
-			onCategoryChange={(v) => (selectedCategoryId = v)}
+			onAccountChange={(v) => (selectedAccountIds = v)}
+			onCategoryChange={(v) => (selectedCategoryIds = v)}
 			onDatePresetChange={(v) => (datePreset = v)}
 			onCustomStartDateChange={(v) => (customStartDate = v)}
 			onCustomEndDateChange={(v) => (customEndDate = v)}

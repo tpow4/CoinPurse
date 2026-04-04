@@ -3,7 +3,7 @@
 	import { BarChart } from 'layerchart';
 	import * as Chart from '$lib/components/ui/chart';
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
-	import { formatCompactCurrency, formatDateCompact } from '$lib/format';
+	import { formatCompactCurrency } from '$lib/format';
 
 	interface Props {
 		transactions: TransactionWithNames[];
@@ -14,6 +14,14 @@
 	interface MonthlyCashFlowDatum {
 		monthLabel: string;
 		cashFlow: number;
+	}
+
+	function formatMonthLabelUtc(date: Date): string {
+		return new Intl.DateTimeFormat(undefined, {
+			month: 'short',
+			year: 'numeric',
+			timeZone: 'UTC',
+		}).format(date);
 	}
 
 	function parseIsoDate(date: string): Date {
@@ -44,7 +52,7 @@
 		return [...byMonth.entries()]
 			.sort((a, b) => a[0].localeCompare(b[0]))
 			.map(([, value]): MonthlyCashFlowDatum => ({
-				monthLabel: formatDateCompact(value.monthDate),
+				monthLabel: formatMonthLabelUtc(value.monthDate),
 				cashFlow: value.totalCents / 100,
 			}));
 	});

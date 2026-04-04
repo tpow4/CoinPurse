@@ -3,7 +3,6 @@
 	import { LineChart } from 'layerchart';
 	import * as Chart from '$lib/components/ui/chart';
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
-	import { formatDateCompact } from '$lib/format';
 
 	interface Props {
 		transactions: TransactionWithNames[];
@@ -19,6 +18,14 @@
 	function parseIsoDate(date: string): Date {
 		// Ensure stable UTC date parsing for YYYY-MM-DD inputs.
 		return date.length === 10 ? new Date(`${date}T00:00:00Z`) : new Date(date);
+	}
+
+	function formatMonthLabelUtc(date: Date): string {
+		return new Intl.DateTimeFormat(undefined, {
+			month: 'short',
+			year: 'numeric',
+			timeZone: 'UTC',
+		}).format(date);
 	}
 
 	const chartData = $derived.by(() => {
@@ -50,7 +57,7 @@
 		return [...byMonth.entries()]
 			.sort((a, b) => a[0].localeCompare(b[0]))
 			.map(([, value]): MonthlyRatioDatum => ({
-				monthLabel: formatDateCompact(value.monthDate),
+				monthLabel: formatMonthLabelUtc(value.monthDate),
 				ratio:
 					value.debitCentsAbs > 0 ? value.creditCents / value.debitCentsAbs : 0,
 			}));

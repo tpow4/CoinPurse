@@ -70,9 +70,20 @@ export function buildQueryString(params: Record<string, any>): string {
   const searchParams = new URLSearchParams();
 
   Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      searchParams.append(key, String(value));
+    if (value === undefined || value === null) {
+      return;
     }
+
+    if (Array.isArray(value)) {
+      value.forEach((entry) => {
+        if (entry !== undefined && entry !== null) {
+          searchParams.append(key, String(entry));
+        }
+      });
+      return;
+    }
+
+    searchParams.append(key, String(value));
   });
 
   const queryString = searchParams.toString();

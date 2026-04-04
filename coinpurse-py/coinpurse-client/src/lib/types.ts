@@ -218,8 +218,8 @@ export interface AggregatedMonthlyParams {
 // API query parameters
 
 export interface TransactionFilters {
-    account_id?: number;
-    category_id?: number;
+    account_ids?: number[];
+    category_ids?: number[];
     start_date?: string;
     end_date?: string;
     include_inactive?: boolean;

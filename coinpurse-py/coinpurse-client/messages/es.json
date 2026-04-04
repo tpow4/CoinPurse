@@ -208,6 +208,8 @@
     "txn_filter_search_accounts": "Buscar cuentas...",
     "txn_filter_all_categories": "Todas las categorías",
     "txn_filter_search_categories": "Buscar categorías...",
+    "txn_filter_select_all": "Seleccionar todo",
+    "txn_filter_select_none": "Deseleccionar todo",
     "txn_filter_last30": "Últimos 30 días",
     "txn_filter_this_month": "Este mes",
     "txn_filter_ytd": "Año hasta la fecha",

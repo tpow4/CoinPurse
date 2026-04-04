@@ -208,6 +208,8 @@
     "txn_filter_search_accounts": "Search accounts...",
     "txn_filter_all_categories": "All Categories",
     "txn_filter_search_categories": "Search categories...",
+    "txn_filter_select_all": "Select all",
+    "txn_filter_select_none": "Select none",
     "txn_filter_last30": "Last 30 Days",
     "txn_filter_this_month": "This Month",
     "txn_filter_ytd": "Year to Date",

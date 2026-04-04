@@ -24,6 +24,10 @@
         ariaInvalid?: boolean;
         class?: string;
         contentClass?: string;
+        showSelectAll?: boolean;
+        showSelectNone?: boolean;
+        selectAllLabel?: string;
+        selectNoneLabel?: string;
     }
 
     let {
@@ -38,6 +42,10 @@
         ariaInvalid = false,
         class: className,
         contentClass,
+        showSelectAll = false,
+        showSelectNone = false,
+        selectAllLabel = 'Select all',
+        selectNoneLabel = 'Select none',
     }: Props = $props();
 
     const selectedLabels = $derived(() => {
@@ -55,6 +63,16 @@
         } else {
             values = [...values, item.value];
         }
+    }
+
+    function handleSelectAll() {
+        if (disabled) return;
+        values = items.map((item) => item.value);
+    }
+
+    function handleSelectNone() {
+        if (disabled) return;
+        values = [];
     }
 </script>
 
@@ -77,12 +95,42 @@
 
     <Popover.Content
         align="start"
-        class={cn('w-(--bits-popover-anchor-width) p-0', contentClass)}
+        class={cn(
+            'w-auto min-w-[max(var(--bits-popover-anchor-width),18rem)] max-w-[min(24rem,calc(100vw-2rem))] p-0',
+            contentClass
+        )}
     >
         <Command.Root>
             <Command.Input placeholder={searchPlaceholder} />
             <Command.List>
                 <Command.Empty>{emptyText}</Command.Empty>
+                {#if showSelectAll || showSelectNone}
+                    <div
+                        class="flex items-center gap-2 border-b px-3 py-2 whitespace-nowrap"
+                    >
+                        {#if showSelectAll}
+                            <button
+                                type="button"
+                                class="text-muted-foreground hover:text-foreground text-sm"
+                                onclick={handleSelectAll}
+                            >
+                                {selectAllLabel}
+                            </button>
+                        {/if}
+                        {#if showSelectAll && showSelectNone}
+                            <span class="text-muted-foreground text-sm">|</span>
+                        {/if}
+                        {#if showSelectNone}
+                            <button
+                                type="button"
+                                class="text-muted-foreground hover:text-foreground text-sm"
+                                onclick={handleSelectNone}
+                            >
+                                {selectNoneLabel}
+                            </button>
+                        {/if}
+                    </div>
+                {/if}
                 <Command.Group>
                     {#each items as item (item.value)}
                         <Command.Item
