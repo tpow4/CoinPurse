@@ -35,6 +35,7 @@
         "layerchart": "2.0.0-next.48",
         "paneforge": "^1.0.2",
         "prettier": "^3.8.1",
+        "prettier-plugin-svelte": "^3.5.1",
         "prettier-plugin-tailwindcss": "^0.7.2",
         "svelte": "^5.55.1",
         "svelte-check": "^4.4.6",
@@ -47,6 +48,10 @@
         "typescript": "^6.0.2",
         "vaul-svelte": "1.0.0-next.7",
         "vite": "^8.0.3"
+    },
+    "prettier": {
+        "plugins": ["prettier-plugin-svelte", "prettier-plugin-tailwindcss"],
+        "overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }]
     },
     "dependencies": {
         "@tanstack/table-core": "^8.21.3",

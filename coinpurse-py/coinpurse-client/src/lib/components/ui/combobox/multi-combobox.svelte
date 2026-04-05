@@ -1,10 +1,10 @@
 <script lang="ts">
-    import * as Popover from '$lib/components/ui/popover';
-    import * as Command from '$lib/components/ui/command';
-    import { buttonVariants } from '$lib/components/ui/button';
-    import { cn } from '$lib/utils.js';
-    import CheckIcon from '@lucide/svelte/icons/check';
-    import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
+    import * as Popover from "$lib/components/ui/popover";
+    import * as Command from "$lib/components/ui/command";
+    import { buttonVariants } from "$lib/components/ui/button";
+    import { cn } from "$lib/utils.js";
+    import CheckIcon from "@lucide/svelte/icons/check";
+    import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
 
     export type ComboboxItem = {
         value: string;
@@ -34,9 +34,9 @@
         items,
         values = $bindable([]),
         open = $bindable(false),
-        placeholder = 'Select...',
-        searchPlaceholder = 'Search...',
-        emptyText = 'No results found.',
+        placeholder = "Select...",
+        searchPlaceholder = "Search...",
+        emptyText = "No results found.",
         disabled = false,
         id,
         ariaInvalid = false,
@@ -44,15 +44,15 @@
         contentClass,
         showSelectAll = false,
         showSelectNone = false,
-        selectAllLabel = 'Select all',
-        selectNoneLabel = 'Select none',
+        selectAllLabel = "Select all",
+        selectNoneLabel = "Select none",
     }: Props = $props();
 
     const selectedLabels = $derived(() => {
         const selected = items.filter((item) => values.includes(item.value));
-        if (selected.length === 0) return '';
+        if (selected.length === 0) return "";
         if (selected.length <= 2)
-            return selected.map((s) => s.label).join(', ');
+            return selected.map((s) => s.label).join(", ");
         return `${selected.length} selected`;
     });
 
@@ -84,9 +84,9 @@
         aria-expanded={open}
         aria-invalid={ariaInvalid ? true : undefined}
         class={cn(
-            buttonVariants({ variant: 'outline' }),
-            'w-full justify-between',
-            className
+            buttonVariants({ variant: "outline" }),
+            "w-full justify-between",
+            className,
         )}
     >
         <span class="truncate">{selectedLabels() || placeholder}</span>
@@ -96,8 +96,8 @@
     <Popover.Content
         align="start"
         class={cn(
-            'w-auto min-w-[max(var(--bits-popover-anchor-width),18rem)] max-w-[min(24rem,calc(100vw-2rem))] p-0',
-            contentClass
+            "w-auto max-w-[min(24rem,calc(100vw-2rem))] min-w-[max(var(--bits-popover-anchor-width),18rem)] p-0",
+            contentClass,
         )}
     >
         <Command.Root>
@@ -140,10 +140,10 @@
                         >
                             <CheckIcon
                                 class={cn(
-                                    'mr-2 size-4',
+                                    "mr-2 size-4",
                                     values.includes(item.value)
-                                        ? 'opacity-100'
-                                        : 'opacity-0'
+                                        ? "opacity-100"
+                                        : "opacity-0",
                                 )}
                             />
                             {item.label}
