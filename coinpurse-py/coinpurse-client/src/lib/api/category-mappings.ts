@@ -1,11 +1,11 @@
-import { apiFetch, buildQueryString } from '$lib/api';
+import { apiFetch, buildQueryString } from "$lib/api";
 import type {
     CategoryMapping,
     CategoryMappingCreate,
     CategoryMappingGroupDelete,
     CategoryMappingGroupSave,
     CategoryMappingUpdate,
-} from '$lib/types';
+} from "$lib/types";
 
 export const categoryMappingsApi = {
     /**
@@ -13,7 +13,7 @@ export const categoryMappingsApi = {
      */
     getAll(
         institutionId?: number,
-        includeInactive = false
+        includeInactive = false,
     ): Promise<CategoryMapping[]> {
         const query = buildQueryString({
             institution_id: institutionId,
@@ -33,8 +33,8 @@ export const categoryMappingsApi = {
      * Create new category mapping
      */
     create(data: CategoryMappingCreate): Promise<CategoryMapping> {
-        return apiFetch<CategoryMapping>('/import/category-mappings', {
-            method: 'POST',
+        return apiFetch<CategoryMapping>("/import/category-mappings", {
+            method: "POST",
             body: JSON.stringify(data),
         });
     },
@@ -44,7 +44,7 @@ export const categoryMappingsApi = {
      */
     update(id: number, data: CategoryMappingUpdate): Promise<CategoryMapping> {
         return apiFetch<CategoryMapping>(`/import/category-mappings/${id}`, {
-            method: 'PATCH',
+            method: "PATCH",
             body: JSON.stringify(data),
         });
     },
@@ -55,7 +55,7 @@ export const categoryMappingsApi = {
     delete(id: number, hardDelete = false): Promise<void> {
         const query = buildQueryString({ hard_delete: hardDelete });
         return apiFetch<void>(`/import/category-mappings/${id}${query}`, {
-            method: 'DELETE',
+            method: "DELETE",
         });
     },
 
@@ -63,8 +63,8 @@ export const categoryMappingsApi = {
      * Batch-save a mapping group in a single transaction
      */
     saveGroup(data: CategoryMappingGroupSave): Promise<CategoryMapping[]> {
-        return apiFetch<CategoryMapping[]>('/import/category-mappings/group', {
-            method: 'PUT',
+        return apiFetch<CategoryMapping[]>("/import/category-mappings/group", {
+            method: "PUT",
             body: JSON.stringify(data),
         });
     },
@@ -73,8 +73,8 @@ export const categoryMappingsApi = {
      * Delete all mappings in a group in a single transaction
      */
     deleteGroup(data: CategoryMappingGroupDelete): Promise<void> {
-        return apiFetch<void>('/import/category-mappings/group', {
-            method: 'DELETE',
+        return apiFetch<void>("/import/category-mappings/group", {
+            method: "DELETE",
             body: JSON.stringify(data),
         });
     },

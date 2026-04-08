@@ -1,13 +1,13 @@
 <script lang="ts">
-    import type { AccountDueForCheckin } from '$lib/types';
-    import * as Dialog from '$lib/components/ui/dialog';
-    import * as Field from '$lib/components/ui/field';
-    import * as Card from '$lib/components/ui/card';
-    import { Input } from '$lib/components/ui/input';
-    import { Button } from '$lib/components/ui/button';
-    import * as m from '$lib/paraglide/messages';
-    import { parseCentsCurrency } from '$lib/format';
-    import { balancesApi } from '$lib/api/balances';
+    import type { AccountDueForCheckin } from "$lib/types";
+    import * as Dialog from "$lib/components/ui/dialog";
+    import * as Field from "$lib/components/ui/field";
+    import * as Card from "$lib/components/ui/card";
+    import { Input } from "$lib/components/ui/input";
+    import { Button } from "$lib/components/ui/button";
+    import * as m from "$lib/paraglide/messages";
+    import { parseCentsCurrency } from "$lib/format";
+    import { balancesApi } from "$lib/api/balances";
 
     interface Props {
         open: boolean;
@@ -18,11 +18,11 @@
 
     let { open, accounts, onOpenChange, onSuccess }: Props = $props();
 
-    let balanceDate = $state('');
+    let balanceDate = $state("");
     let balanceValues: Record<number, string> = $state({});
     let balanceErrors: Record<number, string> = $state({});
     let saving = $state(false);
-    let submitError = $state('');
+    let submitError = $state("");
 
     function todayIsoDate(): string {
         return new Date().toISOString().slice(0, 10);
@@ -33,7 +33,7 @@
 
     // Count how many inputs have a value
     const filledCount = $derived(
-        Object.values(balanceValues).filter((v) => v.trim() !== '').length
+        Object.values(balanceValues).filter((v) => v.trim() !== "").length,
     );
 
     // Reset form when dialog opens
@@ -43,12 +43,12 @@
         balanceValues = {};
         balanceErrors = {};
         saving = false;
-        submitError = '';
+        submitError = "";
     });
 
     async function handleSubmit(e: SubmitEvent) {
         e.preventDefault();
-        submitError = '';
+        submitError = "";
 
         if (!balanceDate) {
             submitError = m.balance_validation_date_required();
@@ -98,8 +98,8 @@
                                 balance: entry.balance,
                             },
                         ],
-                    })
-                )
+                    }),
+                ),
             );
             onSuccess();
             onOpenChange(false);
@@ -112,7 +112,7 @@
 </script>
 
 <Dialog.Root {open} {onOpenChange}>
-    <Dialog.Content class="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+    <Dialog.Content class="max-h-[85vh] overflow-y-auto sm:max-w-lg">
         <Dialog.Header>
             <Dialog.Title>{m.checkin_dialog_title()}</Dialog.Title>
             <Dialog.Description
@@ -123,7 +123,7 @@
         <form onsubmit={handleSubmit}>
             <div class="space-y-4">
                 {#if submitError}
-                    <div class="bg-red-50 text-red-700 p-4 rounded">
+                    <div class="rounded bg-red-50 p-4 text-red-700">
                         {submitError}
                     </div>
                 {/if}
@@ -162,12 +162,12 @@
                                         placeholder={m.balance_field_balance_placeholder()}
                                         value={balanceValues[
                                             account.account_id
-                                        ] ?? ''}
+                                        ] ?? ""}
                                         oninput={(e) => {
                                             balanceValues[account.account_id] =
                                                 e.currentTarget.value;
                                             balanceErrors[account.account_id] =
-                                                '';
+                                                "";
                                         }}
                                         aria-invalid={hasError
                                             ? true

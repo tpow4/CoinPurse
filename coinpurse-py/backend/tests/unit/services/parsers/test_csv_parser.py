@@ -203,6 +203,24 @@ class TestCsvParserCapitalOne:
         assert rows[2].amount == 2500  # Credit: +$25
         assert rows[2].transaction_type == "CREDIT"
 
+    def test_parse_with_quoted_iso_date_format(self, capital_one_template_config):
+        """Quoted date_format should still parse ISO dates correctly"""
+        csv_data = """Transaction Date,Posted Date,Card No.,Description,Category,Debit,Credit
+2025-12-28,2025-12-29,1111,TEST PURCHASE,Shopping,49.99,"""
+
+        parser = CsvParser(
+            column_mappings=capital_one_template_config["column_mappings"],
+            amount_config=capital_one_template_config["amount_config"],
+            date_format="\"%Y-%m-%d\"",
+        )
+
+        rows = parser.parse(io.BytesIO(csv_data.encode("utf-8")))
+
+        assert len(rows) == 1
+        assert rows[0].transaction_date == date(2025, 12, 28)
+        assert rows[0].posted_date == date(2025, 12, 29)
+        assert rows[0].is_valid
+
 
 class TestCsvParserValidation:
     """Tests for validation and error handling"""

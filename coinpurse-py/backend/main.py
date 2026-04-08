@@ -5,7 +5,7 @@ Run with: uvicorn main:app --reload --port 8000
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from scalar_fastapi import get_scalar_api_reference
+from scalar_fastapi import AgentScalarConfig, get_scalar_api_reference
 
 from routers.accounts_router import router as accounts_router
 from routers.balances_router import router as balances_router
@@ -58,6 +58,9 @@ async def scalar_html():
     return get_scalar_api_reference(
         openapi_url=app.openapi_url,
         scalar_proxy_url="https://proxy.scalar.com",
+        telemetry=False,
+        # disable AI/chat feature
+        agent=AgentScalarConfig(disabled=True),
     )
 
 

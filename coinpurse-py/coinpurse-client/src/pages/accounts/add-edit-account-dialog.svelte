@@ -2,6 +2,7 @@
     import {
         type Account,
         type Institution,
+        type ImportTemplate,
         type AccountType,
         TaxTreatmentType,
     } from '$lib/types';
@@ -14,6 +15,7 @@
     import { Checkbox } from '$lib/components/ui/checkbox';
     import { Label } from '$lib/components/ui/label';
     import { institutionsApi } from '$lib/api/institutions';
+    import { importApi } from '$lib/api/import';
     import * as m from '$lib/paraglide/messages';
 
     interface Props {
@@ -24,6 +26,7 @@
         fieldErrors?: {
             account_name?: string;
             institution_id?: string;
+            template_id?: string;
             account_type?: string;
             tax_treatment?: string;
             last_4_digits?: string;
@@ -32,6 +35,7 @@
         onSubmit: (data: {
             account_name: string;
             institution_id: number;
+            template_id?: number | null;
             account_type: AccountType;
             tax_treatment: TaxTreatmentType;
             last_4_digits: string;
@@ -54,6 +58,7 @@
     type FormData = {
         account_name: string;
         institution_id: string;
+        template_id: string;
         account_type: AccountType;
         tax_treatment: TaxTreatmentType;
         last_4_digits: string;
@@ -65,6 +70,7 @@
     const defaultFormData: FormData = {
         account_name: '',
         institution_id: '',
+        template_id: '',
         account_type: AccountTypeEnum.BANKING,
         tax_treatment: TaxTreatmentType.TAXABLE,
         last_4_digits: '',
@@ -77,6 +83,10 @@
     let loadingInstitutions = $state(false);
     let institutionsLoaded = $state(false);
 
+    let importTemplates = $state<ImportTemplate[]>([]);
+    let loadingTemplates = $state(false);
+    let templatesLoaded = $state(false);
+
     let formData = $state<FormData>({ ...defaultFormData });
 
     function resetFormData() {
@@ -87,6 +97,7 @@
         Object.assign(formData, {
             account_name: account.account_name,
             institution_id: String(account.institution_id),
+            template_id: account.template_id ? String(account.template_id) : '',
             account_type: account.account_type,
             tax_treatment: account.tax_treatment,
             last_4_digits: account.last_4_digits,
@@ -131,6 +142,25 @@
             });
     });
 
+    // Lazy-load import templates when dialog opens
+    $effect(() => {
+        if (!open || templatesLoaded || loadingTemplates) return;
+
+        loadingTemplates = true;
+        importApi
+            .getTemplates(false) // active only
+            .then((res) => {
+                importTemplates = res;
+                templatesLoaded = true;
+            })
+            .catch((e) => {
+                console.error('Failed to load import templates:', e);
+            })
+            .finally(() => {
+                loadingTemplates = false;
+            });
+    });
+
     // (Re)initialize form when dialog opens (prevents stale values when re-opening "Add")
     $effect(() => {
         if (!open) return;
@@ -151,12 +181,23 @@
         }))
     );
 
+    const templateItems = $derived(
+        importTemplates.map((template) => ({
+            value: String(template.template_id),
+            label: template.template_name,
+        }))
+    );
+
+    // Disable template dropdown until institution is selected
+    const templateDisabled = $derived(!formData.institution_id);
+
     function handleSubmit(e: SubmitEvent) {
         e.preventDefault();
         if (loading) return;
         onSubmit({
             account_name: formData.account_name,
             institution_id: Number(formData.institution_id),
+            template_id: formData.template_id ? Number(formData.template_id) : null,
             account_type: formData.account_type,
             tax_treatment: formData.tax_treatment,
             last_4_digits: formData.last_4_digits,
@@ -222,6 +263,25 @@
                     />
                     {#if fieldErrors.institution_id}
                         <Field.Error>{fieldErrors.institution_id}</Field.Error>
+                    {/if}
+                </Field.Field>
+
+                <!-- Import Template -->
+                <Field.Field
+                    data-invalid={fieldErrors.template_id ? true : undefined}
+                >
+                    <Field.Label for="template_id">{m.acct_field_template()}</Field.Label>
+                    <Combobox
+                        id="template_id"
+                        items={templateItems}
+                        bind:value={formData.template_id}
+                        placeholder={m.acct_field_template_placeholder()}
+                        searchPlaceholder={m.acct_field_template_search()}
+                        ariaInvalid={fieldErrors.template_id ? true : false}
+                        disabled={templateDisabled}
+                    />
+                    {#if fieldErrors.template_id}
+                        <Field.Error>{fieldErrors.template_id}</Field.Error>
                     {/if}
                 </Field.Field>
 

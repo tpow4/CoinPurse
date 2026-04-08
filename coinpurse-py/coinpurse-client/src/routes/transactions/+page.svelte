@@ -4,6 +4,12 @@
 	import { accountsApi } from '$lib/api/accounts';
 	import { categoriesApi } from '$lib/api/categories';
 	import TransactionsDataTable from '../../pages/transactions/transactions-data-table.svelte';
+	import SelectedTransactionsSummary from '../../pages/transactions/selected-transactions-summary.svelte';
+	import TransactionsBreakdownCharts, {
+		type BreakdownDatum,
+	} from '../../pages/transactions/transactions-breakdown-charts.svelte';
+	import TransactionsCashFlowChart from '../../pages/transactions/transactions-cash-flow-chart.svelte';
+	import TransactionsCashFlowRatioChart from '../../pages/transactions/transactions-cash-flow-ratio-chart.svelte';
 	import TransactionsFilters, {
 		type DatePreset,
 		type TransactionFilter,
@@ -22,8 +28,8 @@
 	let error = $state('');
 
 	// Filter state - backend filters
-	let selectedAccountId = $state('');
-	let selectedCategoryId = $state('');
+	let selectedAccountIds = $state<string[]>([]);
+	let selectedCategoryIds = $state<string[]>([]);
 	let datePreset = $state<DatePreset>('last30');
 	let customStartDate = $state('');
 	let customEndDate = $state('');
@@ -38,9 +44,66 @@
 	// Dynamic amount range bounds
 	let amountRangeMin = $state(0);
 	let amountRangeMax = $state(0);
+	let selectedTransactionIds = $state<Set<number>>(new Set());
 
 	// Columns
 	const columns = createColumns();
+	const chartColors = [
+		'var(--chart-1)',
+		'var(--chart-2)',
+		'var(--chart-3)',
+		'var(--chart-4)',
+		'var(--chart-5)',
+	];
+
+	const selectedTransactions = $derived(
+		filteredTransactions.filter((tx) => selectedTransactionIds.has(tx.transaction_id))
+	);
+
+	const selectedTotalCents = $derived(
+		selectedTransactions.reduce((sum, tx) => sum + tx.amount, 0)
+	);
+	const filteredTotalCents = $derived(
+		filteredTransactions.reduce((sum, tx) => sum + tx.amount, 0)
+	);
+	const hasSelection = $derived(selectedTransactions.length > 0);
+
+	function slugify(value: string): string {
+		return value.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/^-|-$/g, '');
+	}
+
+	function buildAmountBreakdown(
+		items: TransactionWithNames[],
+		getLabel: (tx: TransactionWithNames) => string,
+		type: 'credits' | 'debits'
+	): BreakdownDatum[] {
+		const byLabel = new Map<string, number>();
+		for (const tx of items) {
+			if (type === 'credits' && tx.amount <= 0) continue;
+			if (type === 'debits' && tx.amount >= 0) continue;
+			const label = getLabel(tx);
+			byLabel.set(label, (byLabel.get(label) ?? 0) + Math.abs(tx.amount));
+		}
+
+		return [...byLabel.entries()]
+			.sort((a, b) => b[1] - a[1])
+			.map(([label, cents], index) => ({
+				key: `${slugify(label) || 'group'}-${index}`,
+				label,
+				value: cents / 100,
+				color: chartColors[index % chartColors.length],
+			}));
+	}
+
+	const breakdownType = $derived(transactionFilter === 'credits' ? 'credits' : 'debits');
+	const showBreakdownCharts = $derived(transactionFilter !== 'all');
+
+	const accountBreakdownData = $derived(
+		buildAmountBreakdown(filteredTransactions, (tx) => tx.account_name, breakdownType)
+	);
+	const categoryBreakdownData = $derived(
+		buildAmountBreakdown(filteredTransactions, (tx) => tx.category_name, breakdownType)
+	);
 
 	// Calculate date range from preset
 	function getDateRange(preset: DatePreset): { start: string; end: string } {
@@ -109,8 +172,10 @@
 		try {
 			const dateRange = getDateRange(datePreset);
 			const filters = {
-				account_id: selectedAccountId ? Number(selectedAccountId) : undefined,
-				category_id: selectedCategoryId ? Number(selectedCategoryId) : undefined,
+				account_ids:
+					selectedAccountIds.length > 0 ? selectedAccountIds.map(Number) : undefined,
+				category_ids:
+					selectedCategoryIds.length > 0 ? selectedCategoryIds.map(Number) : undefined,
 				start_date: dateRange.start || undefined,
 				end_date: dateRange.end || undefined,
 				include_inactive: includeInactive,
@@ -169,8 +234,8 @@
 
 	// Clear all filters
 	function clearFilters() {
-		selectedAccountId = '';
-		selectedCategoryId = '';
+		selectedAccountIds = [];
+		selectedCategoryIds = [];
 		datePreset = 'last30';
 		customStartDate = '';
 		customEndDate = '';
@@ -188,8 +253,8 @@
 	// Reload when backend filters change
 	$effect(() => {
 		// Track backend filter dependencies
-		selectedAccountId;
-		selectedCategoryId;
+		selectedAccountIds;
+		selectedCategoryIds;
 		datePreset;
 		customStartDate;
 		customEndDate;
@@ -228,8 +293,8 @@
 	<div class="mb-6">
 		<TransactionsFilters
 			{searchTerm}
-			{selectedAccountId}
-			{selectedCategoryId}
+			{selectedAccountIds}
+			{selectedCategoryIds}
 			{datePreset}
 			{customStartDate}
 			{customEndDate}
@@ -242,8 +307,8 @@
 			{accounts}
 			{categories}
 			onSearchChange={(v) => (searchTerm = v)}
-			onAccountChange={(v) => (selectedAccountId = v)}
-			onCategoryChange={(v) => (selectedCategoryId = v)}
+			onAccountChange={(v) => (selectedAccountIds = v)}
+			onCategoryChange={(v) => (selectedCategoryIds = v)}
 			onDatePresetChange={(v) => (datePreset = v)}
 			onCustomStartDateChange={(v) => (customStartDate = v)}
 			onCustomEndDateChange={(v) => (customEndDate = v)}
@@ -258,6 +323,34 @@
 	{#if loading}
 		<div class="py-8 text-center text-gray-600">{m.txn_loading()}</div>
 	{:else}
-		<TransactionsDataTable data={filteredTransactions} {columns} />
+		<div class="mb-6">
+			<SelectedTransactionsSummary
+				selectedCount={selectedTransactions.length}
+				filteredCount={filteredTransactions.length}
+				totalCents={hasSelection ? selectedTotalCents : filteredTotalCents}
+				showSelection={hasSelection}
+			/>
+		</div>
+
+		<div class="mb-6">
+			{#if showBreakdownCharts}
+				<TransactionsBreakdownCharts
+					accountData={accountBreakdownData}
+					categoryData={categoryBreakdownData}
+					type={breakdownType}
+				/>
+			{:else}
+				<div class="grid gap-4 lg:grid-cols-2">
+					<TransactionsCashFlowChart transactions={filteredTransactions} />
+					<TransactionsCashFlowRatioChart transactions={filteredTransactions} />
+				</div>
+			{/if}
+		</div>
+
+		<TransactionsDataTable
+			data={filteredTransactions}
+			{columns}
+			onSelectionChange={(ids) => (selectedTransactionIds = ids)}
+		/>
 	{/if}
 </div>
