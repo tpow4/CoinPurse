@@ -78,8 +78,8 @@ class TransactionRepository:
         self,
         start_date: date | None = None,
         end_date: date | None = None,
-        account_id: int | None = None,
-        category_id: int | None = None,
+        account_ids: list[int] | None = None,
+        category_ids: list[int] | None = None,
         include_inactive: bool = False,
         with_relationships: bool = False,
     ) -> list[Transaction]:
@@ -89,8 +89,8 @@ class TransactionRepository:
         Args:
             start_date: Optional start date (inclusive)
             end_date: Optional end date (inclusive)
-            account_id: Optional account ID to filter by
-            category_id: Optional category ID to filter by
+            account_ids: Optional account IDs to filter by
+            category_ids: Optional category IDs to filter by
             include_inactive: If True, includes inactive transactions
             with_relationships: If True, eager-loads account and category relationships
         """
@@ -108,10 +108,10 @@ class TransactionRepository:
             stmt = stmt.where(Transaction.transaction_date >= start_date)
         if end_date is not None:
             stmt = stmt.where(Transaction.transaction_date <= end_date)
-        if account_id is not None:
-            stmt = stmt.where(Transaction.account_id == account_id)
-        if category_id is not None:
-            stmt = stmt.where(Transaction.category_id == category_id)
+        if account_ids:
+            stmt = stmt.where(Transaction.account_id.in_(account_ids))
+        if category_ids:
+            stmt = stmt.where(Transaction.category_id.in_(category_ids))
 
         stmt = stmt.order_by(Transaction.transaction_date.desc())
         return list(self.db.scalars(stmt).unique())

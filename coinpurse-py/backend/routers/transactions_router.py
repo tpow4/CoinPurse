@@ -67,8 +67,8 @@ def create_transaction(
 
 @router.get("/", response_model=list[TransactionResponse])
 def list_transactions(
-    account_id: int | None = Query(None, description="Filter by account ID"),
-    category_id: int | None = Query(None, description="Filter by category ID"),
+    account_ids: list[int] | None = Query(None, description="Filter by account IDs"),
+    category_ids: list[int] | None = Query(None, description="Filter by category IDs"),
     start_date: date | None = Query(None, description="Start date (inclusive)"),
     end_date: date | None = Query(None, description="End date (inclusive)"),
     include_inactive: bool = Query(False, description="Include inactive transactions"),
@@ -77,8 +77,8 @@ def list_transactions(
     """
     Get all transactions with optional filters
 
-    - **account_id**: Optional filter by account ID
-    - **category_id**: Optional filter by category ID
+    - **account_ids**: Optional filter by account IDs
+    - **category_ids**: Optional filter by category IDs
     - **start_date**: Optional start date filter (inclusive)
     - **end_date**: Optional end date filter (inclusive)
     - **include_inactive**: Set to true to include inactive transactions
@@ -87,16 +87,16 @@ def list_transactions(
 
     # If any filter specified, use filtered query
     if (
-        account_id is not None
-        or category_id is not None
+        account_ids is not None
+        or category_ids is not None
         or start_date is not None
         or end_date is not None
     ):
         return repo.get_by_date_range(
             start_date=start_date,
             end_date=end_date,
-            account_id=account_id,
-            category_id=category_id,
+            account_ids=account_ids,
+            category_ids=category_ids,
             include_inactive=include_inactive,
         )
 
@@ -105,8 +105,8 @@ def list_transactions(
 
 @router.get("/with-names", response_model=list[TransactionWithNamesResponse])
 def list_transactions_with_names(
-    account_id: int | None = Query(None, description="Filter by account ID"),
-    category_id: int | None = Query(None, description="Filter by category ID"),
+    account_ids: list[int] | None = Query(None, description="Filter by account IDs"),
+    category_ids: list[int] | None = Query(None, description="Filter by category IDs"),
     start_date: date | None = Query(None, description="Start date (inclusive)"),
     end_date: date | None = Query(None, description="End date (inclusive)"),
     include_inactive: bool = Query(False, description="Include inactive transactions"),
@@ -116,8 +116,8 @@ def list_transactions_with_names(
     Get all transactions with account and category names included.
     Ideal for grid/table display.
 
-    - **account_id**: Optional filter by account ID
-    - **category_id**: Optional filter by category ID
+    - **account_ids**: Optional filter by account IDs
+    - **category_ids**: Optional filter by category IDs
     - **start_date**: Optional start date filter (inclusive)
     - **end_date**: Optional end date filter (inclusive)
     - **include_inactive**: Set to true to include inactive transactions
@@ -126,16 +126,16 @@ def list_transactions_with_names(
 
     # Use filtered query with relationships
     if (
-        account_id is not None
-        or category_id is not None
+        account_ids is not None
+        or category_ids is not None
         or start_date is not None
         or end_date is not None
     ):
         transactions = repo.get_by_date_range(
             start_date=start_date,
             end_date=end_date,
-            account_id=account_id,
-            category_id=category_id,
+            account_ids=account_ids,
+            category_ids=category_ids,
             include_inactive=include_inactive,
             with_relationships=True,
         )

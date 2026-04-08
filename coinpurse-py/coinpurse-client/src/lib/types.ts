@@ -6,30 +6,30 @@
 // Enums matching backend/models/base.py
 
 export enum AccountType {
-    BANKING = 'banking',
-    TREASURY = 'treasury',
-    CREDIT_CARD = 'credit_card',
-    INVESTMENT = 'investment',
+    BANKING = "banking",
+    TREASURY = "treasury",
+    CREDIT_CARD = "credit_card",
+    INVESTMENT = "investment",
 }
 
 export enum TaxTreatmentType {
-    TAXABLE = 'taxable',
-    TAX_DEFERRED = 'tax_deferred',
-    TAX_FREE = 'tax_free',
-    TRIPLE_TAX_FREE = 'triple_tax_free',
-    NOT_APPLICABLE = 'not_applicable',
+    TAXABLE = "taxable",
+    TAX_DEFERRED = "tax_deferred",
+    TAX_FREE = "tax_free",
+    TRIPLE_TAX_FREE = "triple_tax_free",
+    NOT_APPLICABLE = "not_applicable",
 }
 
 export enum TransactionType {
-    PURCHASE = 'purchase',
-    PAYMENT = 'payment',
-    REFUND = 'refund',
-    TRANSFER = 'transfer',
-    FEE = 'fee',
-    INTEREST = 'interest',
-    ADJUSTMENT = 'adjustment',
-    WITHDRAWAL = 'withdrawal',
-    DEPOSIT = 'deposit',
+    PURCHASE = "purchase",
+    PAYMENT = "payment",
+    REFUND = "refund",
+    TRANSFER = "transfer",
+    FEE = "fee",
+    INTEREST = "interest",
+    ADJUSTMENT = "adjustment",
+    WITHDRAWAL = "withdrawal",
+    DEPOSIT = "deposit",
 }
 
 // Institution types
@@ -92,6 +92,7 @@ export interface Account {
 export interface AccountCreate {
     account_name: string;
     institution_id: number;
+    template_id?: number | null;
     account_type: AccountType;
     tax_treatment: TaxTreatmentType;
     last_4_digits: string;
@@ -104,6 +105,7 @@ export interface AccountCreate {
 export interface AccountUpdate {
     account_name?: string;
     institution_id?: number;
+    template_id?: number | null;
     account_type?: AccountType;
     tax_treatment?: TaxTreatmentType;
     last_4_digits?: string;
@@ -216,8 +218,8 @@ export interface AggregatedMonthlyParams {
 // API query parameters
 
 export interface TransactionFilters {
-    account_id?: number;
-    category_id?: number;
+    account_ids?: number[];
+    category_ids?: number[];
     start_date?: string;
     end_date?: string;
     include_inactive?: boolean;
@@ -272,14 +274,14 @@ export interface CategoryMappingGroupDelete {
 // Import types
 
 export enum FileFormat {
-    CSV = 'csv',
-    EXCEL = 'excel',
+    CSV = "csv",
+    EXCEL = "excel",
 }
 
 export enum ImportStatus {
-    PREVIEW = 'preview',
-    COMPLETED = 'completed',
-    FAILED = 'failed',
+    PREVIEW = "preview",
+    COMPLETED = "completed",
+    FAILED = "failed",
 }
 
 export interface ImportTemplate {
