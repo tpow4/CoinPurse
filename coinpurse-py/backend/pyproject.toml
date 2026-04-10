@@ -12,7 +12,7 @@ dependencies = [
     "pandas==3.0.2",
     "openpyxl==3.1.5",
     "httpx==0.28.1",
-    "scalar-fastapi==1.8.1",
+    "scalar-fastapi==1.8.2",
 ]
 
 [project.optional-dependencies]
