@@ -1150,8 +1150,8 @@ packages:
     resolution: {integrity: sha512-3i5pmOiZvMDj00qhrIVbH0AnioVTx22DMP7Vn5At4yJO46iy+FM8Y/g61ltenLVSo3fiO8h8Q3QOFgf/gQ72ww==}
     engines: {node: '>=20.0.0'}
 
-  layerchart@2.0.0-next.48:
-    resolution: {integrity: sha512-XoEYBztamA8lMxtF/Jz3aDX0HMk8dI+o4fK9fSl8ecT2Tdx3DQUjtKGtlQAOFdwC/AWifeLmKq5cMTQt9COZPQ==}
+  layerchart@2.0.0-next.51:
+    resolution: {integrity: sha512-RvRu67ja+OfZzObTus7z/Ldc27tf4TLZNsimaAgx5Ser/qCIQomwtIcNnLURg2etQmFJDTULpeceR5mHvzwNZA==}
     peerDependencies:
       svelte: ^5.0.0
 
