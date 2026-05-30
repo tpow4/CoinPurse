@@ -24,7 +24,7 @@ def create_account(account_data: AccountCreate, db: Session = Depends(get_db)):
     - **account_name**: Name of the account (required)
     - **institution_id**: ID of the institution this account belongs to (required)
     - **template_id**: ID of the import template to use (optional)
-    - **account_type**: Type of account (checking, credit_card, savings, etc.) (required)
+    - **account_type**: Type of account (checking, credit_card, etc.) (required)
     - **tax_treatment**: Tax treatment type of the account (required)
     - **last_4_digits**: Last 4 digits of the account number (required)
     - **tracks_transactions**: Whether this account tracks transactions (default: False)
@@ -51,18 +51,19 @@ def create_account(account_data: AccountCreate, db: Session = Depends(get_db)):
                 detail=f"Import template with ID {account_data.template_id} not found",
             )
 
-    # Check if name already exists
-    if repo.name_exists(account_data.account_name):
+    # Check if name already exists for this institution
+    if repo.name_exists(account_data.account_name, account_data.institution_id):
         raise HTTPException(
             status_code=400,
-            detail=f"Account with name '{account_data.account_name}' already exists",
+            detail=(
+                f"Account with name '{account_data.account_name}' already exists "
+                "for this institution"
+            ),
         )
 
     db_account = Account(**account_data.model_dump())
 
-    created = repo.create(db_account)
-
-    return created
+    return repo.create(db_account)
 
 
 @router.get("/", response_model=list[AccountResponse])
@@ -164,13 +165,17 @@ def update_account(
                 detail=f"Import template with ID {account_data.template_id} not found",
             )
 
-    # Check if new name conflicts with existing account
-    if account_data.account_name:
-        if repo.name_exists(account_data.account_name, exclude_id=account_id):
-            raise HTTPException(
-                status_code=400,
-                detail=f"Account with name '{account_data.account_name}' already exists",
-            )
+    # Check if the resulting name/institution pair conflicts with existing account
+    account_name = account_data.account_name or account.account_name
+    institution_id = account_data.institution_id or account.institution_id
+    if repo.name_exists(account_name, institution_id, exclude_id=account_id):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Account with name '{account_name}' already exists "
+                "for this institution"
+            ),
+        )
 
     # Update only provided fields
     update_data = account_data.model_dump(exclude_unset=True)
@@ -192,7 +197,8 @@ def delete_account(
     Delete an account (soft delete by default)
 
     - **account_id**: The ID of the account to delete
-    - **hard_delete**: If true, permanently deletes. Otherwise, soft deletes (sets active=False)
+    - **hard_delete**: If true, permanently deletes.
+      Otherwise, soft deletes (sets active=False)
     """
     repo = AccountRepository(db)
     account = repo.get_by_id(account_id)
