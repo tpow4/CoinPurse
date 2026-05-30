@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { ApiException } from '$lib/api';
+    import { ApiException } from "$lib/api";
     import type {
         Account,
         AccountBalance,
@@ -9,23 +9,23 @@
         BalanceCreate,
         BalanceBatchCreate,
         TaxTreatmentType,
-    } from '$lib/types';
-    import { AccountType } from '$lib/types';
+    } from "$lib/types";
+    import { AccountType } from "$lib/types";
 
-    import { Button } from '$lib/components/ui/button';
-    import { Badge } from '$lib/components/ui/badge';
-    import AddEditAccountDialog from '../pages/accounts/add-edit-account-dialog.svelte';
-    import AddEditInstitutionDialog from '../pages/institutions/add-edit-institution-dialog.svelte';
-    import AccountBalanceCard from '../pages/dashboard/account-balance-card.svelte';
-    import StackedBalanceChart from '../pages/dashboard/stacked-balance-chart.svelte';
-    import BalanceCheckinDialog from '$lib/components/balance-checkin-dialog.svelte';
-    import { accountsApi } from '$lib/api/accounts';
-    import { institutionsApi } from '$lib/api/institutions';
-    import { balancesApi } from '$lib/api/balances';
-    import { settingsApi } from '$lib/api/settings';
-    import { toast } from 'svelte-sonner';
-    import * as m from '$lib/paraglide/messages';
-    import { Plus } from '@lucide/svelte';
+    import { Button } from "$lib/components/ui/button";
+    import { Badge } from "$lib/components/ui/badge";
+    import AddEditAccountDialog from "../pages/accounts/add-edit-account-dialog.svelte";
+    import AddEditInstitutionDialog from "../pages/institutions/add-edit-institution-dialog.svelte";
+    import AccountBalanceCard from "../pages/dashboard/account-balance-card.svelte";
+    import StackedBalanceChart from "../pages/dashboard/stacked-balance-chart.svelte";
+    import BalanceCheckinDialog from "$lib/components/balance-checkin-dialog.svelte";
+    import { accountsApi } from "$lib/api/accounts";
+    import { institutionsApi } from "$lib/api/institutions";
+    import { balancesApi } from "$lib/api/balances";
+    import { settingsApi } from "$lib/api/settings";
+    import { toast } from "svelte-sonner";
+    import * as m from "$lib/paraglide/messages";
+    import { Plus } from "@lucide/svelte";
 
     type AccountWithInstitutionName = Account & { institution_name?: string };
 
@@ -35,25 +35,25 @@
     let dueAccounts = $state<AccountDueForCheckin[]>([]);
 
     let loading = $state(false);
-    let error = $state('');
+    let error = $state("");
 
     let showAddAccount = $state(false);
     let showAddInstitution = $state(false);
     let checkinDialogOpen = $state(false);
 
     let accountFormLoading = $state(false);
-    let accountFormError = $state('');
+    let accountFormError = $state("");
     let accountFieldErrors = $state({
-        account_name: '',
-        institution_id: '',
-        account_type: '',
-        tax_treatment: '',
-        last_4_digits: '',
+        account_name: "",
+        institution_id: "",
+        account_type: "",
+        tax_treatment: "",
+        last_4_digits: "",
     });
 
     let institutionFormLoading = $state(false);
-    let institutionFormError = $state('');
-    let institutionFieldErrors = $state({ name: '' });
+    let institutionFormError = $state("");
+    let institutionFieldErrors = $state({ name: "" });
 
     let institutionsRefreshKey = $state(0);
     let chartRefreshKey = $state(0);
@@ -68,12 +68,12 @@
                 map[inst.institution_id] = inst.name;
                 return map;
             },
-            {} as Record<number, string>
-        )
+            {} as Record<number, string>,
+        ),
     );
 
     const latestBalanceByAccountId = $derived(
-        getLatestBalanceByAccountId(balances)
+        getLatestBalanceByAccountId(balances),
     );
     const balancesByAccountId = $derived(
         balances.reduce(
@@ -81,11 +81,11 @@
                 (map[bal.account_id] ??= []).push(bal);
                 return map;
             },
-            {} as Record<number, AccountBalance[]>
-        )
+            {} as Record<number, AccountBalance[]>,
+        ),
     );
     const previousBalanceByAccountId = $derived(
-        getPreviousBalanceByAccountId(balancesByAccountId)
+        getPreviousBalanceByAccountId(balancesByAccountId),
     );
 
     const accountsWithInstitutionName = $derived(
@@ -96,29 +96,29 @@
                         ...account,
                         institution_name:
                             institutionNameById[account.institution_id] ??
-                            'Unknown',
-                    }) satisfies AccountWithInstitutionName
+                            "Unknown",
+                    }) satisfies AccountWithInstitutionName,
             )
             .sort(
                 (a, b) =>
                     (a.display_order ?? 0) - (b.display_order ?? 0) ||
-                    a.account_name.localeCompare(b.account_name)
-            )
+                    a.account_name.localeCompare(b.account_name),
+            ),
     );
 
     const balanceTrackingAccountsWithInstitutionName = $derived(
-        accountsWithInstitutionName.filter((a) => a.tracks_balances)
+        accountsWithInstitutionName.filter((a) => a.tracks_balances),
     );
 
     const allCheckinAccounts = $derived<AccountDueForCheckin[]>(
         balanceTrackingAccountsWithInstitutionName.map((a) => ({
             account_id: a.account_id,
             account_name: a.account_name,
-            institution_name: a.institution_name ?? 'Unknown',
+            institution_name: a.institution_name ?? "Unknown",
             last_balance_date:
                 latestBalanceByAccountId[a.account_id]?.balance_date ?? null,
             days_since_last: null,
-        }))
+        })),
     );
 
     const balanceTrackingAccountById = $derived(
@@ -127,15 +127,15 @@
                 map[account.account_id] = account;
                 return map;
             },
-            {} as Record<number, AccountWithInstitutionName>
-        )
+            {} as Record<number, AccountWithInstitutionName>,
+        ),
     );
 
     const netWorthTotal = $derived(
         Object.values(latestBalanceByAccountId).reduce((sum, balance) => {
             if (!balanceTrackingAccountById[balance.account_id]) return sum;
             return sum + balance.balance;
-        }, 0)
+        }, 0),
     );
 
     const liquidTotal = $derived(
@@ -149,7 +149,7 @@
                 return sum + balance.balance;
             }
             return sum;
-        }, 0)
+        }, 0),
     );
 
     const netWorthPreviousTotal = $derived(
@@ -157,19 +157,19 @@
             if (!balanceTrackingAccountById[latest.account_id]) return sum;
             const previous = previousBalanceByAccountId[latest.account_id];
             return sum + (previous ? previous.balance : latest.balance);
-        }, 0)
+        }, 0),
     );
 
     const netWorthChange = $derived(netWorthTotal - netWorthPreviousTotal);
     const netWorthChangePercent = $derived(
         netWorthPreviousTotal !== 0
             ? netWorthChange / netWorthPreviousTotal
-            : 0
+            : 0,
     );
     const hasPreviousBalances = $derived(
         Object.keys(previousBalanceByAccountId).some(
-            (accountId) => balanceTrackingAccountById[Number(accountId)]
-        )
+            (accountId) => balanceTrackingAccountById[Number(accountId)],
+        ),
     );
 
     const latestBalanceOverall = $derived(
@@ -183,13 +183,13 @@
                     ? balance
                     : latest;
             },
-            null as AccountBalance | null
-        )
+            null as AccountBalance | null,
+        ),
     );
 
     async function loadDashboardData() {
         loading = true;
-        error = '';
+        error = "";
         try {
             const [
                 accountsData,
@@ -230,12 +230,12 @@
                 if (balKey > existingKey) map[bal.account_id] = bal;
                 return map;
             },
-            {} as Record<number, AccountBalance>
+            {} as Record<number, AccountBalance>,
         );
     }
 
     function getPreviousBalanceByAccountId(
-        groupedBalances: Record<number, AccountBalance[]>
+        groupedBalances: Record<number, AccountBalance[]>,
     ) {
         const previousById: Record<number, AccountBalance> = {};
         Object.entries(groupedBalances).forEach(([accountId, list]) => {
@@ -253,20 +253,20 @@
     }
 
     function openAddAccount() {
-        accountFormError = '';
+        accountFormError = "";
         accountFieldErrors = {
-            account_name: '',
-            institution_id: '',
-            account_type: '',
-            tax_treatment: '',
-            last_4_digits: '',
+            account_name: "",
+            institution_id: "",
+            account_type: "",
+            tax_treatment: "",
+            last_4_digits: "",
         };
         showAddAccount = true;
     }
 
     function openAddInstitution() {
-        institutionFormError = '';
-        institutionFieldErrors = { name: '' };
+        institutionFormError = "";
+        institutionFieldErrors = { name: "" };
         showAddInstitution = true;
     }
 
@@ -278,11 +278,11 @@
         last_4_digits: string;
     }): boolean {
         accountFieldErrors = {
-            account_name: '',
-            institution_id: '',
-            account_type: '',
-            tax_treatment: '',
-            last_4_digits: '',
+            account_name: "",
+            institution_id: "",
+            account_type: "",
+            tax_treatment: "",
+            last_4_digits: "",
         };
         let isValid = true;
 
@@ -329,7 +329,7 @@
         tracks_balances: boolean;
         display_order: number;
     }) {
-        accountFormError = '';
+        accountFormError = "";
         if (!validateAccountForm(data)) return;
 
         accountFormLoading = true;
@@ -360,7 +360,7 @@
     }
 
     function validateInstitutionForm(name: string): boolean {
-        institutionFieldErrors = { name: '' };
+        institutionFieldErrors = { name: "" };
         if (!name.trim()) {
             institutionFieldErrors.name = m.inst_validation_name_required();
             return false;
@@ -373,7 +373,7 @@
     }
 
     async function handleCreateInstitution(data: { name: string }) {
-        institutionFormError = '';
+        institutionFormError = "";
         if (!validateInstitutionForm(data.name)) return;
 
         institutionFormLoading = true;
@@ -411,10 +411,10 @@
     }
 </script>
 
-<div class="p-8 max-w-350 mx-auto">
-    <div class="flex items-start justify-between gap-4 mb-8">
+<div class="mx-auto max-w-350 p-8">
+    <div class="mb-8 flex items-start justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-bold mb-2">{m.dashboard_title()}</h1>
+            <h1 class="mb-2 text-3xl font-bold">{m.dashboard_title()}</h1>
             <p class="text-muted-foreground">
                 {m.dashboard_description()}
             </p>
@@ -441,7 +441,7 @@
     </div>
 
     {#if error}
-        <div class="bg-red-50 text-red-700 p-4 rounded mb-6">{error}</div>
+        <div class="mb-6 rounded bg-red-50 p-4 text-red-700">{error}</div>
     {/if}
 
     {#if !loading && balanceTrackingAccountsWithInstitutionName.length > 0}
@@ -460,16 +460,16 @@
     {/if}
 
     {#if loading}
-        <div class="text-center py-12 text-gray-600">
+        <div class="py-12 text-center text-gray-600">
             {m.dashboard_loading()}
         </div>
     {:else if balanceTrackingAccountsWithInstitutionName.length === 0}
-        <div class="text-center py-12 text-muted-foreground">
+        <div class="text-muted-foreground py-12 text-center">
             {m.dashboard_empty()}
         </div>
     {:else}
         <div
-            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+            class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
         >
             {#each balanceTrackingAccountsWithInstitutionName as account (account.account_id)}
                 <AccountBalanceCard
@@ -520,7 +520,7 @@
     }}
     onSuccess={() => {
         loadDashboardData();
-        sessionStorage.removeItem('balance_checkin_reminded');
+        sessionStorage.removeItem("balance_checkin_reminded");
         toast.success(m.checkin_success());
     }}
 />
