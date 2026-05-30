@@ -105,15 +105,21 @@ class AccountRepository:
         """Check if an account exists"""
         return self.get_by_id(account_id) is not None
 
-    def name_exists(self, account_name: str, exclude_id: int | None = None) -> bool:
+    def name_exists(
+        self, account_name: str, institution_id: int, exclude_id: int | None = None
+    ) -> bool:
         """
-        Check if an account name already exists
+        Check if an account name already exists for an institution
 
         Args:
             account_name: Account name to check
+            institution_id: Institution ID to scope the name check
             exclude_id: Optional ID to exclude (for updates)
         """
-        stmt = select(Account).where(Account.account_name == account_name)
+        stmt = select(Account).where(
+            Account.account_name == account_name,
+            Account.institution_id == institution_id,
+        )
         if exclude_id:
             stmt = stmt.where(Account.account_id != exclude_id)
         return self.db.scalar(stmt) is not None
