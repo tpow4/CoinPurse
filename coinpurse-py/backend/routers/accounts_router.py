@@ -207,4 +207,4 @@ def delete_account(
     else:
         repo.soft_delete(account)
 
-    return None
+    return

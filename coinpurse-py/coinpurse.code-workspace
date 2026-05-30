@@ -10,8 +10,9 @@
     }
   ],
   "settings": {
-    "python.defaultInterpreterPath": "${workspaceFolder:backend}/.venv/bin/python",
-    "python.terminal.activateEnvironment": true,
+    // ---- Formatting ----
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "[python]": {
       "editor.defaultFormatter": "charliermarsh.ruff",
       "editor.formatOnSave": true,
@@ -31,6 +32,56 @@
     "[javascript]": {
       "editor.defaultFormatter": "esbenp.prettier-vscode",
       "editor.formatOnSave": true
+    },
+    "[json]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[jsonc]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+
+    // ---- Python / Pylance ----
+    "python.defaultInterpreterPath": "${workspaceFolder:backend}/.venv/bin/python",
+    "python.terminal.activateEnvironment": true,
+    // Static type analysis in-editor. "standard" surfaces real type errors
+    // without the noise of "strict".
+    "python.analysis.typeCheckingMode": "standard",
+    // Only diagnose files you actually open, and never analyze third-party /
+    // generated code. Without this, Pylance reports thousands of warnings from
+    // the 3400+ files under .venv.
+    "python.analysis.diagnosticMode": "openFilesOnly",
+    "python.analysis.exclude": [
+      "**/.venv/**",
+      "**/venv/**",
+      "**/node_modules/**",
+      "**/__pycache__/**",
+      "**/.pytest_cache/**"
+    ],
+
+    // ---- Ruff ----
+    "ruff.logLevel": "error",
+    "ruff.trace.server": "off",
+
+    // ---- Files ----
+    "files.associations": {
+      "*.svelte": "svelte",
+      "*.css": "tailwindcss"
+    },
+    "files.watcherExclude": {
+      "**/.git/objects/**": true,
+      "**/.git/subtree-cache/**": true,
+      "**/node_modules/**": true,
+      "**/.venv/**": true,
+      "**/__pycache__/**": true,
+      "**/.pytest_cache/**": true,
+      "**/dist/**": true,
+      "**/build/**": true
+    },
+
+    // ---- SonarLint (connected mode) ----
+    "sonarlint.connectedMode.project": {
+      "connectionId": "https-sonarqube-local-hotdamndog-com",
+      "projectKey": "tpow4_CoinPurse_427eda53-5531-4e4a-829c-2976b92f9141"
     }
   },
   "launch": {
@@ -71,7 +122,8 @@
       "ms-python.python",
       "ms-python.vscode-pylance",
       "svelte.svelte-vscode",
-      "esbenp.prettier-vscode"
+      "esbenp.prettier-vscode",
+      "inlang.vs-code-extension"
     ]
   }
 }

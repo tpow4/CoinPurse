@@ -34,23 +34,51 @@ line-length = 88
 fix = true
 
 [tool.ruff.lint]
-# Enable common linting rules
+# Enable linting rules. Beyond style/correctness, this turns on the rule
+# groups that matter for security and static analysis of a finance backend.
 select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort (import sorting)
-    "N",   # pep8-naming
-    "UP",  # pyupgrade
-    "B",   # flake8-bugbear
-    "C4",  # flake8-comprehensions
-    "SIM", # flake8-simplify
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "I",     # isort (import sorting)
+    "N",     # pep8-naming
+    "UP",    # pyupgrade (modernize syntax for the target Python)
+    "B",     # flake8-bugbear (likely bugs / footguns)
+    "C4",    # flake8-comprehensions
+    "SIM",   # flake8-simplify
+    "S",     # flake8-bandit (security: injection, hardcoded secrets, etc.)
+    "ASYNC", # flake8-async (blocking calls in async paths — FastAPI)
+    "DTZ",   # flake8-datetimez (require timezone-aware datetimes)
+    "LOG",   # flake8-logging (logging API misuse)
+    "G",     # flake8-logging-format (f-strings/format in log calls)
+    "PIE",   # flake8-pie (misc lints / dead code)
+    "RET",   # flake8-return (return-statement consistency)
+    "PTH",   # flake8-use-pathlib (prefer pathlib over os.path)
+    "PT",    # flake8-pytest-style
+    "RUF",   # Ruff-specific rules (mutable defaults, etc.)
+    "C90",   # mccabe (cyclomatic complexity)
 ]
 
-# Ignore some rules that conflict with FastAPI patterns
+# Rules deliberately disabled.
 ignore = [
-    "B008", # Allow function calls in default arguments (needed for FastAPI Depends)
+    "B008", # Function calls in default arguments — required for FastAPI `Depends`
 ]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests legitimately use asserts and throwaway credentials/fixtures.
+"tests/**/*.py" = [
+    "S101", # assert is the whole point of a test
+    "S105", # hardcoded password (test fixtures)
+    "S106", # hardcoded password passed as argument (test fixtures)
+    "S311", # non-crypto random is fine for test data
+]
+# Standalone seed/utility scripts may print to the console.
+"database.py" = ["T201"]
+"test_db.py" = ["T201"]
+
+[tool.ruff.lint.mccabe]
+# Flag functions whose cyclomatic complexity exceeds this threshold.
+max-complexity = 12
 
 [tool.ruff.lint.isort]
 # Configure import sorting

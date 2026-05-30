@@ -155,4 +155,4 @@ def delete_institution(
     else:
         repo.soft_delete(institution)
 
-    return None
+    return

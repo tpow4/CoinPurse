@@ -21,7 +21,6 @@ class CategoryMappingBase(BaseModel):
 class CategoryMappingCreate(CategoryMappingBase):
     """Schema for creating a category mapping"""
 
-    pass
 
 
 class CategoryMappingUpdate(BaseModel):

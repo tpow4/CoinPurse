@@ -6,7 +6,15 @@ from datetime import date
 
 import pytest
 
-from models import Account, AccountType, Category, Institution, TaxTreatmentType, Transaction, TransactionType
+from models import (
+    Account,
+    AccountType,
+    Category,
+    Institution,
+    TaxTreatmentType,
+    Transaction,
+    TransactionType,
+)
 from services import DuplicateDetector, TransactionHash
 
 

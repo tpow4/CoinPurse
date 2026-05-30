@@ -92,7 +92,7 @@ async def upload_and_preview(
         raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Error processing file: {str(e)}"
+            status_code=500, detail=f"Error processing file: {e!s}"
         ) from e
 
 
@@ -123,7 +123,7 @@ def confirm_import(
         raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Error confirming import: {str(e)}"
+            status_code=500, detail=f"Error confirming import: {e!s}"
         ) from e
 
 
@@ -309,7 +309,7 @@ def delete_template(
     else:
         repo.soft_delete(template)
 
-    return None
+    return
 
 
 # =============================================================================
@@ -425,7 +425,7 @@ def delete_category_mapping_group(
         # Soft-delete: mark active mappings as inactive, preserving the rows
         repo.soft_delete_group(data.institution_id, data.bank_category_name)
 
-    return None
+    return
 
 
 @router.get("/category-mappings/{mapping_id}", response_model=CategoryMappingResponse)
@@ -545,4 +545,4 @@ def delete_category_mapping(
     else:
         repo.soft_delete(mapping)
 
-    return None
+    return

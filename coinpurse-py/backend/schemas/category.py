@@ -18,7 +18,7 @@ class CategoryBase(BaseModel):
 class CategoryCreate(CategoryBase):
     """Schema for creating a category (what user sends)"""
 
-    pass  # No additional fields needed for creation
+    # No additional fields needed for creation
 
 
 class CategoryUpdate(BaseModel):

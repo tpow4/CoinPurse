@@ -27,7 +27,7 @@ class TransactionBase(BaseModel):
 class TransactionCreate(TransactionBase):
     """Schema for creating a transaction (what user sends)"""
 
-    pass  # No additional fields needed for creation
+    # No additional fields needed for creation
 
 
 class TransactionUpdate(BaseModel):

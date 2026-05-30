@@ -272,4 +272,4 @@ def delete_transaction(
     else:
         repo.soft_delete(transaction)
 
-    return None
+    return
