@@ -106,41 +106,42 @@
             )
     );
 
-    const allCheckinAccounts = $derived<AccountDueForCheckin[]>(
-        accountsWithInstitutionName
-            .filter((a) => a.tracks_balances)
-            .map((a) => ({
-                account_id: a.account_id,
-                account_name: a.account_name,
-                institution_name: a.institution_name ?? 'Unknown',
-                last_balance_date:
-                    latestBalanceByAccountId[a.account_id]?.balance_date ??
-                    null,
-                days_since_last: null,
-            }))
+    const balanceTrackingAccountsWithInstitutionName = $derived(
+        accountsWithInstitutionName.filter((a) => a.tracks_balances)
     );
 
-    const accountById = $derived(
-        accounts.reduce(
+    const allCheckinAccounts = $derived<AccountDueForCheckin[]>(
+        balanceTrackingAccountsWithInstitutionName.map((a) => ({
+            account_id: a.account_id,
+            account_name: a.account_name,
+            institution_name: a.institution_name ?? 'Unknown',
+            last_balance_date:
+                latestBalanceByAccountId[a.account_id]?.balance_date ?? null,
+            days_since_last: null,
+        }))
+    );
+
+    const balanceTrackingAccountById = $derived(
+        balanceTrackingAccountsWithInstitutionName.reduce(
             (map, account) => {
                 map[account.account_id] = account;
                 return map;
             },
-            {} as Record<number, Account>
+            {} as Record<number, AccountWithInstitutionName>
         )
     );
 
     const netWorthTotal = $derived(
-        Object.values(latestBalanceByAccountId).reduce(
-            (sum, balance) => sum + balance.balance,
-            0
-        )
+        Object.values(latestBalanceByAccountId).reduce((sum, balance) => {
+            if (!balanceTrackingAccountById[balance.account_id]) return sum;
+            return sum + balance.balance;
+        }, 0)
     );
 
     const liquidTotal = $derived(
         Object.values(latestBalanceByAccountId).reduce((sum, balance) => {
-            const account = accountById[balance.account_id];
-            if (!account || !account.tracks_balances) return sum;
+            const account = balanceTrackingAccountById[balance.account_id];
+            if (!account) return sum;
             if (
                 account.account_type === AccountType.BANKING ||
                 account.account_type === AccountType.TREASURY
@@ -153,6 +154,7 @@
 
     const netWorthPreviousTotal = $derived(
         Object.values(latestBalanceByAccountId).reduce((sum, latest) => {
+            if (!balanceTrackingAccountById[latest.account_id]) return sum;
             const previous = previousBalanceByAccountId[latest.account_id];
             return sum + (previous ? previous.balance : latest.balance);
         }, 0)
@@ -160,15 +162,22 @@
 
     const netWorthChange = $derived(netWorthTotal - netWorthPreviousTotal);
     const netWorthChangePercent = $derived(
-        netWorthPreviousTotal !== 0 ? netWorthChange / netWorthPreviousTotal : 0
+        netWorthPreviousTotal !== 0
+            ? netWorthChange / netWorthPreviousTotal
+            : 0
     );
     const hasPreviousBalances = $derived(
-        Object.keys(previousBalanceByAccountId).length > 0
+        Object.keys(previousBalanceByAccountId).some(
+            (accountId) => balanceTrackingAccountById[Number(accountId)]
+        )
     );
 
     const latestBalanceOverall = $derived(
         Object.values(latestBalanceByAccountId).reduce(
             (latest, balance) => {
+                if (!balanceTrackingAccountById[balance.account_id]) {
+                    return latest;
+                }
                 if (!latest) return balance;
                 return balanceKey(balance) > balanceKey(latest)
                     ? balance
@@ -435,7 +444,7 @@
         <div class="bg-red-50 text-red-700 p-4 rounded mb-6">{error}</div>
     {/if}
 
-    {#if !loading && accountsWithInstitutionName.length > 0}
+    {#if !loading && balanceTrackingAccountsWithInstitutionName.length > 0}
         <div class="mb-8">
             {#key chartRefreshKey}
                 <StackedBalanceChart
@@ -454,7 +463,7 @@
         <div class="text-center py-12 text-gray-600">
             {m.dashboard_loading()}
         </div>
-    {:else if accountsWithInstitutionName.length === 0}
+    {:else if balanceTrackingAccountsWithInstitutionName.length === 0}
         <div class="text-center py-12 text-muted-foreground">
             {m.dashboard_empty()}
         </div>
@@ -462,7 +471,7 @@
         <div
             class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
         >
-            {#each accountsWithInstitutionName as account (account.account_id)}
+            {#each balanceTrackingAccountsWithInstitutionName as account (account.account_id)}
                 <AccountBalanceCard
                     {account}
                     latestBalance={latestBalanceByAccountId[
