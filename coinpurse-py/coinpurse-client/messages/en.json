@@ -2,6 +2,7 @@
     "$schema": "https://inlang.com/schema/inlang-message-format",
     "locale_name": "English",
     "nav_home": "Home",
+    "nav_balances": "Balances",
     "nav_transactions": "Transactions",
     "nav_import": "Import",
     "nav_settings": "Settings",
@@ -198,6 +199,12 @@
     "dashboard_empty": "No accounts yet. Add an institution and account to get started.",
     "dashboard_error_create_account": "Failed to create account",
     "dashboard_error_create_institution": "Failed to create institution",
+
+    "balances_title": "Balances",
+    "balances_description": "Track your account balances over time.",
+    "balances_loading": "Loading balances...",
+    "balances_empty": "No accounts yet. Add an institution and account to get started.",
+    "balances_error_load": "Failed to load balances",
 
     "txn_title": "Transactions",
     "txn_btn_import": "Import",

@@ -2,6 +2,7 @@
     "$schema": "https://inlang.com/schema/inlang-message-format",
     "locale_name": "Deutsch",
     "nav_home": "Startseite",
+    "nav_balances": "Konten",
     "nav_transactions": "Transaktionen",
     "nav_import": "Importieren",
     "nav_settings": "Einstellungen",
@@ -198,6 +199,12 @@
     "dashboard_empty": "Noch keine Konten. Füge eine Institution und ein Konto hinzu, um zu beginnen.",
     "dashboard_error_create_account": "Fehler beim Erstellen des Kontos",
     "dashboard_error_create_institution": "Fehler beim Erstellen der Institution",
+
+    "balances_title": "Konten",
+    "balances_description": "Verfolge deine Kontosalden im Laufe der Zeit.",
+    "balances_loading": "Salden werden geladen...",
+    "balances_empty": "Noch keine Konten. Füge eine Institution und ein Konto hinzu, um zu beginnen.",
+    "balances_error_load": "Fehler beim Laden der Salden",
 
     "txn_title": "Transaktionen",
     "txn_btn_import": "Importieren",

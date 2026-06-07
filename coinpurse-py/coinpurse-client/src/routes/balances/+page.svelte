@@ -3,19 +3,17 @@
     import type {
         Account,
         AccountBalance,
-        AccountCreate,
         AccountDueForCheckin,
         Institution,
-        TaxTreatmentType,
+        BalanceCreate,
+        BalanceBatchCreate,
     } from "$lib/types";
     import { AccountType } from "$lib/types";
 
     import { Button } from "$lib/components/ui/button";
     import { Badge } from "$lib/components/ui/badge";
-    import AddEditAccountDialog from "../pages/accounts/add-edit-account-dialog.svelte";
-    import AddEditInstitutionDialog from "../pages/institutions/add-edit-institution-dialog.svelte";
-    import StackedBalanceChart from "../pages/dashboard/stacked-balance-chart.svelte";
-    import PortfolioAllocationChart from "../pages/dashboard/portfolio-allocation-chart.svelte";
+    import AccountBalanceCard from "../../pages/dashboard/account-balance-card.svelte";
+    import StackedBalanceChart from "../../pages/dashboard/stacked-balance-chart.svelte";
     import BalanceCheckinDialog from "$lib/components/balance-checkin-dialog.svelte";
     import { accountsApi } from "$lib/api/accounts";
     import { institutionsApi } from "$lib/api/institutions";
@@ -23,7 +21,6 @@
     import { settingsApi } from "$lib/api/settings";
     import { toast } from "svelte-sonner";
     import * as m from "$lib/paraglide/messages";
-    import { Plus } from "@lucide/svelte";
 
     type AccountWithInstitutionName = Account & { institution_name?: string };
 
@@ -34,30 +31,11 @@
 
     let loading = $state(false);
     let error = $state("");
-
-    let showAddAccount = $state(false);
-    let showAddInstitution = $state(false);
     let checkinDialogOpen = $state(false);
-
-    let accountFormLoading = $state(false);
-    let accountFormError = $state("");
-    let accountFieldErrors = $state({
-        account_name: "",
-        institution_id: "",
-        account_type: "",
-        tax_treatment: "",
-        last_4_digits: "",
-    });
-
-    let institutionFormLoading = $state(false);
-    let institutionFormError = $state("");
-    let institutionFieldErrors = $state({ name: "" });
-
-    let institutionsRefreshKey = $state(0);
     let chartRefreshKey = $state(0);
 
     $effect(() => {
-        loadDashboardData();
+        loadData();
     });
 
     const institutionNameById = $derived(
@@ -185,7 +163,7 @@
         ),
     );
 
-    async function loadDashboardData() {
+    async function loadData() {
         loading = true;
         error = "";
         try {
@@ -208,7 +186,7 @@
             if (e instanceof ApiException) {
                 error = e.detail;
             } else {
-                error = m.dashboard_error_load();
+                error = m.balances_error_load();
             }
         } finally {
             loading = false;
@@ -250,166 +228,32 @@
         return `${balance.balance_date}|${balance.created_at}`;
     }
 
-    function openAddAccount() {
-        accountFormError = "";
-        accountFieldErrors = {
-            account_name: "",
-            institution_id: "",
-            account_type: "",
-            tax_treatment: "",
-            last_4_digits: "",
-        };
-        showAddAccount = true;
+    async function handleCreateBalance(data: BalanceCreate) {
+        const created = await balancesApi.create(data);
+        balances = [...balances, created];
+        chartRefreshKey += 1;
     }
 
-    function openAddInstitution() {
-        institutionFormError = "";
-        institutionFieldErrors = { name: "" };
-        showAddInstitution = true;
+    async function handleCreateBalanceBatch(data: BalanceBatchCreate) {
+        const result = await balancesApi.createBatch(data);
+        const updatedIds = new Set(result.balances.map((b) => b.balance_id));
+        balances = [
+            ...balances.filter((b) => !updatedIds.has(b.balance_id)),
+            ...result.balances,
+        ];
+        chartRefreshKey += 1;
     }
-
-    function validateAccountForm(data: {
-        account_name: string;
-        institution_id: number;
-        account_type: AccountType;
-        tax_treatment: TaxTreatmentType;
-        last_4_digits: string;
-    }): boolean {
-        accountFieldErrors = {
-            account_name: "",
-            institution_id: "",
-            account_type: "",
-            tax_treatment: "",
-            last_4_digits: "",
-        };
-        let isValid = true;
-
-        if (!data.account_name.trim()) {
-            accountFieldErrors.account_name = m.acct_validation_name_required();
-            isValid = false;
-        } else if (data.account_name.length > 100) {
-            accountFieldErrors.account_name = m.acct_validation_name_too_long();
-            isValid = false;
-        }
-
-        if (!data.institution_id || data.institution_id === 0) {
-            accountFieldErrors.institution_id =
-                m.acct_validation_institution_required();
-            isValid = false;
-        }
-
-        if (!data.account_type) {
-            accountFieldErrors.account_type = m.acct_validation_type_required();
-            isValid = false;
-        }
-
-        if (!data.tax_treatment) {
-            accountFieldErrors.tax_treatment = m.acct_validation_tax_required();
-            isValid = false;
-        }
-
-        if (data.last_4_digits && data.last_4_digits.length > 4) {
-            accountFieldErrors.last_4_digits =
-                m.acct_validation_last4_too_long();
-            isValid = false;
-        }
-
-        return isValid;
-    }
-
-    async function handleCreateAccount(data: {
-        account_name: string;
-        institution_id: number;
-        account_type: AccountType;
-        tax_treatment: TaxTreatmentType;
-        last_4_digits: string;
-        tracks_transactions: boolean;
-        tracks_balances: boolean;
-        display_order: number;
-    }) {
-        accountFormError = "";
-        if (!validateAccountForm(data)) return;
-
-        accountFormLoading = true;
-        try {
-            const createData: AccountCreate = {
-                account_name: data.account_name,
-                institution_id: data.institution_id,
-                account_type: data.account_type,
-                tax_treatment: data.tax_treatment,
-                last_4_digits: data.last_4_digits,
-                tracks_transactions: data.tracks_transactions,
-                tracks_balances: data.tracks_balances,
-                display_order: data.display_order,
-                active: true,
-            };
-            await accountsApi.create(createData);
-            showAddAccount = false;
-            loadDashboardData();
-        } catch (e) {
-            if (e instanceof ApiException) {
-                accountFormError = e.detail;
-            } else {
-                accountFormError = m.dashboard_error_create_account();
-            }
-        } finally {
-            accountFormLoading = false;
-        }
-    }
-
-    function validateInstitutionForm(name: string): boolean {
-        institutionFieldErrors = { name: "" };
-        if (!name.trim()) {
-            institutionFieldErrors.name = m.inst_validation_name_required();
-            return false;
-        }
-        if (name.length > 100) {
-            institutionFieldErrors.name = m.inst_validation_name_too_long();
-            return false;
-        }
-        return true;
-    }
-
-    async function handleCreateInstitution(data: { name: string }) {
-        institutionFormError = "";
-        if (!validateInstitutionForm(data.name)) return;
-
-        institutionFormLoading = true;
-        try {
-            await institutionsApi.create({ name: data.name });
-            showAddInstitution = false;
-            institutionsRefreshKey += 1;
-            loadDashboardData();
-        } catch (e) {
-            if (e instanceof ApiException) {
-                institutionFormError = e.detail;
-            } else {
-                institutionFormError = m.dashboard_error_create_institution();
-            }
-        } finally {
-            institutionFormLoading = false;
-        }
-    }
-
-
 </script>
 
 <div class="mx-auto max-w-350 p-8">
     <div class="mb-8 flex items-start justify-between gap-4">
         <div>
-            <h1 class="mb-2 text-3xl font-bold">{m.dashboard_title()}</h1>
+            <h1 class="mb-2 text-3xl font-bold">{m.balances_title()}</h1>
             <p class="text-muted-foreground">
-                {m.dashboard_description()}
+                {m.balances_description()}
             </p>
         </div>
         <div class="flex gap-2">
-            <Button variant="outline" onclick={openAddInstitution}>
-                {m.inst_btn_add()}
-            </Button>
-            <Button variant="outline" onclick={openAddAccount}>
-                <Plus class="size-4" />
-                {m.acct_btn_add()}
-            </Button>
             <Button
                 onclick={() => {
                     checkinDialogOpen = true;
@@ -439,51 +283,35 @@
                     lastUpdatedDate={latestBalanceOverall?.balance_date ?? null}
                 />
             {/key}
-            <div class="mt-4">
-                <PortfolioAllocationChart
-                    {latestBalanceByAccountId}
-                    {balanceTrackingAccountById}
-                />
-            </div>
         </div>
     {/if}
 
     {#if loading}
         <div class="py-12 text-center text-gray-600">
-            {m.dashboard_loading()}
+            {m.balances_loading()}
         </div>
     {:else if balanceTrackingAccountsWithInstitutionName.length === 0}
         <div class="text-muted-foreground py-12 text-center">
-            {m.dashboard_empty()}
+            {m.balances_empty()}
+        </div>
+    {:else}
+        <div
+            class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        >
+            {#each balanceTrackingAccountsWithInstitutionName as account (account.account_id)}
+                <AccountBalanceCard
+                    {account}
+                    latestBalance={latestBalanceByAccountId[
+                        account.account_id
+                    ] ?? null}
+                    balances={balancesByAccountId[account.account_id] ?? []}
+                    onCreateBalance={handleCreateBalance}
+                    onCreateBalanceBatch={handleCreateBalanceBatch}
+                />
+            {/each}
         </div>
     {/if}
 </div>
-
-{#key institutionsRefreshKey}
-    <AddEditAccountDialog
-        open={showAddAccount}
-        editingAccount={null}
-        loading={accountFormLoading}
-        error={accountFormError}
-        fieldErrors={accountFieldErrors}
-        onOpenChange={(open) => {
-            if (!open) showAddAccount = false;
-        }}
-        onSubmit={handleCreateAccount}
-    />
-{/key}
-
-<AddEditInstitutionDialog
-    open={showAddInstitution}
-    editingInstitution={null}
-    loading={institutionFormLoading}
-    error={institutionFormError}
-    fieldErrors={institutionFieldErrors}
-    onOpenChange={(open) => {
-        if (!open) showAddInstitution = false;
-    }}
-    onSubmit={handleCreateInstitution}
-/>
 
 <BalanceCheckinDialog
     open={checkinDialogOpen}
@@ -492,7 +320,7 @@
         checkinDialogOpen = open;
     }}
     onSuccess={() => {
-        loadDashboardData();
+        loadData();
         sessionStorage.removeItem("balance_checkin_reminded");
         toast.success(m.checkin_success());
     }}
