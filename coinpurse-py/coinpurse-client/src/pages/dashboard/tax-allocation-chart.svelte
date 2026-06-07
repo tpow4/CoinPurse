@@ -50,7 +50,7 @@
 
 <Card>
 	<CardHeader class="pb-2">
-		<CardTitle>Tax Allocation</CardTitle>
+		<CardTitle>{m.chart_tax_allocation_title()}</CardTitle>
 	</CardHeader>
 	<CardContent>
 		{#if hasData}
@@ -88,7 +88,7 @@
 			<div
 				class="text-muted-foreground bg-muted/30 border-border/70 flex min-h-70 items-center justify-center rounded-md border border-dashed text-sm"
 			>
-				No balance data available.
+				{m.chart_no_balance_data()}
 			</div>
 		{/if}
 	</CardContent>

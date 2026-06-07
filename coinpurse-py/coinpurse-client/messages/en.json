@@ -205,6 +205,10 @@
     "balances_loading": "Loading balances...",
     "balances_empty": "No accounts yet. Add an institution and account to get started.",
     "balances_error_load": "Failed to load balances",
+    "chart_portfolio_allocation_title": "Portfolio Allocation",
+    "chart_tax_allocation_title": "Tax Allocation",
+    "chart_institution_allocation_title": "By Institution",
+    "chart_no_balance_data": "No balance data available.",
 
     "txn_title": "Transactions",
     "txn_btn_import": "Import",

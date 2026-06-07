@@ -4,6 +4,7 @@
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { type Account, type AccountBalance } from '$lib/types';
 	import { formatCentsCurrency } from '$lib/format';
+	import * as m from '$lib/paraglide/messages';
 
 	interface Props {
 		latestBalanceByAccountId: Record<number, AccountBalance>;
@@ -48,7 +49,7 @@
 
 <Card>
 	<CardHeader class="pb-2">
-		<CardTitle>By Institution</CardTitle>
+		<CardTitle>{m.chart_institution_allocation_title()}</CardTitle>
 	</CardHeader>
 	<CardContent>
 		{#if hasData}
@@ -86,7 +87,7 @@
 			<div
 				class="text-muted-foreground bg-muted/30 border-border/70 flex min-h-70 items-center justify-center rounded-md border border-dashed text-sm"
 			>
-				No balance data available.
+				{m.chart_no_balance_data()}
 			</div>
 		{/if}
 	</CardContent>

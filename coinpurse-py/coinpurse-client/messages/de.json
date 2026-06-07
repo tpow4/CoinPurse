@@ -205,6 +205,10 @@
     "balances_loading": "Salden werden geladen...",
     "balances_empty": "Noch keine Konten. Füge eine Institution und ein Konto hinzu, um zu beginnen.",
     "balances_error_load": "Fehler beim Laden der Salden",
+    "chart_portfolio_allocation_title": "Portfolio-Aufteilung",
+    "chart_tax_allocation_title": "Steuerliche Aufteilung",
+    "chart_institution_allocation_title": "Nach Institution",
+    "chart_no_balance_data": "Keine Salden verfügbar.",
 
     "txn_title": "Transaktionen",
     "txn_btn_import": "Importieren",
