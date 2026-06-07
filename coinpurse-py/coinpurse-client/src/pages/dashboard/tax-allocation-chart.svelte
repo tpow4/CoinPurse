@@ -2,8 +2,9 @@
 	import { PieChart } from 'layerchart';
 	import * as Chart from '$lib/components/ui/chart';
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
-	import { AccountType, type Account, type AccountBalance } from '$lib/types';
+	import { TaxTreatmentType, type Account, type AccountBalance } from '$lib/types';
 	import { formatCentsCurrency } from '$lib/format';
+	import * as m from '$lib/paraglide/messages';
 
 	interface Props {
 		latestBalanceByAccountId: Record<number, AccountBalance>;
@@ -13,19 +14,11 @@
 	let { latestBalanceByAccountId, balanceTrackingAccountById }: Props = $props();
 
 	const allSlices = [
-		{ key: 'cash', label: 'Cash', type: AccountType.BANKING, color: 'var(--chart-1)' },
-		{
-			key: 'treasuries',
-			label: 'Treasuries',
-			type: AccountType.TREASURY,
-			color: 'var(--chart-2)',
-		},
-		{
-			key: 'investments',
-			label: 'Investments',
-			type: AccountType.INVESTMENT,
-			color: 'var(--chart-3)',
-		},
+		{ key: 'taxable', label: m.tax_taxable(), type: TaxTreatmentType.TAXABLE, color: 'var(--chart-1)' },
+		{ key: 'tax_deferred', label: m.tax_deferred(), type: TaxTreatmentType.TAX_DEFERRED, color: 'var(--chart-2)' },
+		{ key: 'tax_free', label: m.tax_free(), type: TaxTreatmentType.TAX_FREE, color: 'var(--chart-3)' },
+		{ key: 'triple_tax_free', label: m.tax_triple_free(), type: TaxTreatmentType.TRIPLE_TAX_FREE, color: 'var(--chart-4)' },
+		{ key: 'not_applicable', label: m.tax_not_applicable(), type: TaxTreatmentType.NOT_APPLICABLE, color: 'var(--chart-5)' },
 	];
 
 	const chartData = $derived(
@@ -33,7 +26,7 @@
 			.map((slice) => {
 				const total = Object.values(latestBalanceByAccountId).reduce((sum, balance) => {
 					const account = balanceTrackingAccountById[balance.account_id];
-					if (account?.account_type === slice.type) return sum + balance.balance;
+					if (account?.tax_treatment === slice.type) return sum + balance.balance;
 					return sum;
 				}, 0);
 				return { key: slice.key, label: slice.label, value: total, color: slice.color };
@@ -57,7 +50,7 @@
 
 <Card>
 	<CardHeader class="pb-2">
-		<CardTitle>Portfolio Allocation</CardTitle>
+		<CardTitle>Tax Allocation</CardTitle>
 	</CardHeader>
 	<CardContent>
 		{#if hasData}

@@ -16,6 +16,8 @@
     import AddEditInstitutionDialog from "../pages/institutions/add-edit-institution-dialog.svelte";
     import StackedBalanceChart from "../pages/dashboard/stacked-balance-chart.svelte";
     import PortfolioAllocationChart from "../pages/dashboard/portfolio-allocation-chart.svelte";
+    import TaxAllocationChart from "../pages/dashboard/tax-allocation-chart.svelte";
+    import InstitutionAllocationChart from "../pages/dashboard/institution-allocation-chart.svelte";
     import BalanceCheckinDialog from "$lib/components/balance-checkin-dialog.svelte";
     import { accountsApi } from "$lib/api/accounts";
     import { institutionsApi } from "$lib/api/institutions";
@@ -439,8 +441,16 @@
                     lastUpdatedDate={latestBalanceOverall?.balance_date ?? null}
                 />
             {/key}
-            <div class="mt-4">
+            <div class="mt-4 grid gap-4 lg:grid-cols-3">
                 <PortfolioAllocationChart
+                    {latestBalanceByAccountId}
+                    {balanceTrackingAccountById}
+                />
+                <TaxAllocationChart
+                    {latestBalanceByAccountId}
+                    {balanceTrackingAccountById}
+                />
+                <InstitutionAllocationChart
                     {latestBalanceByAccountId}
                     {balanceTrackingAccountById}
                 />

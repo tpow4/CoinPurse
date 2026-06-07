@@ -2,7 +2,7 @@
 	import { PieChart } from 'layerchart';
 	import * as Chart from '$lib/components/ui/chart';
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
-	import { AccountType, type Account, type AccountBalance } from '$lib/types';
+	import { type Account, type AccountBalance } from '$lib/types';
 	import { formatCentsCurrency } from '$lib/format';
 
 	interface Props {
@@ -12,34 +12,25 @@
 
 	let { latestBalanceByAccountId, balanceTrackingAccountById }: Props = $props();
 
-	const allSlices = [
-		{ key: 'cash', label: 'Cash', type: AccountType.BANKING, color: 'var(--chart-1)' },
-		{
-			key: 'treasuries',
-			label: 'Treasuries',
-			type: AccountType.TREASURY,
-			color: 'var(--chart-2)',
-		},
-		{
-			key: 'investments',
-			label: 'Investments',
-			type: AccountType.INVESTMENT,
-			color: 'var(--chart-3)',
-		},
-	];
-
-	const chartData = $derived(
-		allSlices
-			.map((slice) => {
-				const total = Object.values(latestBalanceByAccountId).reduce((sum, balance) => {
-					const account = balanceTrackingAccountById[balance.account_id];
-					if (account?.account_type === slice.type) return sum + balance.balance;
-					return sum;
-				}, 0);
-				return { key: slice.key, label: slice.label, value: total, color: slice.color };
-			})
-			.filter((slice) => slice.value > 0),
-	);
+	const chartData = $derived.by(() => {
+		const totals = new Map<number, { name: string; total: number }>();
+		for (const balance of Object.values(latestBalanceByAccountId)) {
+			const account = balanceTrackingAccountById[balance.account_id];
+			if (!account) continue;
+			const id = account.institution_id;
+			const existing = totals.get(id) ?? { name: account.institution_name ?? 'Unknown', total: 0 };
+			totals.set(id, { ...existing, total: existing.total + balance.balance });
+		}
+		return [...totals.entries()]
+			.filter(([, v]) => v.total > 0)
+			.sort((a, b) => b[1].total - a[1].total)
+			.map(([id, { name, total }], i) => ({
+				key: `inst_${id}`,
+				label: name,
+				value: total,
+				color: `var(--chart-${(i % 5) + 1})`,
+			}));
+	});
 
 	const chartConfig = $derived(
 		chartData.reduce(
@@ -57,7 +48,7 @@
 
 <Card>
 	<CardHeader class="pb-2">
-		<CardTitle>Portfolio Allocation</CardTitle>
+		<CardTitle>By Institution</CardTitle>
 	</CardHeader>
 	<CardContent>
 		{#if hasData}
