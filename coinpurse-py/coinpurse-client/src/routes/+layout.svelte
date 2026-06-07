@@ -15,6 +15,7 @@
         User,
         SlidersHorizontal,
         Tag,
+        BarChart3,
     } from '@lucide/svelte';
     import { page } from '$app/state';
     import { Button } from '$lib/components/ui/button';
@@ -83,6 +84,7 @@
 
     const navItems = $derived([
         { href: localizeHref('/'), label: m.nav_home(), icon: House },
+        { href: localizeHref('/balances'), label: m.nav_balances(), icon: BarChart3 },
         {
             href: localizeHref('/transactions'),
             label: m.nav_transactions(),
