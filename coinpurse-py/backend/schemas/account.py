@@ -28,7 +28,7 @@ class AccountBase(BaseModel):
 class AccountCreate(AccountBase):
     """Schema for creating an account (what user sends)"""
 
-    pass  # No additional fields needed for creation
+    # No additional fields needed for creation
 
 
 class AccountUpdate(BaseModel):

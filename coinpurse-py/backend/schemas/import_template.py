@@ -68,7 +68,6 @@ class ImportTemplateBase(BaseModel):
 class ImportTemplateCreate(ImportTemplateBase):
     """Schema for creating an import template"""
 
-    pass
 
 
 class ImportTemplateUpdate(BaseModel):

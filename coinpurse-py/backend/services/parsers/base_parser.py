@@ -69,7 +69,6 @@ class BaseParser(ABC):
         Returns:
             List of ParsedRow objects
         """
-        pass
 
     def _process_dataframe(self, df: pd.DataFrame) -> list[ParsedRow]:
         """
@@ -182,12 +181,12 @@ class BaseParser(ABC):
         try:
             if sign_convention == "split_columns":
                 return self._parse_split_columns(row, decimal_places)
-            elif sign_convention == "inverted":
+            if sign_convention == "inverted":
                 return self._parse_inverted(row, decimal_places)
-            elif sign_convention == "amount_with_type_column":
+            if sign_convention == "amount_with_type_column":
                 return self._parse_amount_with_type(row, decimal_places)
-            else:  # bank_standard
-                return self._parse_bank_standard(row, decimal_places)
+            # bank_standard
+            return self._parse_bank_standard(row, decimal_places)
         except Exception as e:
             errors.append(f"Error parsing amount: {e}")
             return (0, "DEBIT")
@@ -230,10 +229,9 @@ class BaseParser(ABC):
             # Credit = positive (money in)
             amount_cents = self._to_cents(credit_amount, decimal_places)
             return (amount_cents, "CREDIT")
-        else:
-            # Debit = negative (money out)
-            amount_cents = self._to_cents(-abs(debit_amount), decimal_places)
-            return (amount_cents, "DEBIT")
+        # Debit = negative (money out)
+        amount_cents = self._to_cents(-abs(debit_amount), decimal_places)
+        return (amount_cents, "DEBIT")
 
     def _parse_amount_with_type(
         self, row: pd.Series, decimal_places: int
@@ -250,9 +248,8 @@ class BaseParser(ABC):
         if credit_indicator in type_value:
             amount_cents = self._to_cents(raw_amount, decimal_places)
             return (amount_cents, "CREDIT")
-        else:
-            amount_cents = self._to_cents(-raw_amount, decimal_places)
-            return (amount_cents, "DEBIT")
+        amount_cents = self._to_cents(-raw_amount, decimal_places)
+        return (amount_cents, "DEBIT")
 
     def _get_string_value(
         self, row: pd.Series, column_name: str | None, default: str | None

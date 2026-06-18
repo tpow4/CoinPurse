@@ -281,8 +281,7 @@ class ImportService:
         """Map CREDIT/DEBIT string to TransactionType enum"""
         if type_str == "CREDIT":
             return TransactionType.PAYMENT
-        else:
-            return TransactionType.PURCHASE
+        return TransactionType.PURCHASE
 
     def _parse_date_from_json(self, date_value: str | date | None) -> date | None:
         """Parse a date that may be an ISO string or already a date object"""

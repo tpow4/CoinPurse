@@ -23,7 +23,7 @@ class BalanceBase(BaseModel):
 class BalanceCreate(BalanceBase):
     """Schema for creating a balance (what user sends)"""
 
-    pass  # No additional fields needed for creation
+    # No additional fields needed for creation
 
 
 class BalanceUpdate(BaseModel):

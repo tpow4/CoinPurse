@@ -9,6 +9,6 @@ from .import_service import ImportService
 __all__ = [
     "CategoryMapper",
     "DuplicateDetector",
-    "TransactionHash",
     "ImportService",
+    "TransactionHash",
 ]

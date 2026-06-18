@@ -148,4 +148,4 @@ def delete_category(
     else:
         repo.soft_delete(category)
 
-    return None
+    return

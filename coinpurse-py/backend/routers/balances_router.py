@@ -290,4 +290,4 @@ def delete_balance(
     else:
         repo.soft_delete(balance)
 
-    return None
+    return
