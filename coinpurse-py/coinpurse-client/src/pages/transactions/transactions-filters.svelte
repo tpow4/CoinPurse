@@ -264,7 +264,7 @@
 		</div>
 
 		<!-- Amount Range -->
-		<div class="flex min-w-55 max-w-87.5 flex-1 items-center gap-2">
+		<div class="flex min-w-55 max-w-87.5 flex-1 items-end gap-2">
 			<Label class="shrink-0 text-sm">{m.txn_filter_amount()}</Label>
 			<AmountRangeSlider
 				min={amountRangeMin}
