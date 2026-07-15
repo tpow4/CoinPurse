@@ -4,5 +4,8 @@ packages:
 allowBuilds:
   esbuild: true
 
+minimumReleaseAgeExclude:
+  - svelte@5.56.5
+
 onlyBuiltDependencies:
   - esbuild
