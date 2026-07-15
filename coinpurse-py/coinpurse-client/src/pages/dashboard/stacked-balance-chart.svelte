@@ -1,29 +1,29 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-    import { AreaChart } from 'layerchart';
-    import { curveMonotoneX } from 'd3-shape';
-    import { scaleUtc } from 'd3-scale';
-    import * as Chart from '$lib/components/ui/chart/index.js';
-    import { balancesApi } from '$lib/api/balances';
-    import { ApiException } from '$lib/api';
-    import type { MonthlyBalanceAggregateResponse } from '$lib/types';
+    import { onMount } from "svelte";
+    import { AreaChart } from "layerchart";
+    import { curveMonotoneX } from "d3-shape";
+    import { scaleUtc } from "d3-scale";
+    import * as Chart from "$lib/components/ui/chart/index.js";
+    import { balancesApi } from "$lib/api/balances";
+    import { ApiException } from "$lib/api";
+    import type { MonthlyBalanceAggregateResponse } from "$lib/types";
     import {
         Card,
         CardContent,
         CardHeader,
         CardTitle,
-    } from '$lib/components/ui/card';
-    import { ButtonGroup } from '$lib/components/ui/button-group';
-    import { Button } from '$lib/components/ui/button';
+    } from "$lib/components/ui/card";
+    import { ButtonGroup } from "$lib/components/ui/button-group";
+    import { Button } from "$lib/components/ui/button";
     import {
         formatCompactCurrency,
         formatPercent,
         formatDate,
         formatDateCompact,
-    } from '$lib/format';
-    import * as m from '$lib/paraglide/messages';
+    } from "$lib/format";
+    import * as m from "$lib/paraglide/messages";
 
-    type DateRange = 'ytd' | '1y' | 'max';
+    type DateRange = "ytd" | "1y" | "max";
 
     interface Props {
         netWorthTotal: number;
@@ -44,13 +44,13 @@
     }: Props = $props();
 
     let loading = $state(true);
-    let error = $state('');
+    let error = $state("");
     let response = $state<MonthlyBalanceAggregateResponse | null>(null);
-    let selectedRange = $state<DateRange>('ytd');
+    let selectedRange = $state<DateRange>("ytd");
 
     const changeIsPositive = $derived(netWorthChange >= 0);
     const changeClass = $derived(
-        changeIsPositive ? 'text-emerald-600' : 'text-red-600'
+        changeIsPositive ? "text-emerald-600" : "text-red-600",
     );
 
     function parseIsoDate(date: string): Date {
@@ -74,7 +74,7 @@
             // Add each account's balance for this month
             response?.series.forEach((accountSeries) => {
                 const monthData = accountSeries.data.find(
-                    (d) => d.balance_date === monthDate
+                    (d) => d.balance_date === monthDate,
                 );
                 const key = `account_${accountSeries.account_id}`;
                 // Convert cents to dollars
@@ -91,7 +91,7 @@
             key: `account_${s.account_id}`,
             label: s.account_name,
             color: `var(--chart-${(idx % 5) + 1})`, // Cycle through chart-1 to chart-5
-        })) ?? []
+        })) ?? [],
     );
 
     // Create chart config for tooltip/legend
@@ -104,19 +104,19 @@
                 };
                 return config;
             },
-            {} as Record<string, { label: string; color: string }>
-        )
+            {} as Record<string, { label: string; color: string }>,
+        ),
     );
 
     const hasData = $derived(chartData.length >= 1 && chartSeries.length > 0);
 
     function getStartDateForRange(range: DateRange): string | undefined {
-        if (range === 'max') return undefined;
+        if (range === "max") return undefined;
 
         const now = new Date();
         let startDate: Date;
 
-        if (range === 'ytd') {
+        if (range === "ytd") {
             // Start of current year
             startDate = new Date(now.getFullYear(), 0, 1);
         } else {
@@ -124,16 +124,16 @@
             startDate = new Date(
                 now.getFullYear() - 1,
                 now.getMonth(),
-                now.getDate()
+                now.getDate(),
             );
         }
 
-        return startDate.toISOString().split('T')[0];
+        return startDate.toISOString().split("T")[0];
     }
 
     async function fetchData() {
         loading = true;
-        error = '';
+        error = "";
 
         try {
             const startDate = getStartDateForRange(selectedRange);
@@ -163,18 +163,18 @@
 </script>
 
 {#if error}
-    <div class="bg-red-50 text-red-700 p-4 rounded">
+    <div class="rounded bg-red-50 p-4 text-red-700">
         {m.portfolio_error_detail({ error })}
     </div>
 {:else}
-    <Card class="h-full flex flex-col">
+    <Card class="flex h-full flex-col">
         <CardHeader class="pb-2">
             <div
                 class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"
             >
                 <div class="flex flex-col gap-1">
                     <CardTitle
-                        class="text-xs uppercase tracking-wide text-muted-foreground"
+                        class="text-muted-foreground text-xs tracking-wide uppercase"
                     >
                         {m.portfolio_net_worth()}
                     </CardTitle>
@@ -182,9 +182,9 @@
                         <div class="text-3xl font-semibold tracking-tight">
                             {formatCompactCurrency(netWorthTotal / 100)}
                         </div>
-                        <div class="flex flex-col pl-8 items-center text-xs">
+                        <div class="flex flex-col items-center pl-8 text-xs">
                             <span
-                                class="text-muted-foreground uppercase tracking-wide"
+                                class="text-muted-foreground tracking-wide uppercase"
                             >
                                 {#if lastUpdatedDate}
                                     {formatDate(parseIsoDate(lastUpdatedDate))}
@@ -194,12 +194,12 @@
                             </span>
                             {#if hasPreviousBalances}
                                 <span class={changeClass}>
-                                    {changeIsPositive ? '▲' : '▼'}
+                                    {changeIsPositive ? "▲" : "▼"}
                                     {formatCompactCurrency(
-                                        Math.abs(netWorthChange) / 100
+                                        Math.abs(netWorthChange) / 100,
                                     )}
                                     ({formatPercent(
-                                        Math.abs(netWorthChangePercent)
+                                        Math.abs(netWorthChangePercent),
                                     )})
                                 </span>
                             {/if}
@@ -209,7 +209,7 @@
                 <div class="flex gap-6">
                     <div class="text-right">
                         <div
-                            class="text-xs uppercase tracking-wide text-muted-foreground"
+                            class="text-muted-foreground text-xs tracking-wide uppercase"
                         >
                             {m.portfolio_liquid_total()}
                         </div>
@@ -223,13 +223,13 @@
         <CardContent class="flex-1">
             {#if loading}
                 <div
-                    class="h-90 flex items-center justify-center text-sm text-muted-foreground"
+                    class="text-muted-foreground flex h-90 items-center justify-center text-sm"
                 >
                     {m.portfolio_loading()}
                 </div>
             {:else if !hasData}
                 <div
-                    class="h-90 flex items-center justify-center text-sm text-muted-foreground border border-dashed rounded-md"
+                    class="text-muted-foreground flex h-90 items-center justify-center rounded-md border border-dashed text-sm"
                 >
                     {m.portfolio_empty()}
                 </div>
@@ -241,19 +241,21 @@
                         xScale={scaleUtc()}
                         series={chartSeries}
                         seriesLayout="stack"
+                        padding={{ left: 32, right: 32 }}
                         props={{
                             area: {
                                 curve: curveMonotoneX,
-                                'fill-opacity': 0.4,
-                                line: { class: 'stroke-1' },
-                                motion: 'tween',
+                                "fill-opacity": 0.4,
+                                line: { class: "stroke-1" },
+                                motion: "tween",
                             },
                             xAxis: {
                                 format: (v: Date) => formatDateCompact(v),
+                                ticks: 10,
                             },
                             yAxis: {
                                 format: (v) =>
-                                    typeof v === 'number'
+                                    typeof v === "number"
                                         ? formatCompactCurrency(v)
                                         : String(v),
                             },
@@ -272,27 +274,27 @@
             <div class="mt-4 flex justify-center">
                 <ButtonGroup>
                     <Button
-                        variant={selectedRange === 'ytd'
-                            ? 'default'
-                            : 'outline'}
+                        variant={selectedRange === "ytd"
+                            ? "default"
+                            : "outline"}
                         size="sm"
-                        onclick={() => handleRangeChange('ytd')}
+                        onclick={() => handleRangeChange("ytd")}
                     >
                         {m.portfolio_range_ytd()}
                     </Button>
                     <Button
-                        variant={selectedRange === '1y' ? 'default' : 'outline'}
+                        variant={selectedRange === "1y" ? "default" : "outline"}
                         size="sm"
-                        onclick={() => handleRangeChange('1y')}
+                        onclick={() => handleRangeChange("1y")}
                     >
                         {m.portfolio_range_1y()}
                     </Button>
                     <Button
-                        variant={selectedRange === 'max'
-                            ? 'default'
-                            : 'outline'}
+                        variant={selectedRange === "max"
+                            ? "default"
+                            : "outline"}
                         size="sm"
-                        onclick={() => handleRangeChange('max')}
+                        onclick={() => handleRangeChange("max")}
                     >
                         {m.portfolio_range_max()}
                     </Button>
